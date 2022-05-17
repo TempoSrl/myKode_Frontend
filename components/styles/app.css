@@ -1,0 +1,1396 @@
+/* define color variable Blue default theme*/
+:root {
+	--main-bg-color:#0d4b75;
+	--clear-bg-color:#b8d8f8;
+	--link-color:#0073e6;
+	--hover-and-nav-link-color:#21649e;
+	--toolbar-bg-color: var(--main-bg-color);
+	--modal-header-gradient-a:  var(--clear-bg-color);
+	--modal-header-gradient-b: var(--link-color);
+	--modal-header-gradient-c: #1e5799;
+	--nav-link-forecolor: #f0f0f0;
+	--table-header-bg-color: var(--clear-bg-color);
+	--menu-nav-bg-color: var(--main-bg-color) !important;
+	--menu-drop-down-bg-color: var(--main-bg-color) !important;
+	--menu-drop-down-bg-color-hover: var(--hover-and-nav-link-color) !important;
+	--menu-nav-link: var(--hover-and-nav-link-color);
+	--btn-primary-bg-color: #428BCA;
+	--btn-primary-color: var(--nav-link-forecolor);
+	--btn-link-color: var(--link-color);
+	--btn-primary-hover-color: #38e4ff;
+}
+
+/* define color variable YELLOW theme*/
+/*:root {
+	--main-bg-color:#FCE30B;
+	--clear-bg-color:#FCF3CF;
+	--link-color:#F1C40F;
+	--hover-and-nav-link-color:#D4AC0D;
+	--toolbar-bg-color: var(--main-bg-color);
+	--modal-header-gradient-a:  var(--clear-bg-color);
+	--modal-header-gradient-b: var(--link-color);
+	--modal-header-gradient-c: #D4AC0D;
+	--nav-link-forecolor: '#191919';
+	--table-header-bg-color: var(--clear-bg-color);
+	--menu-nav-bg-color: var(--main-bg-color) !important;
+	--menu-drop-down-bg-color: var(--main-bg-color) !important;
+	--menu-drop-down-bg-color-hover: var(--hover-and-nav-link-color) !important;
+	--menu-nav-link: var(--hover-and-nav-link-color);
+	--btn-primary-color: var(--nav-link-forecolor);
+	--btn-primary-bg-color: #F4D03F;
+	--btn-link-color: var(--link-color);
+	--btn-primary-hover-color: #FCF3CF;
+}*/
+
+
+/* define color variable RED theme*/
+
+/*:root {
+	--main-bg-color:#E74C3C;
+	--clear-bg-color:#F5B7B1;
+	--link-color:#E74C3C;
+	--hover-and-nav-link-color:#CD6155;
+	--toolbar-bg-color: var(--main-bg-color);
+	--modal-header-gradient-a:  var(--clear-bg-color);
+	--modal-header-gradient-b: var(--link-color);
+	--modal-header-gradient-c: #7B241C;
+	--nav-link-forecolor: #f0f0f0;
+	--table-header-bg-color: var(--clear-bg-color);
+	--menu-nav-bg-color: var(--main-bg-color) !important;
+	--menu-drop-down-bg-color: var(--main-bg-color) !important;
+	--menu-drop-down-bg-color-hover: var(--hover-and-nav-link-color) !important;
+	--menu-nav-link: var(--hover-and-nav-link-color);
+	--btn-primary-bg-color: #FA8072;
+	--btn-primary-color: var(--nav-link-forecolor);
+	--btn-link-color: var(--link-color);
+	--btn-primary-hover-color: #fbec88;
+}*/
+
+.mainButton {
+	height: 50px;
+}
+
+/* applied to td in table */
+.alignNumericColumn {
+	text-align: right !important;
+}
+
+.alignStringColumn {
+	text-align: left !important;
+}
+
+/******* Init Grid and list manager *******/
+
+input[type="number"] {
+	border: 1px solid lightgrey;
+	height: initial;
+	padding: 6px;
+	border-radius: 3px;
+}
+
+/* css for gridxchild */
+.table-in-cell {
+	border: 0 !important;
+	background-color: inherit !important;
+}
+
+.table-in-cell > tr > td {
+	border-top-style: none !important;
+	border-left-style: none !important;
+	border-right-style: none !important;
+	border-bottom-style: none !important;
+	padding-bottom: 0 !important;
+}
+
+.table-in-cell-td {
+	border-top-style: none !important;
+	border-left-style: none !important;
+	border-right-style: none !important;
+	border-bottom-style: none !important;
+	padding-top: 0 !important;
+	padding-bottom: 0 !important;
+}
+
+.grid-child-add-button {
+	margin-left: 5px;
+	padding-left: 5px;
+	float: left;
+	cursor: pointer;
+}
+
+/* odd rows in the grid */
+table tr:nth-child(even):not(.table-in-cell-tr) {
+	background-color: lightgrey;
+}
+
+/* Style of ListManager grid control */
+
+.listManagerNotModalContainer {
+	height: 30%;
+	resize: vertical;
+	overflow: auto;
+	border: 1px solid lightgrey;
+}
+
+/* set the border of the control */
+.listManagerContainer {
+	border: solid grey thin;
+}
+
+/* row selected in a grid */
+.table > tr > td, th {
+	line-height: 18px;
+	padding-left: 5px;
+	padding-right: 5px;
+	cursor: pointer;
+	white-space: nowrap;
+}
+
+.table {
+	border: 1px solid grey;
+}
+
+.table thead th {
+	position: sticky;
+	top: 0;
+}
+
+/* row selected in a grid */
+.table > tr.active {
+	background-color: yellow;
+}
+
+.gridGroupTot {
+	line-height: 14px !important;
+	color: grey;
+}
+
+/* MuliSelectControl*/
+.selectedRow {
+	background: cyan;
+}
+
+.multiSelect_rowMargin {
+	margin-top: 20px;
+}
+/******* End Grid and list manager ******/
+
+/******* init Toolbar css ***************/
+
+/* toolbar button pushed state*/
+.btnPushed {
+	background: #e5e5e5;
+	border-width: 5px;
+	border-style: ridge;
+}
+
+/* toolbar button*/
+.btn-sq-lg {
+	width: 100px !important;
+	height: 100px !important;
+	float: left;
+	position: relative;
+}
+
+/* toolbar button text*/
+.buttonTooBarText {
+	position: relative;
+	bottom: 5%;
+	width: 100%;
+	left: 0%;
+}
+/******* end Toolbar css ***************/
+.ui-accordion-header {
+	outline: none;
+}
+
+/*****************************************/
+
+/* Important part */
+.modal-dialog {
+	overflow-y: initial !important
+}
+
+.modal-body {
+	height: 70%;
+	overflow-y: auto;
+}
+
+/*******************CUSTOM CSS*************************/
+
+/* classe sui bottoni della griglia */
+.mdlw_tdclickable {
+	user-select: none;
+	cursor: pointer;
+}
+
+
+/** permette alle label del jsTree di andare  capo se non entrano nella lunghezza **/
+.jstree-anchor {
+	/*enable wrapping*/
+	white-space: normal !important;
+	/*ensure lower nodes move down*/
+	height: auto !important;
+	/*offset icon width*/
+	padding-right: 24px;
+}
+
+/* applicato alle pagine di dettaglio per avere un effetto popup */
+.detailPage {
+	border: 15px solid lightgrey;
+	padding: 5px;
+	resize: vertical !important;
+	overflow: auto !important;
+	min-height: calc(100vh - 140px);
+}
+
+.delNode { color:red !important; }
+.addNode { color:green !important; }
+.modNode { color:blue !important; }
+
+/************************** CHECKBOX *********************************************/
+
+.big-checkbox {
+	width: 25px;
+	height: 25px;
+}
+/*********************************************************************************/
+
+/****************** css per gridx ********************/
+.gridx {
+	overflow-x: auto;
+	border: 1px darkgray solid;
+	margin-top: 5px;
+}
+
+.gx-column-drop-cell {
+	background: #D2D2D2;
+	border-radius: 8px;
+	height: 16px !important;
+	padding: 2px 8px;
+	margin-left: 8px;
+}
+
+/*stile per celle raggruppamento*/
+.gx-td-grouped-cell-first {
+	background: #99b2fd;
+}
+
+.gx-td-grouped-cell-notfirst {
+	background: #E0FFFF;
+}
+
+.gx-column-drop-cell-drag {
+	background-position: center;
+	background: url("../styles/icon/dragico.png");
+	background-size: 16px 16px;
+	height: 16px;
+	opacity: 0.87;
+	width: 16px;
+}
+
+/* css per grix , con raggruppamento  */
+.gx-td-grouped-cell {
+}
+
+/*********** fine stile gridx ***********************/
+
+/************ il datepicker va sopra a tutto ********/
+#ui-datepicker-div {
+	z-index: 10001 !important;
+}
+/************ il datepicker va sopra a tutto ********/
+
+/************ dialog appare sopra a tutto ********/
+.ui-dialog {
+	z-index: 1051 !important;
+}
+
+.ui-dialog .ui-dialog-titlebar {
+	color: white !important;
+}
+
+
+/************ dialog autochoose in posizione relativa al controllo e non modale ********/
+.mdlautochoose {
+	position: absolute;
+	/*top: 58.5px;*/
+	left: 6.5px;
+	min-height: 100px;
+	min-width: 100px;
+	z-index: 10;
+	display: table;
+	background-color: white;
+	-webkit-box-shadow: 0px 1px 10px 1px rgba(0,0,0,0.6);
+	-moz-box-shadow: 0px 1px 10px 1px rgba(0,0,0,0.6);
+	box-shadow: 0px 1px 10px 1px rgba(0,0,0,0.6);
+	border-radius: 4px;
+	margin-bottom: 20px;
+	margin-top: 36px;
+	padding: 3px 7px;
+	overflow: hidden;
+}
+
+.listManagerFooterCont {
+	width: 100%;
+	margin: 5px auto;
+	display: flex;
+	justify-content: center;
+}
+
+.searchzoneList .autoChooseDataTag {
+	display: block;
+	overflow: hidden;
+	position: relative;
+}
+
+
+.mdlautochoose .autoChooseDataTag {
+	position: relative;
+	width: auto !important;
+	height: auto !important;
+	/*
+	resize: vertical;
+	display: block;
+	overflow: hidden;
+	min-height: 180px;
+	*/
+}
+
+.modal-dialog .autoChooseDataTag {
+	height: 100% !important;
+}
+
+.modal-dialog .tableCont {
+	height: 100% !important;
+}
+
+
+/**************************************/
+
+.waitProgress {
+	width: 100%;
+	background-color: var(--clear-bg-color);
+	margin-top: 3px;
+}
+
+.waitBar {
+	width: 10%;
+	height: 10px;
+	background-color: var(--hover-and-nav-link-color);
+	text-align: center;
+	line-height: 10px;
+	color: var(--clear-bg-color);
+}
+
+#mdl_menuloader_id,
+.spinner-cont {
+	width: 100%;
+	text-align: center;
+}
+
+.textarea {
+	border: none;
+	border-bottom: 1px solid #5c6f82;
+	border-radius: 0;
+	outline: 0;
+	height: 8rem;
+	width: 100%;
+	-webkit-box-shadow: none;
+	box-shadow: none;
+	-webkit-transition: .3s;
+	transition: .3s;
+	font-weight: 700;
+}
+
+/***************************BARRA MENU *******************************************/
+
+.navbar-dark .navbar-nav .nav-link {
+	color: var(--nav-link-forecolor);
+}
+
+/* disabled menù item */
+.disabledMenu {
+	pointer-events: none !important;
+	background-color: lightgrey;
+}
+
+
+/*************************** MEGAMENU**************************************************/
+#toolbar {
+	background-color: var(--toolbar-bg-color);
+	padding-bottom: 4px;
+	border-top: 0.5px solid white;
+}
+/* fixed menù (vedi js per l' onscroll) */
+.fixed-navbar {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 100;
+	-webkit-box-shadow: 0px 0px 15px 0px #000000b5;
+	-moz-box-shadow: 0px 0px 15px 0px #000000b5;
+	-o-box-shadow: 0px 0px 15px 0px #000000b5;
+	box-shadow: 0px 0px 15px 0px #000000b5;
+	border-top: none !important;
+}
+
+
+.navbar .dropdown-menu {
+	border: none;
+	background-color: #0060c8 !important;
+}
+
+/* breakpoint and up - mega dropdown styles */
+@media screen and (min-width: 992px) {
+
+	/* remove the padding from the navbar so the dropdown hover state is not broken */
+	.navbar {
+		padding-top: 0px;
+		padding-bottom: 0px;
+	}
+
+	/* makes the dropdown full width  */
+	.navbar .dropdown {
+		position: static;
+	}
+
+	.navbar .dropdown-menu {
+		width: 100%;
+		left: 0;
+		right: 0;
+		/*  height of nav-item  */
+		top: 45px;
+		z-index: 101;
+	}
+
+	.navbar .dropdown-menu ul {
+		list-style-type: none;
+	}
+
+	/* shows the dropdown menu on hover */
+	.navbar .dropdown:hover .dropdown-menu, .navbar .dropdown .dropdown-menu:hover {
+		display: block !important;
+	}
+
+	.navbar .dropdown-menu {
+		border: 1px solid rgba(0, 0, 0, .15);
+		background-color: #fff;
+	}
+
+	/*************************** BARRA PULSANTI *******************************************/
+	.bd-navbar {
+		position: sticky;
+		top: 0;
+		z-index: 99;
+	}
+
+	#header {
+		/*background-image: url("../assets/testatablu-azzurra.png");*/
+		background-repeat: no-repeat;
+		background-size: 100% 100%;
+	}
+
+	.list-inline {
+		margin-bottom: 10px;
+	}
+
+	.list-inline-item {
+		margin-right: 0px !important;
+	}
+
+	/*************************** TAB *******************************************/
+	.nav-tabs {
+		flex-wrap: wrap;
+		overflow-x: hidden;
+	}
+
+	/***************************  CALENDARIO *******************************************/
+	.fc-state-active, .fc-state-down {
+		background-color: #ccc;
+		background-image: none;
+		box-shadow: none;
+	}
+
+	.fc-title {
+		color: white;
+	}
+
+	/***************************  ELENCO  *******************************************/
+	.table a {
+		color: #19191a;
+		text-decoration: none;
+	}
+
+	/***************************  MODALI RIDIMENSIONABILI *******************************************/
+	.ui-widget-header {
+		border: 1px solid #aaaaaa;
+		background: #b8d8f8; /* Old browsers */
+		background: -moz-linear-gradient(top, var(--modal-header-gradient-a) 0%, var(--modal-header-gradient-b) 0%, var(--modal-header-gradient-c) 100%); /* FF3.6-15 */
+		background: -webkit-linear-gradient(top, var(--modal-header-gradient-a) 0%, var(--modal-header-gradient-b) 0%, var(--modal-header-gradient-c) 100%); /* Chrome10-25,Safari5.1-6 */
+		background: linear-gradient(to bottom, var(--modal-header-gradient-a) 0%, var(--modal-header-gradient-b) 0%, var(--modal-header-gradient-c) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#7db9e8', endColorstr='#b8d8f8', GradientType=0); /* IE6-9 */
+		font-weight: 600;
+	}
+
+	.ui-widget {
+		font-family: "Titillium Web", Geneva, Tahoma, sans-serif;
+	}
+
+	.table th {
+		background-color: var(--table-header-bg-color);
+	}
+
+	.table td, .table th {
+		padding: 0.5em;
+	}
+
+	/***************************  MODALI  *******************************************/
+	.modal-header {
+		padding-bottom: 0rem;
+	}
+
+	.modal-footer {
+		padding-top: 0rem;
+	}
+
+	/***************************  WIZARD  *******************************************/
+	.stepwizard-step p {
+		margin-top: 10px;
+	}
+
+	.stepwizard-row {
+		display: table-row;
+	}
+
+	.stepwizard {
+		display: table;
+		width: 100%;
+		position: relative;
+	}
+
+	.stepwizard-step button[disabled] {
+		opacity: 1 !important;
+		filter: alpha(opacity=100) !important;
+	}
+
+	.stepwizard-row:before {
+		top: 14px;
+		bottom: 0;
+		position: absolute;
+		content: " ";
+		width: 100%;
+		height: 1px;
+		background-color: #ccc;
+		z-order: 0;
+	}
+
+	.stepwizard-step {
+		display: table-cell;
+		text-align: center;
+		position: relative;
+	}
+
+	.btn-circle {
+		width: 30px;
+		height: 30px;
+		text-align: center;
+		padding: 6px 0;
+		font-size: 12px;
+		line-height: 1.428571429;
+		border-radius: 15px !important;
+	}
+
+	.btn-primary {
+		color: #fff;
+		background-color: #428bca;
+		border-color: #357ebd;
+	}
+}
+
+
+/* ========================================================= */
+/*                        RESET FONT                         */
+/* ========================================================= */
+* {
+	font-family: "Helvetica Neue", "Segoe UI", Helvetica, Verdana, sans-serif !important;
+	font-size: 14px;
+	font-weight: 400;
+	line-height: 1.15;
+}
+
+/* ========================================================= */
+/*                          HEADER                           */
+/* ========================================================= */
+.navbar-brand b {
+	font-size: 1rem;
+}
+
+#header {
+	background: none;
+	/*height: 36px;*/
+}
+
+#toolbar {
+	margin-bottom: 12px;
+}
+
+/* ========================================================= */
+/*                      PULSANTI HEADER                      */
+/* ========================================================= */
+ul.list-inline {
+	margin-bottom: 0;
+}
+
+li.list-inline-item {
+	margin-right: 0 !important;
+	display: initial;
+}
+
+/* ========================================================= */
+/*                          FOOTER                           */
+/* ========================================================= */
+.footer {
+	position: fixed;
+	bottom: 0px;
+	left: 0px;
+	right: 0px;
+	height: 26px;
+	z-index: 99;
+}
+
+.footer .container p {
+	padding: 6px 0 0 0;
+	font-size: 12px !important;
+}
+
+/* ========================================================= */
+/*                           MENU                            */
+/* ========================================================= */
+#menu nav, .footer, .dropdown-toggle {
+	background-color:var(--menu-nav-bg-color) !important;
+	color: var(--nav-link-forecolor) !important;
+	border: none !important;
+}
+
+.navbar .dropdown-menu {
+	border: none;
+	background-color: var(--menu-drop-down-bg-color) !important;
+	color: var(--nav-link-forecolor);
+	top: 37px;
+	border-radius: 0;
+}
+
+.navbar .dropdown-menu.show {
+	top: 34px !important;
+}
+
+.dropdown-item:focus, .dropdown-item:hover {
+	background-color: var(--menu-drop-down-bg-color-hover);
+}
+
+.navbar-dark .navbar-nav .nav-link:focus, .navbar-dark .navbar-nav .nav-link:hover {
+	color: #fff;
+	background-color: var(--menu-nav-link);
+}
+
+/* ========================================================= */
+/*                         CONTAINER                         */
+/* ========================================================= */
+/*@media (min-width: 576px) {
+	.container {
+		max-width: 546px;
+	}
+}
+
+@media (min-width: 768px) {
+	.container {
+		max-width: 738px;
+	}
+}
+
+@media (min-width: 992px) {
+	.container {
+		max-width: 962px;
+	}
+}
+
+@media (min-width: 1200px) {
+	.container {
+		max-width: 1170px;
+	}
+}*/
+
+
+.container {
+	width: 100% !important;
+	max-width: 1440px !important;
+	position: relative;
+}
+
+/* ========================================================= */
+/*                          ROW COL                          */
+/* ========================================================= */
+.row {
+	margin-bottom: 4px !important;
+}
+
+.rowInner {
+	margin-bottom: 0px !important;
+}
+
+/* ========================================================= */
+/*                          INPUT                            */
+/* ========================================================= */
+textarea, input[type=text], input[type=checkbox], input[type=password], select,
+.select2-container--default .select2-selection--single {
+	font-weight: 400 !important;
+	color: #333 !important;
+	border: 1px solid #ccc !important;
+	border-radius: 4px !important;
+	text-align: start;
+	font-size: 16px;
+}
+
+input[type=text], input[type=checkbox], input[type=password], select,
+.select2-container--default .select2-selection--single {
+	height: 34px !important;
+}
+
+/* ========================================================= */
+/*                      FRECCIA COMBO                        */
+/* ========================================================= */
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+	height: 31px !important;
+}
+
+textarea, input[type=text], input[type=checkbox], input[type=password], select {
+	padding: 0 8px 0 8px !important
+}
+
+.select2-container--default .select2-selection--single {
+	padding: 2px 0 0 4px !important;
+}
+
+
+
+
+/* ========================================================= */
+/*                      RADIO CUSTOM                         */
+/* ========================================================= */
+.custom-radio {
+	/*background-color: white;
+    border: 1px solid #ccc!important;*/
+	border-radius: 4px !important;
+	text-align: start !important;
+	padding: 8.5px 0 0 10px !important;
+	height: 34px;
+}
+
+.custom-radio label {
+	margin-right: 15px !important;
+}
+
+/* ========================================================= */
+/*                         SELECT2                           */
+/* ========================================================= */
+.select2 {
+	width: 100% !important;
+}
+
+.select2-selection__arrow {
+	top: 6px;
+}
+
+.select2-results__option[aria-selected] {
+	cursor: pointer;
+	height: auto !important;
+	border-bottom: 0.5px solid #f8f8f8;
+}
+
+.select2-search--dropdown {
+	padding: 0px;
+}
+
+.select2-container--open .select2-dropdown--below {
+	border-top-right-radius: 4px !important;
+	border-top-left-radius: 4px !important;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+	border: 1px solid #ccc;
+	border-left: none;
+	border-right: none;
+	padding: 0 0px 1px 6px;
+	height: 30px;
+	background-color: #fff;
+}
+
+.select2-dropdown {
+	position: relative;
+}
+
+.select2-search:after {
+	font-family: FontAwesome;
+	content: "\f002";
+	position: absolute;
+	top: 10.5px;
+	right: 14px;
+	color: #555;
+}
+
+span.select2-results {
+	padding-bottom: 1px;
+}
+
+
+/* ========================================================= */
+/*                          BUTTON                           */
+/* ========================================================= */
+.btn {
+	font-size: 14px;
+	font-weight: 500;
+	padding: 0.3rem 1rem 0.35rem !important;
+	/*min-width: 100px*/
+}
+
+.btn-primary.disabled, .btn-primary:disabled {
+	color: #111;
+}
+
+/* ========================================================= */
+/*                           LOGIN                           */
+/* ========================================================= */
+#login {
+	margin-top: 75px;
+	margin-bottom: 75px;
+}
+
+#loginButton {
+	margin-top: 10px;
+}
+
+/* ========================================================= */
+/*                          NAVBAR                           */
+/* ========================================================= */
+.navbar {
+	padding: 0 !important;
+}
+
+.navbar-nav {
+	margin-right: 8px
+}
+
+.nav-link {
+	padding: .35rem 1rem;
+}
+
+.menulist {
+	margin-left: 5px;
+}
+
+.nav-tabs {
+	border-bottom: none;
+}
+
+.dropdown-toggle {
+	padding-bottom: 3px;
+}
+
+
+.nav-tabs {
+	/*padding-left: 3px;*/
+}
+
+.nav-tabs .nav-item {
+	padding: 0;
+	/*margin: 0 -3px -1px;*/
+	background-color: #fff;
+	border-top-left-radius: 4px !important;
+	border-top-right-radius: 8px !important;
+	/*max-width: 200px;*/
+}
+
+.nav-tabs .nav-item a:hover {
+	background-color: #fff9d0;
+}
+
+.nav-tabs .nav-item .nav-link {
+	padding: 10px 12px 8px !important;
+	border: 0.5px solid #ccc !important;
+	border-top-left-radius: 4px !important;
+	border-top-right-radius: 8px !important;
+	background-color: #fff;
+}
+
+.nav-tabs .nav-item .nav-link.active {
+	border: none;
+	background-color: #ffff99;
+}
+
+a.nav-link.active.show {
+	background-color: #ffe41b;
+	color: #333;
+}
+
+/* ========================================================= */
+/*                           TABLE                           */
+/* ========================================================= */
+.table {
+	margin-bottom: 0px;
+	background-color: white;
+}
+
+th {
+	border-bottom: 1px solid #aaa !important;
+}
+
+
+/* ========================================================= */
+/*                           WIDGET                           */
+/* ========================================================= */
+.ui-widget-content {
+	border: 1px solid #aaaaaa;
+	background: #ffffff;
+	color: #0d4b75;
+}
+
+/* ========================================================= */
+/*                         ACCORDION                         */
+/* ========================================================= */
+.ui-state-active, .ui-widget-content .ui-state-active, .ui-widget-header .ui-state-active, a.ui-button:active, .ui-button:active, .ui-button.ui-state-active:hover {
+	background: #ffff99 !important;
+}
+
+.ui-accordion .ui-accordion-content {
+	padding: 10px !important;
+}
+
+.ui-accordion .ui-accordion-header {
+	margin: 10px 0 0 0;
+	font-weight: 700;
+	font-size: 16px;
+}
+
+/*.ui-state-default, .ui-widget-content .ui-state-default, .ui-widget-header .ui-state-default, .ui-button, html .ui-button.ui-state-disabled:hover, html .ui-button.ui-state-disabled:active {
+	background: #fff9c9;
+}
+
+.ui-state-hover, .ui-widget-content .ui-state-hover, .ui-widget-header .ui-state-hover, .ui-state-focus, .ui-widget-content .ui-state-focus, .ui-widget-header .ui-state-focus, .ui-button:hover, .ui-button:focus {
+	background: #ffe41b !important;
+}*/
+
+/* ========================================================= */
+/*                          CONTENT                          */
+/* ========================================================= */
+.tab-content {
+	background-color: #f4f4f4;
+	border-top: 0.5px solid #ccc;
+	border-left: 1px solid #ccc !important;
+	border-right: 1px solid #ccc !important;
+	border-bottom: 1px solid #ccc !important;
+	padding: 10px;
+	margin-top: 0 !important;
+	border-top-right-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-left-radius: 4px;
+}
+
+/* ========================================================= */
+/*                           LABEL                           */
+/* ========================================================= */
+label {
+	font-size: 14px !important;
+	line-height: 19px !important;
+	color: #333 !important;
+	margin: 4px 0 2px 2px !important;
+	padding: 0 !important;
+}
+
+.spaceLabel {
+	width: 100%;
+}
+
+@media screen and (max-width: 991px) {
+	.spaceLabel {
+		display: block;
+		margin: 0 !important;
+		line-height: 14px !important;
+	}
+
+	.spaceLabel2 {
+		display: block;
+		margin: 0 !important;
+		line-height: 19px !important;
+	}
+}
+
+input[type=radio] {
+	width: 20px !important;
+	background-color: #fff !important;
+}
+
+input[type=checkbox] {
+	width: 21px !important;
+	height: 21px !important;
+	background-color: #fff !important;
+	float: left;
+}
+
+/*testo	 sopra i singoli campi*/
+.col-md-6, .col-md-12 {
+	align-self: flex-end;
+}
+
+.col-md-6 div, .col-md-12 div {
+	color: #000;
+	font-style: italic;
+	font-size: 14px;
+}
+
+.custom_lng_div {
+	margin-top: 10px;
+}
+
+/* ========================================================= */
+/*                    SEARCH RESULT DIV                      */
+/* ========================================================= */
+.mdlautochoose #groupingArea_id {
+	padding: 4px 0px 0px;
+	margin: 0 0 7px 0;
+}
+
+#groupingArea_id {
+	margin-bottom: 8px;
+	margin-top: 5px;
+}
+
+.searchzoneGridX {
+	position: relative;
+	color: #777;
+	border: 1px solid #bbb !important;
+	padding: 5px 6px 6px 6px;
+	margin: 0 6px 0 5px;
+	border-radius: 4px;
+	display: block;
+	overflow: hidden;
+	background-color: white;
+}
+
+.icoTrascina {
+	cursor: pointer;
+	padding: 6px 8px 0 7px;
+	color: #888;
+	float: left;
+}
+
+.searchzoneList {
+	position: relative;
+	border: 0.5px solid #ccc !important;
+	margin-bottom: 15px;
+	border-radius: 4px;
+	background-color: #f4f4f4;
+	height: auto !important;
+}
+
+.mdlautochoose .tableCont {
+	overflow-x: scroll !important;
+}
+
+.searchzoneList .tableCont {
+	display: block;
+	overflow: scroll;
+	height: 300px;
+	border-bottom: 1px solid #ccc;
+	resize: vertical;
+	min-height: 118px;
+}
+
+.mdlautochoose .tableCont {
+	/*overflow: auto;*/
+	width: 540px;
+	height: 388px;
+	resize: both;
+	min-width: 320px;
+	min-height: 116px;
+}
+
+/* ========================================================= */
+/*                      RICERCA CHIUDI                       */
+/* ========================================================= */
+.searchClose {
+	position: absolute;
+	top: 6px;
+	right: 6px;
+	z-index: 1000000;
+}
+
+
+/* ========================================================= */
+/*                 PULSANTE TIPOLOGIA SELECT                 */
+/* ========================================================= */
+.oneRow button,
+.oneRow input,
+.oneRow .select2 {
+	float: left;
+	display: block;
+	overflow: hidden;
+	border-top-left-radius: 0 !important;
+	border-bottom-left-radius: 0 !important;
+}
+
+.oneRow button {
+	width: 44px !important;
+	height: 34px;
+	min-width: inherit;
+	margin: 0 !important;
+	border-top-left-radius: 0 !important;
+	border-bottom-left-radius: 0 !important;
+}
+
+.oneRow .select2,
+.oneRow input {
+	width: calc(100% - 44px) !important;
+}
+
+.oneRow .select2-selection {
+	border-left: none !important;
+}
+
+.norow {
+	font-style: italic;
+	text-align: center !important;
+}
+
+/* ========================================================= */
+/*                         CONTAINER                         */
+/* ========================================================= */
+
+@media (max-width: 575px) {
+	.navbar-brand {
+		margin-left: 10px;
+	}
+}
+
+
+@media (max-width: 991px) {
+	#groupingArea_id {
+		display: none;
+	}
+
+	.navbar-collapse {
+		padding: 0 10px 10px 10px;
+	}
+
+	input[type=checkbox] {
+		height: 16px !important;
+	}
+
+	input[type=text], input[type=checkbox], input[type=password], select, .select2-container--default .select2-selection--single {
+		height: 28px !important;
+	}
+
+	.select2-container--default .select2-selection--single .select2-selection__arrow {
+		height: 26px !important;
+	}
+
+	.select2-container .select2-selection--single .select2-selection__rendered {
+		padding-left: 8px;
+		padding-right: 20px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		position: absolute;
+		top: 0px;
+	}
+
+	textarea, input[type=text], input[type=checkbox], input[type=password], select {
+		padding: 0 6px 2px 6px !important
+	}
+
+	label {
+		font-size: 12px !important;
+		line-height: 12px !important;
+		margin: 6px 0 2px 2px !important;
+	}
+
+	.oneRow button {
+		width: 24px !important;
+		padding-left: 8px !important;
+		height: 28px !important;
+	}
+
+	.custom-radio {
+		padding: 4px 0 0 0px !important;
+		height: 20px !important;
+		font-size: 12px;
+	}
+
+	.selection--single .select2-selection__rendered {
+		line-height: 16px;
+		font-size: 12px;
+	}
+
+	.oneRow .select2,
+	.oneRow .input {
+		width: calc(100% - 24px) !important;
+	}
+
+	.btn {
+		font-size: 12px !important;
+		padding: 4px 10px !important;
+	}
+
+	.btn span {
+		font-size: 12px !important;
+	}
+
+	#toolbartitle {
+		margin-top: 4px;
+		width: 100%;
+		padding-right: 4px;
+		font-size: 12px;
+	}
+
+	.ui-accordion .ui-accordion-header {
+		font-size: 14px;
+		padding: 6px 0 5px 10px;
+	}
+
+	.mdlautochoose td, .mdlautochoose th {
+		padding: 4px 6px !important;
+	}
+}
+
+#metaRoot.fixed-metaRoot {
+	padding-top: 50px;
+}
+
+.fakeTr td:before {
+	display: block;
+	height: 100%;
+	content: '';
+	background-image: url("../../components/styles/images/virtualRow.png");
+	background-repeat: no-repeat repeat;
+}
+
+.fakeTr td {
+	padding: 0 5px !important;
+}
+
+.risultati {
+	margin: 4px 0px 6px 7px !important;
+	padding: 0 !important;
+}
+
+/**************** drop down column info on control**************************/
+.dw-column-info {
+	background: #ece6e6;
+	border-radius: 2px;
+	padding: 2px;
+	margin-left: 2px;
+	margin-top: -5px;
+	border: solid 1px #c1bdbd;
+}
+
+.dw-column-info-container {
+	margin-bottom: 10px;
+	position: relative;
+	top: 5px
+}
+
+.nav-item a[href^='#tab'] {
+	display: none;
+}
+
+.no-close .ui-dialog-titlebar-close {  display: none;}
+
+.gridLoaderScroll {
+	position: absolute;
+	top:0px;
+	right:0px;
+	width:100%;
+	height:100%;
+	background-color:#eceaea;
+	background-size: 50px;
+	background-repeat:no-repeat;
+	background-position:center;
+	z-index:10000000;
+	opacity: 0.4;
+	filter: alpha(opacity=40);
+}
+
+
+.mdlw-sliderLabel-value {
+	text-align: center;
+}
+
+.mdlw-sliderLabel-min {
+	text-align: start;
+}
+
+.mdlw-sliderLabel-max {
+	text-align: end;
+}
+
+.mdlw-slider {
+	width: 100%;
+}
+
+.mdlw-tachimetro-text {
+	width: 100%;
+	text-align: center;
+	font-size: 2em;
+	font-weight: bold;
+	color: black;
+	font-family: 'Amaranth', sans-serif;
+	margin-top: 5px;
+}
+
+#toolbartitle {
+	color: var(--nav-link-forecolor);
+}
+
+.btn-primary {
+	background-color: var(--btn-primary-bg-color);
+	color: var(--btn-primary-color);
+}
+
+.btn-link {
+	color: var(--btn-link-color);
+}
+
+.btn-primary:hover {
+	background-color: var(--btn-primary-hover-color);
+	color: var(--nav-link-forecolor);
+}
+
+.navbar-brand {
+	color: var(--nav-link-forecolor) !important;
+}
+
+
+.portale_brand_name_id {
+	font-weight: bold;
+	font-size: 18px;
+	padding-left: 5px
+}
+
+.mdl-cell-size-calc {
+	min-width: 200px;
+	max-width: 400px !important;
+	white-space: break-spaces !important;
+}
+
+.mdl-cell-child-size-calc {
+	min-width: 250px;
+	max-width: 450px !important;
+	white-space: break-spaces !important;
+}
+
+.mdl-cell-size-default {
+	white-space: nowrap !important;
+}
+
+

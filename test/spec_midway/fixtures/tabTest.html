@@ -1,0 +1,65 @@
+<div class="container"><h2>Html Test for Tab Control</h2>
+</div>
+<div id="rootelement">
+    <div id="externalTab" class="container" data-custom-container="bootstrapTab">
+        <ul class="nav nav-tabs">
+            <li class="active">
+                <a href="#1" data-toggle="tab">P</a>
+            </li>
+            <li>
+                <a href="#2" data-toggle="tab">S</a>
+            </li>
+            <li>
+                <a href="#3" data-toggle="tab">T</a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="tcext">
+            <div class="tab-pane active" id="1">
+                <h3>First tab</h3>
+                Name 1: <input type="text" id="txtBox1" data-tag="table2.c_citta" value="ric"><br>
+                Name 2: <input type="text" id="txtBox2" data-tag="table2.c_citta" value="anto"><br>
+            </div>
+            <div class="tab-pane" id="2">
+                <h3>Second tab</h3>
+                <div id="internalTab" class="container" data-custom-container="bootstrapTab">
+                    <ul class="nav nav-tabs">
+                        <li class="active">
+                            <a href="#21" data-toggle="tab">21</a>
+                        </li>
+                        <li><a href="#22" data-toggle="tab">22</a>
+                        </li>
+                        <li><a href="#23" data-toggle="tab">23</a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content" id="tcint">
+                        <div class="tab-pane active" id="21">
+                            <h3>First internal tab</h3>
+                            int1: <input type="text" id="int1" data-tag="table1.c_dec" value="ric"><br>
+                            int2: <input type="text" id="int2" data-tag="table2.c_citta" value="anto"><br>
+                        </div>
+                        <div class="tab-pane" id="22">
+                            <h3>Second internal tab</h3>
+                            int3: <input type="text" id="int3" data-tag="table1.c_name" value="ric"><br>
+                        </div>
+                        <div class="tab-pane" id="23">
+                            <h3>Third internal tab</h3>
+                            int4: <input type="text" id="int4" data-tag="table1.c_dec" value="ric"><br>
+                            int5: <input type="text" id="int5" data-tag="table1.c_dec" value="ric"><br>
+
+                        </div>
+                    </div>
+                </div>
+
+                control tab 2: <input type="text" id="txtBox3" data-tag="table1.c_dec" value="ric"><br>
+            </div>
+            <div class="tab-pane" id="3">
+                <h3>Third tab</h3>
+                Name 4: <input type="text" id="txtBox4" data-tag="table1.c_dec" value="ric"><br>
+                Name 5: <input type="text" id="txtBox5" data-tag="table1.c_dec" value="ric"><br>
+
+            </div>
+        </div>
+    </div>
+</div>
