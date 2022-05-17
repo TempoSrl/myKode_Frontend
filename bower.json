@@ -1,0 +1,37 @@
+{
+  "name": "portale_client",
+  "description": "Client side of Portale base project",
+  "main": "app/main/main.html",
+  "authors": [
+    "Gaetano Lazzo"
+  ],
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~4.1.1",
+    "font-awesome": "^5.1.1",
+    "jquery": "3.6.0",
+    "jquery-ui": "^1.12.1",
+    "jstree": "~3.3.6",
+    "jsDataSet": "git://github.com/gaelazzo/jsDataSet.git",
+    "jsDataQuery": "git://github.com/gaelazzo/jsDataQuery.git",
+    "json3": "~3.3.1",
+    "es5-shim": "~3.0.1",
+    "lodash": "~4.17.21",
+    "observe-js": "~0.5.7",
+    "bootstrap4": "bootstrap#^4.1.2",
+    "fullcalendar": "^3.9.0",
+    "jqueryui-timepicker-addon": "^1.6.3"
+  },
+  "devDependencies": {
+    "jasmine-core": "~2.2.1",
+    "jasmine-jquery": "^2.1.1"
+  }
+}
