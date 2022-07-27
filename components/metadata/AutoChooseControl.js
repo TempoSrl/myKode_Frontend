@@ -35,7 +35,7 @@
         var kind = 'AutoChoose';
         var startfield = helpForm.getColumnName(this.tag);
 
-        var ai = new appMeta.MetaData.AutoInfo(el, this.listingType, startFilter, startfield, table.name, kind);
+        var ai = new appMeta.AutoInfo(el, this.listingType, startFilter, startfield, table.name, kind);
         $(el).on("keyup", _.partial(this.delay, this.keyup, this.msDelay, this));
         $(el).on("blur", _.partial(this.lostfocus, this));
         // aggiunge il text invisibile, che verrà utilizzato in ricerca tramite id sulla tabella referenziata,

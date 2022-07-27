@@ -2479,7 +2479,8 @@
             // esco dall'editing
             that.resetEditableTd(text)
 
-            that.metaPage.editInPlace(that.metaPage, that, colname, row);
+            if(that.metaPage.editInPlace)
+                that.metaPage.editInPlace(that.metaPage, that, colname, row);
          }
 
          if (27 === ev.which) {  // press ESC-key

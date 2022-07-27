@@ -15,30 +15,7 @@
     var modal = appMeta.BootstrapModal;
     var sec = appMeta.security;
 
-    /**
-     * @constructor AutoInfo
-     * @description
-     * @param {Html node} G usually DIV or SPAN
-     * @param {string} type
-     * @param {jsDataQuery} startfilter
-     * @param {string} startfield
-     * @param {string} table
-     * @param {string} kind
-
-     */
-    function AutoInfo( G,
-                       type,
-                       startfilter,
-                       startfield,
-                       table,
-                       kind) {
-        this.G = G;
-        this.type = type;
-        this.startfield = startfield;
-        this.startFilter = startfilter;
-        this.table = table;
-        this.kind = kind;
-    }
+    
 
 
     /**
@@ -81,8 +58,7 @@
             var foundCondition = false;
             var self = this;
 
-            if (!r) return self.getPromiseIsValidObject(noDataSelected, noDataSelected, outCaption, r);
-            
+            if (!r) return self.getPromiseIsValidObject(noDataSelected, noDataSelected, outCaption, r);            
 
             _.forEach(
                 r.table.key() ,
@@ -631,7 +607,7 @@
                     if (resultCount !== 1) return def.resolve(null);
                     return getData.runSelect(self.primaryTableName, "*", filter, null)
                         .then(function(dataTable) {
-                            if (!dataTable.rows.length) return def.resolve(null);
+                            if (dataTable.rows.length===0) return def.resolve(null);
                             return def.from(self.checkSelectRow(dataTable, dataTable.rows[0].getRow()));
                         });
                 });
@@ -680,6 +656,6 @@
     };
 
     appMeta.MetaData = MetaData;
-    appMeta.MetaData.AutoInfo = AutoInfo;
+    
 }());
 

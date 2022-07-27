@@ -403,7 +403,7 @@
             }
 
             if (currTextBox) {
-                var ai = new appMeta.MetaData.AutoInfo(el, type, startFilter, startf, tablename, kind);
+                var ai = new appMeta.AutoInfo(el, type, startFilter, startf, tablename, kind);
                 var unlinked = (!this.pageState.AE[tname]);
                 this.pageState.AE[tname] = ai;
                 currTextBox.data(self.autoInfoDataTag, ai);//in data-autoinfo memorizzo l'autoinfo del textbox

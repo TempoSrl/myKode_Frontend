@@ -214,6 +214,15 @@
                 // recupero le righe figlie di cui mostrare il campo "columnlookup"
                 var childRows = objRow.getRow().getChildInTable(calcChildObj.tablename);
 
+                //recupero l'ordinamento
+                var meta = appMeta.getMeta(appMeta.currentMetaPage.state.DS.tables[calcChildObj.tablename].myTableForReading);
+                var listType = (calcChildObj.listType || calcChildObj.edittype);
+                var sorting = meta.getSorting(listType);
+                if (sorting) {
+                    var col = sorting.split(' ')[0];
+                    childRows = _.sortBy(childRows, [function (o) { return o[col]; }])
+                }
+
                 _.forEach(childRows, function (childRow, indexChildRows) {
 
                     // inserisco tasto delete
@@ -428,7 +437,10 @@
 
                 var DS = this.table.dataset;
                // la describeColumns ha descritto le colonne
-                return _.chain(_.sortBy(DS.tables[tname].columns, 'listColPos'))
+                return _.chain(
+                    //ordina le colonne per il listColPos che sta nella describeColumns
+                    _.sortBy(DS.tables[tname].columns, 'listColPos'))
+                    //toglie tutte quelle non descritte nella describeColumns
                     .filter(function (field) {
                         return (field.listColPos && field.listColPos !== -1);
                     })

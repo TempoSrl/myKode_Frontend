@@ -248,7 +248,8 @@ describe("GridControlX",
                             // Eseguo 2 fill control consecutivi
                             expect($("#grid1").find("tr").length).toBe(6);
                             return grid.fillControl($("#grid1"));                            
-                        }).then(function () {
+                        })
+                        .then(function () {
                             // Eseguo 2 fill control consecutivi
                                 expect($("#grid1").find("tr").length).toBe(6);
     
@@ -256,7 +257,8 @@ describe("GridControlX",
                                 $("#grid1").find("tr").eq(1).click(); // clicco sulla prima riga dei dati
                                 return s;
     
-                        }).then(function () {
+                        })
+                        .then(function () {
                             expect($("#grid1").find("tr").eq(1).data("mdldatarowlinked")).toBe(objrow2);
                             expect( grid.currentRow).toBe(objrow2);
     
@@ -264,7 +266,8 @@ describe("GridControlX",
                             $("#grid1").find("tr").eq(2).click(); // clicco sulla prima riga dei dati
                             return s;
                         
-                        }).then(function () {
+                        })
+                        .then(function () {                            
                             expect($("#grid1").find("tr").eq(2).data("mdldatarowlinked")).toBe(objrow1);
                             expect( grid.currentRow).toBe(objrow1);
                             done();

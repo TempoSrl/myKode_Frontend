@@ -1208,7 +1208,7 @@
          * @returns {[]}
          */
          getPlaceholders:function(str) {
-            var regex = / \$\(([\w\[.\]\\\?]+)\)/g;
+            var regex = /\$\(([\w\[.\]\\\?]+)\)/g;
             var result = [];
 
             while (match = regex.exec(str)) {

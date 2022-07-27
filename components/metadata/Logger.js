@@ -51,7 +51,11 @@
                     return winModal.show();
                     break;
                 case logTypeEnum.DEBUG:
-                    if (this.levelLog >= logTypeEnum.DEBUG) console.info(params, time);
+                    if (this.levelLog >= logTypeEnum.DEBUG) {
+                        //impongo che per essere stampato debba esserci sul secondo parametro stringa la parola "DEBUG"
+                        if (params.length > 1 && (params[1].indexOf("DEBUG-") !== -1 || params[1].indexOf("afterGetFormData-") !== -1 || params[1].indexOf("beforeFill-") !== -1 || params[1].indexOf("afterRowSelect-") !== -1 ))
+                            console.info(params, time);
+                    }
                     break;
                 case logTypeEnum.WARNING:
                     if (this.levelLog >= logTypeEnum.WARNING)  console.warn(params, time);

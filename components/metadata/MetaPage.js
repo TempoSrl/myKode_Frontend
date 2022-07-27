@@ -3976,7 +3976,7 @@
             });
 
             var result = $.when.apply($, allDeferredChecks)
-                .then(function() {
+                .then(function() {//ha in input tutti i risultati dei manageValidResult
 
                     // torna il primo elemento che non ha warning, quindi è obbligatorio. se non trova torna undefined
                     var mandatoryMsg = _.find(arguments,
@@ -4003,7 +4003,7 @@
                     var allWarning = _.filter(arguments,
                         function(defObj) {
                             if (!defObj) return false;
-                            return defObj.warningMsg;
+                            return defObj.warningMsg;//se truthy allora viene restituito
                         });
 
                     // se non ci sono warning esco con true
@@ -5082,6 +5082,32 @@
 
     };
 
+    /**
+     * @constructor AutoInfo
+     * @description
+     * @param {Html node} G usually DIV or SPAN
+     * @param {string} type
+     * @param {jsDataQuery} startfilter
+     * @param {string} startfield
+     * @param {string} table
+     * @param {string} kind
+
+     */
+    function AutoInfo( G,
+                       type,
+                       startfilter,
+                       startfield,
+                       table,
+                       kind) {
+        this.G = G;
+        this.type = type;
+        this.startfield = startfield;
+        this.startFilter = startfilter;
+        this.table = table;
+        this.kind = kind;
+    }
+
     appMeta.MetaPage = MetaPage;
+    appMeta.AutoInfo = AutoInfo;
 
 }());

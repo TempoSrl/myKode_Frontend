@@ -83,12 +83,12 @@
      * @returns {Deferred}
      */
     utils.skipRun = function(func) {
-        return function(result) {
-            var res = func(result);
+        return function(x) {
+            var res = func(x);
             if (res.then) {
-                return res.then(utils.fConst(result));
+                return res.then(utils.fConst(x));
             }
-            return $.Deferred().resolve(result).promise();
+            return $.Deferred().resolve(x).promise();
         }
     };
 

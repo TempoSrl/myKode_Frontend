@@ -1376,7 +1376,11 @@ input[type=checkbox] {
 	font-size: 18px;
 	padding-left: 5px
 }
-
+.tempo_brand_logo_id {
+	font-weight: bold;
+	font-size: 18px;
+	padding-left: 15px
+}
 .mdl-cell-size-calc {
 	min-width: 200px;
 	max-width: 400px !important;

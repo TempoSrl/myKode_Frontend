@@ -983,6 +983,44 @@
 			return def.promise();
 		},
 
+		/**
+		 * @method launchCustomServerMethodAsync
+		 * @public
+		 * @description ASYNC
+		 * Launches a post call to the server with eventName that is the method custom to call, and with custom "prms"
+		 * in asyncronous mode
+		 * @param {string} eventName
+		 * @param {object} prm
+		 * @returns {Deferred}
+		 */
+		launchCustomServerMethodAsync: function (eventName, prms) {
+			var objConn = {
+				method: methodEnum.customServerMethod,
+				prm: { eventName: eventName, parameters: JSON.stringify(prms) }
+			};
+
+			// recupero dal routing prm da passare alla chiamata
+			var callConfigObj = appMeta.routing.connObj[objConn.method];
+
+			var options   = {
+				url: callConfigObj.url,
+				type: callConfigObj.type,
+				data: objConn.prm,
+			};
+
+			// passo header per autorizzazione solo se metodo lo richiede
+			if (callConfigObj.auth){
+				var token = appMeta.connection.getAuthToken();
+				options["headers"] = {
+					'Authorization':  "Bearer " + token
+				}
+			}
+			// Aggiungo solo se necessario il prm datatype
+			if (callConfigObj.dataType)  options.datatype = callConfigObj.dataType;
+
+			$.ajax(options);
+		},
+
         /**
          * @method doReadValue
          * @public

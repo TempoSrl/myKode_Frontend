@@ -159,7 +159,7 @@
                            $(".modal-footer .procedureMessage_btn_ignoreandsave").click();
                         }
                      });
-
+                     mp.canSave = true;
                      testHelper.clickButtonByTag('mainsave');
                      return s3;
                   }).then(function () {
@@ -185,6 +185,7 @@
                            $(".modal").find("button")[1].click();
                        });
                        // 6. premo "Delete"
+                       mp.canCancel = true;
                        testHelper.log("Premo Delete della riga");
                        testHelper.clickButtonByTag('maindelete');
                        return s6;
@@ -221,7 +222,7 @@
                      var s8;
                      if (prmChecks.currentMetaPage) s8 = stabilizeToCurrent(); // c'è la chiamante quindi deffered ancora aperti
                      if (!prmChecks.currentMetaPage) s8 = stabilize();
-
+                     mp.canCancel = true;
                      countExpect++;
                      // 8. premo bottone di "Chiudi". Mi attendo che la stabilize vada nel then quando tutti i deferred sono chiusi
                      testHelper.log("Chiudo pagina");
@@ -454,6 +455,10 @@
                // Evento di attesa pagina caricata
                testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
+                      // forzo esistenza bottone insert, per quelle pagine che ce l'hanno disabilitato
+                     metaPage.canInsert = true;
+                     metaPage.canCancel = true;
+
                      countExpect++;
                      return self.coreTestMetaPageCase1(metaPage, tablename, edittype, arrayInput, prmChecks);
                   }).then(function () {

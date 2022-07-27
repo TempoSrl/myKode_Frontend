@@ -124,6 +124,7 @@
          * Invokes all delegates linked to the event
          * @param {object} sender
          * @param {object[]} [args]
+         * @return {Deferred}
          */
         trigger: function (sender, args) {
             if (this.subscribers.length === 0) return $.Deferred().resolve(true);
@@ -214,7 +215,7 @@
      */
     function Stabilizer() {
         this.nesting = 0;
-        this.currentDeferred = new $.Deferred();
+        //this.currentDeferred = new $.Deferred();
         this.isPaused = false;
         this.pauseDeferred = new $.Deferred().resolve(true);
         this.enabled = true;
@@ -227,37 +228,7 @@
             return d && d.then !== undefined && d.fail !== undefined;
         },
 
-        /**
-         * Returns a value and resolves it or fails with it when events are not paused
-         * When event is fired, nesting is decreased
-         * @param {object} result
-         * @param {boolean} [fail]
-         * @returns {Deferred}
-         */
-        waitRunning: function(result) {
-            //console.log("waitRunning called  ");
-            if (result && result.__createdByStabilizerWaitRunning) {
-                //console.log("not waiting and returning",result);
-                return result;
-            }
-            var res = $.Deferred();
-            var that = this;
-            this.pauseDeferred.done(function() {
-                result.then(function(err) {
-                        //console.log("resolve with ", result);
-                        res.resolve(result);
-                    },
-                    function(err) {
-                        //console.log("failing with ", result);
-                        res.fail(err);
-                    });
-            });
-
-            res.__createdByStabilizer = true;
-            res.__createdByStabilizerWaitRunning = true;
-            //console.log("waitRunning returns ", res);
-            return res;
-        },
+        
 
         /**
          * Links result of targetDeferred to sourceDeferred
@@ -336,7 +307,7 @@
          **/
         increaseNesting: function(eventName) {
             this.nesting++;
-            logger.log(logType.INFO, "increasing nesting", eventName, this.nesting);
+            logger.log(logType.DEBUG, "increasing nesting", eventName, this.nesting);
             this.evManager.trigger("increase", this, eventName);
         },
 
@@ -348,13 +319,13 @@
          */
         decreaseNesting: function(eventName) {
             this.nesting--;
-            logger.log(logType.INFO, "decreaseNesting ", eventName, this.nesting);
+            logger.log(logType.DEBUG, "decrease nesting ", eventName, this.nesting);
             if (!this.evManager) console.log("this.evManager is null");
             this.evManager.trigger("decrease", this, eventName);
-            if (this.nesting === 0) {
-                this.currentDeferred.resolve();
-                this.currentDeferred = new $.Deferred();
-            }
+            //if (this.nesting === 0) {
+            //    this.currentDeferred.resolve();
+            //    this.currentDeferred = new $.Deferred();
+            //}
             if (this.nesting < 0) throw "Deferred nesting level less than 0";
         },
 
@@ -394,7 +365,6 @@
             //console.log(this.nesting > 0 ? "stabilize invoked:  actually unstable:" + this.nesting : "stabilize invoked:  waiting for unstable");
             var listener = new DeferredListener(this, this.nesting);
             return listener.result;
-
         }
     };
 

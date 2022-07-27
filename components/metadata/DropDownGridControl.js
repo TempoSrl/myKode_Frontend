@@ -47,7 +47,7 @@
       var col = this.dataTable.columns[this.startField];
       $(el).attr("maxlength", metaModel.getMaxLen(col));
 
-      this.ai = new appMeta.MetaData.AutoInfo(this.rootElement, this.listingType, startFilter, this.startField, table.name, kind);
+      this.ai = new appMeta.AutoInfo(this.rootElement, this.listingType, startFilter, this.startField, table.name, kind);
       $(el).on("keyup", _.partial(this.keyUpDelay, this.msDelay, this));
       $(el).on("blur", _.partial(this.lostfocus, this));
       // aggiunge il text invisibile, che verrà utilizzato in ricerca tramite id sulla tabella referenziata,

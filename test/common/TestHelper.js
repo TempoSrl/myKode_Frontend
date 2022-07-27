@@ -70,6 +70,13 @@
 		initAppTestProduction: function (appfolder) {
 			// inizializzo per ogni test l'oggetto appMeta
 			appMeta.appMain = {}; // inizializza oggetto appMain che in test non verrebbe tirato su
+
+			//nell'ambiete di Quality Assurance attivo il log al livello debug altrimento lascio quello di produzione ERROR
+			appMeta.logger.levelLog = appMeta.logTypeEnum.DEBUG;
+
+			// registra ws utilizzato in app_segreterie metaPage perfvalutazionepersonale_default
+			appMeta.routing.builderConnObj("calcolaComportamenti", 'POST', 'performance', false, true);
+
 			appMeta.basePath = 'base/';
 			appMeta.config.backendType = '.net';
 			appMeta.routing.backendUrl = "http://localhost:54471";
@@ -82,6 +89,8 @@
 			appMeta.config.dataContabileYear = (new Date()).getFullYear();
 			appMeta.config.codiceDipartimento = 'amministrazione';
 			appMeta.config.virtualUserUserKind = 3;
+
+
 			// appMeta.config.enableSearchLikeOnTextBox = true;
 			// inserisco elemento con id "teste2e_mp_id" in modo da popolarlo con info utili tramite il metodo setMetaPageTitleOnTestHtml()
 			setFixtures("<body class='bg-light'><h3>App " + appfolder + " - TEST e2e automatici</h3><h5 id='teste2e_mp_id'></h5><div id='toolbar'></div><div class='container' id='metaRoot'></div></body>");
@@ -466,7 +475,7 @@
 							expect(row[columnName]).toBe(value);
 
 							if (row[columnName] !== value) {
-								self.log('ERRORE: nella tabella ' + tableName + ' la riga presente non ha nel campo ' + columnName + ' il valore atteso ' + value, EnumLogType.err);
+								self.log('ERRORE: nella tabella ' + tableName + ' la riga presente non ha nel campo ' + columnName + ' il valore atteso ' + value + ' ma è ' + row[columnName], EnumLogType.err);
 							}
 						}
 					}
@@ -956,6 +965,10 @@
 			})
 		},
 
+		getTime:function () {
+			var time = new Date();
+			return time.getHours() + ":" + time.getMinutes() + ":" + time.getSeconds();
+		},
 
         /**
          * @method insertValueNodeByTagAsync
@@ -981,6 +994,7 @@
 
 				// se non devo considerarlo in insert, vado prossima iterazione
 				if (_.includes(nodeToExclude, input.type)) return true;
+				
 
 				switch (input.type) {
 
@@ -1009,16 +1023,32 @@
 							});
 						}
 						break;
+
 					case controlTypeEnum.textarea:
 						$("textarea[data-tag='" + input.tag + "']").val(input.value);
 						break;
+
 					case controlTypeEnum.inputText:
+
 						self.insertValueInputByTag(input.tag, input.value);
 						// eseguo perdita focus sui controlli text così scattano eventuali eventi gestiti dal fmw
 						// come le dipendenze tra controlli   
 						$("input[data-tag='" + input.tag + "']").blur();
+
+						// se il controllo ha eventi di change attacchati allora vengono invocati forzatamente nel test.
+						// --> gli eventi change DEVONO essere gestiti con Deferred solito
+						var elem =$("input[data-tag='" + input.tag + "']")[0];
+						var data = $.hasData( elem ) && $._data( elem );
+						if (data.events && data.events.change && data.events.change.length) {
+							var ev = data.events.change[0].handler;
+							chainFill = chainFill.then(function () {
+								return ev(helpForm.metaPage);
+							});
+						}
+
 						break;
 					case controlTypeEnum.select:
+
 
 						var fillSelect = function (input) {
 							var defSelect = $.Deferred();
@@ -1026,7 +1056,8 @@
 							// attendo la fine del tasto di add sulla metaPage chiamante
 							common.eventWaiter(helpForm.metaPage, appMeta.EventEnum.afterComboChanged)
 								.then(function () {
-									// afterRowSelect è stata invocata, glie evtni si sono svolti.vado avanti
+									// afterRowSelect è stata invocata, gli eventi si sono svolti.vado avanti
+
 									return defSelect.resolve();
 								});
 
@@ -1034,7 +1065,9 @@
 							input.value = input.value ? input.value : $("select[data-tag='" + input.tag + "'] option:eq(1)").val();
 							if (input.value) {
 								var vcur = $("select[data-tag='" + input.tag + "']").val();
-								if (vcur == input.value) return defSelect.resolve();
+								if (vcur == input.value) {
+									return defSelect.resolve();
+								}
 								$("select[data-tag='" + input.tag + "']").val(input.value).trigger('select2:select');
 							} else {
 								return defSelect.resolve();
@@ -1048,7 +1081,6 @@
 						chainFill = chainFill.then(function () {
 							return fillSelect(input);
 						});
-
 
 						break;
 					case controlTypeEnum.inputCheck:
