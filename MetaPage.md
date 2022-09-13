@@ -160,10 +160,12 @@ La maschera in generale può trovarsi in 3 stati:
 
 stateDiagram-v2
 
-        imposta__ricerca --> modifica: maindosearch
+        imposta__ricerca --> elenco: maindosearch
         imposta__ricerca --> inserimento: maininsert
         imposta__ricerca --> inserimento: maininsertcopy
 
+        elenco --> modifica: mainselect 
+        
         inserimento --> imposta__ricerca: mainsetsearch
         inserimento --> imposta__ricerca: mainclose (detail mask)
         inserimento --> modifica: mainsave
@@ -186,6 +188,7 @@ La maschera si trova nello stato di modifica se selezioniamo (mainselect) una ri
 ### Inserimento
 
 La maschera si trova nello stato di inserimento quando usiamo il comando maininsert o maininsertcopy. Annullando la modifica si ritornerà allo stato Imposta ricerca, salvando i dati si passerà allo stato Modifica
+
 
 
 
@@ -336,6 +339,7 @@ E' chiamato prima di effettuare il prefill delle tabelle di un form, la prima vo
 ## \{Deferred\} afterActivation()
 
 E' chiamato prima di visualizzare i dati di un form la prima volta, dopo aver effettuato il prefill delle tabelle del DataSet che eventualmente sono cached.
+
 
 
 
