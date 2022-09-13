@@ -160,16 +160,16 @@ La maschera in generale può trovarsi in 3 stati:
 
 stateDiagram-v2
 
-        imposta ricerca --> modifica: maindosearch
-        imposta ricerca --> inserimento: maininsert
-        imposta ricerca --> inserimento: maininsertcopy
+        imposta__ricerca --> modifica: maindosearch
+        imposta__ricerca --> inserimento: maininsert
+        imposta__ricerca --> inserimento: maininsertcopy
 
-        inserimento --> imposta ricerca: mainsetsearch
-        inserimento --> imposta ricerca: mainclose (detail mask)
+        inserimento --> imposta__ricerca: mainsetsearch
+        inserimento --> imposta__ricerca: mainclose (detail mask)
         inserimento --> modifica: mainsave
 
-        modifica --> imposta ricerca: mainsetsearch
-        modifica --> imposta ricerca: maindelete
+        modifica --> imposta__ricerca: mainsetsearch
+        modifica --> imposta__ricerca: maindelete
         modifica --> modifica: mainsave
 
 
