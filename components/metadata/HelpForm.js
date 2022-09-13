@@ -99,7 +99,7 @@
          */
         addEvents: function (metaPage) {
             this.metaPage = metaPage;
-            $(this.rootElement).off("click"); // rimuovo e poi rimetto. perchè ad ogni apertura il rooteleemnt è lo stesso per ogni pagina
+            $(this.rootElement).off("click"); // rimuovo e poi rimetto. perchè ad ogni apertura il root element è lo stesso per ogni pagina
             $(this.rootElement).on("click", _.partial(this.showDebugDialog, this.metaPage, this));
             this.iterateOverTag("tag", "addEvent");
             this.iterateOverCustomTag("addEvents", metaPage);
@@ -2313,6 +2313,7 @@
             $(parentel)
                 .find("[data-tag]")
                 .each(function () {
+                    //"this" is the html element
                     if ($(this).parents("[data-custom-control]").length > 0) return true;
                     if ($(this).parents("[data-value-signed]").length > 0) return true;
                     if (self.controlsmaster && this.tagName.toUpperCase() === 'SELECT') {
@@ -2321,7 +2322,7 @@
                             return self.fillControl(that);
                         });
                     } else {
-                        allCtrlPromise.push(self.fillControl(this)); //"this" is the html element
+                        allCtrlPromise.push(self.fillControl(this)); 
                     }
                 });
 
@@ -3815,7 +3816,7 @@
          * @param {string} attr
          * @returns {boolean}
          */
-            existsDataAttribute:function(el, attr){
+         existsDataAttribute:function(el, attr){
             return (typeof $(el).data(attr) === "undefined") ? false : true;
         }
 

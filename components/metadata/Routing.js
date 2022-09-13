@@ -82,7 +82,7 @@
         "use strict";
         // appMeta.basePath = "http://localhost:54471/";
         appMeta.basePath = "/";
-        this.connObj  = {};
+        this.services  = {};
         this.init();
     }
 
@@ -99,8 +99,8 @@
          */
         changeUrlMethods:function (prefixUrl) {
             this.backendUrl = prefixUrl;
-            _.forEach(this.connObj, function (co) {
-                co.url = prefixUrl + co.url;
+            _.forEach(this.services, function (s) {
+                s.url = prefixUrl + s.url;
             })
         },
 
@@ -119,7 +119,7 @@
          * @returns {object|undefined}
          */
         methodRegistered:function (method) {
-            return this.connObj[method];
+            return this.services[method];
         },
 
         /**
@@ -127,24 +127,24 @@
          * @public
          * @description SYNC
          * Called to register a new method, with custom url
-         * @param {object} connObj {method type, url, multipleResult} type can be GET/POST/DELETE, url is absolute url for example http://mysite/mypath/method
+         * @param {object} service {method type, url, multipleResult} type can be GET/POST/DELETE, url is absolute url for example http://mysite/mypath/method
          */
-        register:function(connObj){
-            this.connObj[connObj.method] = connObj
+        register:function(service){
+            this.services[service.method] = service
         },
 
         /**
-         * @method builderConnObj
+         * @method registerService
          * @private
          * @description SYNC
-         * Builds a this.connObj object and registers it.
+         * Invokes register with service params
          * @param {string} method
          * @param {string} type GET/POST/DELETE
          * @param {string} relativePath relative path in the url
          * @param {boolean} multipleResult in true is managed with progress deferred
          * @param {boolean} auth undefined | true means need auth, false not need 
          */
-        builderConnObj:function (method, type, relativePath, multipleResult, auth) {
+        registerService:function (method, type, relativePath, multipleResult, auth) {
             if (auth === undefined) auth = true;
             if (multipleResult === undefined) multipleResult = false;
          
@@ -157,6 +157,9 @@
                 });
         },
 
+        builderConnObj:function (method, type, relativePath, multipleResult, auth) {
+            this.registerService(method, type, relativePath, multipleResult, auth);
+        },
         /**
          * @method init
          * @private
@@ -165,56 +168,56 @@
          */
         init:function () {
             // Metodi SOLO PER DEBUG e Unit test
-            this.builderConnObj(methodEnum.getDataSetTest, 'GET', 'data', false, true);
-            this.builderConnObj(methodEnum.getJsDataQuery, 'GET', 'data', false, true);
-            this.builderConnObj(methodEnum.fromJsDataSetToDataset, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.fromJsDataQueryToSql, 'GET', 'data', false, true);
+            this.registerService(methodEnum.getDataSetTest, 'GET', 'data', false, true);
+            this.registerService(methodEnum.getJsDataQuery, 'GET', 'data', false, true);
+            this.registerService(methodEnum.fromJsDataSetToDataset, 'POST', 'data', false, true);
+            this.registerService(methodEnum.fromJsDataQueryToSql, 'GET', 'data', false, true);
             
-            this.builderConnObj(methodEnum.read, 'POST',  'static', false, true);
+            this.registerService(methodEnum.read, 'POST',  'static', false, true);
             
             // metodo di test e2e per le notify asincrone
-            this.builderConnObj("testNotify", 'GET', 'data', true,true);
+            this.registerService("testNotify", 'GET', 'data', true,true);
 
             // METODI LOGIN Autenticazione
-            this.builderConnObj(methodEnum.login, 'POST', 'auth', false, false);
-            this.builderConnObj(methodEnum.loginSSO, 'POST', 'auth', false, false);
-            this.builderConnObj(methodEnum.loginLDAP, 'POST', 'auth', false, false);
-            this.builderConnObj(methodEnum.register, 'POST', 'auth', false, false);
-            this.builderConnObj(methodEnum.resetPassword, 'GET', 'auth', false, false);
-            this.builderConnObj(methodEnum.nuovaPassword, 'GET', 'auth', false, false);
-            this.builderConnObj(methodEnum.sendMail, 'POST', 'data', false, true);
+            this.registerService(methodEnum.login, 'POST', 'auth', false, false);
+            this.registerService(methodEnum.loginSSO, 'POST', 'auth', false, false);
+            this.registerService(methodEnum.loginLDAP, 'POST', 'auth', false, false);
+            this.registerService(methodEnum.register, 'POST', 'auth', false, false);
+            this.registerService(methodEnum.resetPassword, 'GET', 'auth', false, false);
+            this.registerService(methodEnum.nuovaPassword, 'GET', 'auth', false, false);
+            this.registerService(methodEnum.sendMail, 'POST', 'data', false, true);
 
             // Metodi vari utilizzati all'interno del codice per recupero dati dal database
-            this.builderConnObj(methodEnum.selectCount, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.getPagedTable, 'POST', 'data', false, true);
+            this.registerService(methodEnum.selectCount, 'POST', 'data', false, true);
+            this.registerService(methodEnum.getPagedTable, 'POST', 'data', false, true);
 
-            this.builderConnObj(methodEnum.getDataSet, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.prefillDataSet, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.fillDataSet, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.multiRunSelect, 'POST', 'data', true, true);
-            this.builderConnObj(methodEnum.select, 'POST',  'data', false, true);
-            this.builderConnObj(methodEnum.getDsByRowKey, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.createTableByName, 'GET', 'data', false, true);
-            this.builderConnObj(methodEnum.getPrimaryTable, 'GET', 'data', false, true);
-            this.builderConnObj(methodEnum.doGet, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.saveDataSet, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.getNewRow, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.getNewRowCopyChilds, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.describeColumns, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.describeTree, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.getSpecificChild, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.customServerMethod, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.setUsrEnv, 'POST', 'data', false, true);
-            this.builderConnObj(methodEnum.doReadValue, 'POST', 'data', false, true);
+            this.registerService(methodEnum.getDataSet, 'POST', 'data', false, true);
+            this.registerService(methodEnum.prefillDataSet, 'POST', 'data', false, true);
+            this.registerService(methodEnum.fillDataSet, 'POST', 'data', false, true);
+            this.registerService(methodEnum.multiRunSelect, 'POST', 'data', true, true);
+            this.registerService(methodEnum.select, 'POST',  'data', false, true);
+            this.registerService(methodEnum.getDsByRowKey, 'POST', 'data', false, true);
+            this.registerService(methodEnum.createTableByName, 'GET', 'data', false, true);
+            this.registerService(methodEnum.getPrimaryTable, 'GET', 'data', false, true);
+            this.registerService(methodEnum.doGet, 'POST', 'data', false, true);
+            this.registerService(methodEnum.saveDataSet, 'POST', 'data', false, true);
+            this.registerService(methodEnum.getNewRow, 'POST', 'data', false, true);
+            this.registerService(methodEnum.getNewRowCopyChilds, 'POST', 'data', false, true);
+            this.registerService(methodEnum.describeColumns, 'POST', 'data', false, true);
+            this.registerService(methodEnum.describeTree, 'POST', 'data', false, true);
+            this.registerService(methodEnum.getSpecificChild, 'POST', 'data', false, true);
+            this.registerService(methodEnum.customServerMethod, 'POST', 'data', false, true);
+            this.registerService(methodEnum.setUsrEnv, 'POST', 'data', false, true);
+            this.registerService(methodEnum.doReadValue, 'POST', 'data', false, true);
 
             // cambio ruolo
-            this.builderConnObj(methodEnum.cambiaRuolo, 'POST', 'data', false, true);
+            this.registerService(methodEnum.cambiaRuolo, 'POST', 'data', false, true);
 
             // gestori attachment
-            this.builderConnObj(methodEnum.uploadChunk, 'POST', 'file', false, true);
-            this.builderConnObj(methodEnum.remove, 'DELETE', 'file', false, true);
-            this.builderConnObj(methodEnum.download, 'GET', 'file', false, true);
-            this.builderConnObj(methodEnum.downloadDbField, 'GET', 'file', false, true);
+            this.registerService(methodEnum.uploadChunk, 'POST', 'file', false, true);
+            this.registerService(methodEnum.remove, 'DELETE', 'file', false, true);
+            this.registerService(methodEnum.download, 'GET', 'file', false, true);
+            this.registerService(methodEnum.downloadDbField, 'GET', 'file', false, true);
 
         }
     };

@@ -71,6 +71,7 @@
 
         if (!elTree) return;
         this.elTree = elTree;
+        this.el = elTree;       //rimedio a potenziale incompatibilità con altri controlli custom
         this.helpform = helpform;
         this.treeTable = treeTable;
         this.primaryTable = primaryTable;

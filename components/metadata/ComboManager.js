@@ -293,7 +293,7 @@
          * @method fillControl
          * @public
          * @description ASYNC
-         * Put a loading indciator for the detail combo
+         * Put a loading indicator for the detail combo
          * @param {boolean} wait
          */
         waitMasterDetail:function (wait) {

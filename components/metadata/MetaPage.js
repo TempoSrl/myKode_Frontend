@@ -241,7 +241,7 @@
 
         /**
          * @method freshForm
-         * @private
+         * @public
          * @description ASYNC
          * Refills the form. If RefreshPeripherals is set to true, secondary tables
          * are read again from DB (i.e. all tables in the view that are not
@@ -462,6 +462,7 @@
          * @method canSelect
          * @private
          * @description SYNC
+         * Check if primary table can be changed to r
          * If there are unsaved changes, it shows a message box to the user. if user clicks "ok" it rejects changes and returns true.
          * If the user clicks "cancel" it returns false
          * @param {DataTable} t
@@ -1083,8 +1084,6 @@
             var cmd = this.helpForm.getFieldLower(tag, 0);
             var currRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
 
-            if (cmd === "crea_ticket") return def.resolve(this.helpdeskEnabled);
-
             switch (cmd) {
                 case "mainclose":
                     if (!this.canCmdClose) return def.resolve(false);
@@ -1172,6 +1171,7 @@
                     return def.resolve(true);
                 case "crea_ticket":
                     return def.resolve(this.helpdeskEnabled);
+
                 default:
                     return def.resolve(false);
 
@@ -1677,11 +1677,11 @@
          * @method reFillControls
          * @private
          * @description ASYNC
+         * calls fillControls inside a before/afterFill 
          * @param {string} container. id of the html container
          * @returns {Deferred}
          */
         reFillControls:function (container) {
-
             var savedDrawState = this.drawState;
             this.drawState = drawStates.filling;
             this.setPageTitle();
@@ -1706,7 +1706,7 @@
                     });
                 return def.from(res).promise();
             }
-
+            //Se non c'è una riga corrente non chiama beforeFill/afterFill
             res = this.helpForm.fillControls(container)
                 .then( function () {
                     return self.freshToolBar()
@@ -1862,7 +1862,7 @@
                                     }
 
                                     if (filterLocked) {
-                                        // mostra lista modale. Nel caso di elenco di ricerca salvo in var di classe, così lo chiudo quando encessario
+                                        // mostra lista modale. Nel caso di elenco di ricerca salvo in var di classe, così lo chiudo quando necessario
                                         // Nel caso autochoose lascio aperto l'elenco, e apro nuova modale per la liste dei risultati, senza nascondere l'elenco
                                         // Utile nel caso di edit consecutivi di righe prese da un elenco (Al click singolo infatti l'elenco non si chiude)
                                         var currList = null;
@@ -1900,7 +1900,7 @@
         },
 
         /**
-         * Forza la chiusura del manger della ricerca
+         * Forza la chiusura del manager della ricerca
          */
         closeListManagerResultsSearch:function () {
             if (this.listManagerSearch) this.listManagerSearch.hideControl(this.listManagerSearch);
@@ -1972,7 +1972,7 @@
         /**
          * @method clearDataTableAndGridRowIndex
          * @private
-         * @description ASYNCH
+         * @description ASYNC
          * Clears the table and eventually clears the grid associated to the table
          * @param {DataTable} table
          */
@@ -4037,7 +4037,7 @@
          * @method manageValidResult
          * @public
          * @description SYNC
-         * To override Permits externally to apply grapghics on mandatory fields
+         * To override Permits externally to apply graphics on mandatory fields
          * @params {objMandatory} { warningMsg: warningMessage,
                 errMsg: errmess + " (" + outCaption + ")",
                 errField: colname,
@@ -4154,7 +4154,7 @@
 
         /**
          * @method checkEntityChildRowAdditions
-         * @public
+         * @private
          * @description SYNC
          * If possible, makes row child of current PrimaryEntity
          * @param {DataRow} row
@@ -4252,10 +4252,10 @@
         },
 
         /**
-         * @method doDelete
+         * @method editGridRow
          * @private
          * @description ASYNC
-         * Called when an edit button is clicked on a grid. If there is a current row it open a detail page toe dit the row
+         * Called when an edit button is clicked on a grid. If there is a current row it opens a detail page to edit the row
          * @param {GridControl} grid
          * @param {string} editType
          * @returns {Deferred(DataRow)}
@@ -5047,10 +5047,10 @@
          * @method setDataTagAttr
          * @public
          * @description SYNC
-         * set data-tag value for el element. N.B .data() only set value on memory, not change in the DOM
-         * If you use data() the selector not work if we need to take dom by data-tag
+         * set data-tag value for el element. N.B .data() only set value on memory, data() does not affect attributes in the DOM
+         * If you use data() the selector doesn't work if we need to scan dom by data-tag
          * @param {Html node} el
-         * @param {String} value. Should be accept also object but thi method is used only for data-tag changed on DOM.
+         * @param {String} value. Should be accept also object but this method is used only for data-tag changed on DOM.
          */
         setDataTagAttr:function (el, value) {
             $(el).attr('data-tag', value);

@@ -176,7 +176,7 @@
                  * Sets the "brad crumbs" title on the toolbar (on element with "toolbartitle" id) (Page1 -> page2 -> pageN)
                  */
                 setTitle:function () {
-                    // sull'array inserisco/rimuovo man mano i nomi delle metapage tramite logia a pila LIFO, l'ultimo inserito , primo ad essere rimosso
+                    // sull'array inserisco/rimuovo man mano i nomi delle metapage tramite log a pila LIFO, l'ultimo inserito , primo ad essere rimosso
                     // concetto "briciole di pane"
                     var title = this.pagesNameStack.join(" > ");
                     if (this.toolBarManager)  {
@@ -256,7 +256,7 @@
                  * @method getMetaDataPath
                  * @public
                  * @description SYNC
-                 * Returns the path where to find the MetaPages and html.
+                 * Returns the path are the MetaPages and html.
                  * It mustn't end with "/"
                  * Overridable
                  * @param {string} tableName, represents the main table of the page which we have to find page.js and html
@@ -281,7 +281,6 @@
                     var res = this.Deferred("getMetaPage");
                     var found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
                     var self = this;
-
 
                     if (found){
                         var isDetail = found.MetaPage.prototype.detailPage;
@@ -419,7 +418,7 @@
                                 })
                         })
                         .then(function(){
-                            // esco se non posso chiudere la precedente, eprchè magari ci sono modiifche e l'utente deve prima accettare
+                            // esco se non posso chiudere la precedente, perchè magari ci sono modifiche e l'utente deve prima accettare
                             if (!canOpenPage) return;
 
                             return self.getMetaPage(metaToCall, editType)
@@ -535,7 +534,7 @@
                  * @method callWebService
                  * @public
                  * @description ASYNC
-                 * calla  web service called method with prms object. prms are the pairs key:value specific for each call.
+                 * call a  web service named method with prms object. prms are the pairs key:value specific for each call.
                  * The "method" method must be registered with routing.builderConnObj(...) function
                  * @param {string} method "the name of web service"
                  * @param {Object} prms pair of key:value.
