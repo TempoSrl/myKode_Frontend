@@ -372,7 +372,9 @@
             var tablename = null;
             var kind = this.getField(tag, 0);
             var type = this.getField(tag, 2);
-            var startFilter = this.getFilterFormDataAttribute(el);  // N.B il filtro è impostato dall'esterno, tramite la MetaPage.registerFilter()
+            
+            // N.B il filtro è impostato dall'esterno, tramite la MetaPage.registerFilter()
+            var startFilter = this.getFilterFormDataAttribute(el);  
 
             //Gets start value - start field from control named textboxname
             var startf = null;
@@ -591,7 +593,8 @@
                 $(textBox).data("tag", null); // removes temporarily the tag from the textbox
                 filter = that.iterateGetSpecificSearchCondition(ai.G, ai.table);
                 $(textBox).data("tag", oldTag); //restores the tag
-            } else {
+            } 
+            else {
                 var oldVal = $(textBox).val();
                 var txtBoxTag = that.getStandardTag(oldTag);
                 $(textBox).data("tag", txtBoxTag);
@@ -1710,7 +1713,8 @@
                 this.fillControl(el, fieldValue).then(function () {
                     self.enableDisable(el, table, dataColumn);
                 })
-            } else {
+            } 
+            else {
                 this.setControl(el, table, fieldValue, dataColumn);
                 this.enableDisable(el, table, dataColumn);
             }

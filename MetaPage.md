@@ -264,6 +264,8 @@ L'interfaccia prevede i seguenti metodi, che possono anche mancare:
 
 - el: controllo html associato
 
+- init: ove presente questo metodo, è richiamato in fase di prefill, una volta sola
+
 
 Di questi metodi, quelli indispensabili sono fillControl, clearControl e getControl.
 Per gestire un controllo html come Custom control sarà necessario specificare, nei suoi attributi, data-custom-control="codice controllo custom" ove si sia preventivamente provveduto, in fase di inizializzazione del programma, ad associare a tale codice un custom controller invocando

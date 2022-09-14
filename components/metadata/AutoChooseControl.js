@@ -15,10 +15,9 @@
      * @param {HelpForm} helpForm
      * @param {DataTable} table
      * @param {DataTable} primaryTable
-     * @param {string} listType
      * @constructor
      */
-    function AutoChooseControl(el, helpForm, table, primaryTable, listType) {
+    function AutoChooseControl(el, helpForm, table, primaryTable) {
         this.listManager = null;
         this.timeoutId = 0; // timer che permette di lanciare la query se tra 2 keyup passa più di mezzo secondo
         this.minCharacter = 3; // numero di caratteri per cui scatta la query
