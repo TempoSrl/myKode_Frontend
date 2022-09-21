@@ -201,8 +201,23 @@
             return def.promise();
         },
 
-		getFileNameFromContentDisposition: function (contentDisposition) {
-			var filename = contentDisposition.split('filename=')[1].split(';')[0];
+        getFileNameByUTF8: function (str) {
+
+            // Convert Base64 encoded bytes to percent-encoding, and then get the original string.
+            var start = "=?utf-8?B?";
+            var input = str.substring(str.indexOf(start) + start.length, str.lastIndexOf("?="));
+            percentEncodedStr = atob(input).split('').map(function (c) {
+                 return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+            }).join('');
+
+            return decodeURIComponent(percentEncodedStr);
+        },
+
+        getFileNameFromContentDisposition: function (contentDisposition) {
+            
+            var filename = contentDisposition.split('filename=')[1].split(';')[0];
+            if (filename.indexOf("utf-8") > 0)
+                filename = this.getFileNameByUTF8(filename);
 			return this.getOriginalFileName(filename.replaceAll('"',''));
         },
 

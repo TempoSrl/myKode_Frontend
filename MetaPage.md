@@ -5,33 +5,160 @@ Viceversa, la classe base MetaPage, implementa tutti i comportamenti comuni a tu
 
 E' importante capire quali siano questi comportamenti comuni per poterli integrare o modificare in base alle esigenze di ogni singola pagina, ove sia necessario.
 
-Una pagina (MetaPage) di per se non fa nulla sin quando l'utente non interagisce con i controlli in essa contenuti o con eventuali
- menu o altri strumenti che ne invochino i metodi. Pertanto per comprendere come funziona una pagina occorre comprendere i diversi controlli che essa può contenere.
+Una pagina (MetaPage) di per se non fa nulla sin quando l'utente non interagisce con i controlli in essa contenuti o con eventuali menu o altri strumenti che ne invochino i metodi. Pertanto per comprendere come funziona una pagina occorre comprendere i diversi controlli che essa può contenere.
 
-Una pagina è sempre associato ad un DataSet, ed ogni controllo contenuto nella pagina è associato a dei tag che determinano a quale campo di quale riga (ossia di quale tabella) il controllo si riferisca. Si è già descritto nella [pagina iniziale](readme.md) la struttura di un DataSet
+Una pagina è sempre associato ad un DataSet, ed ogni controllo contenuto nella pagina è associato a dei tag che determinano a quale campo di quale riga (ossia di quale tabella) il controllo si riferisca. Si è già descritto nella [pagina iniziale](readme.md) la struttura di un DataSet. L'associazione tra MetaPage e DataSet avviene nel metodo init della MetaPage.
 
-In generale in una pagina possono esserci due tipi di controlli: controlli che visualizzano un valore (come text,select, etc.) e controlli che visualizzano tanti valori (come table, treeview etc). I controlli che visualizzano un valore si riferiscono ad una riga che deve essere univocamente determinata in base alla riga della tabella principale correntemente visualizzata.
+In generale in una pagina possono esserci due tipi di controlli: controlli che visualizzano un valore (come text,select, etc.) e controlli che visualizzano tanti valori (come table, treeview etc). 
 
-La tabella e la colonna a cui si riferiscono tali controlli è specificata nel tag, come spiegato nella pagina [HTML](MetaPageHtml.md)
+I controlli che visualizzano un valore si riferiscono ad una riga che deve essere univocamente determinata in base alla riga della tabella principale correntemente visualizzata.
+
+Per i controlli che visualizzano un valore la tabella e la colonna a cui si riferiscono è specificata nel tag, come spiegato nella pagina [HTML](MetaPageHtml.md), in cui è spiegato nei dettagli come realizzare la vista html associata alla MetaPage.
 
 La tabella dovrebbe essere tale per cui, a partire dalla riga principale e seguendo le relazioni presenti nel DataSet, è unica la riga a cui si perviene nella tabella data, e di quella riga sarà visualizzato il campo indicato nel tag. 
 
 Analogamente lo stesso campo della stessa riga sarà utilizzato per modificare i valori esistenti, qualora la tabella sia l'entità principale o una sua subentità in relazione uno a uno con la riga principale.
 
 
+I controlli che visualizzano più righe solitamente visualizeranno una tabella figlia della tabella principale.
 
 ## Tipi di pagina
 
-Esistono due principali tipi di maschera: singolo o lista. 
+Esistono due principali tipi di form (maschera): **singolo** o **lista**. 
 
 Un form **"singolo"** visualizza una riga della tabella principale alla volta, e per selezionarne un'altra va svuotato con un comando di "imposta ricerca" e poi riempito con un'altra riga, tipicamente selezionandola da un elenco calcolato in base a dei filtri, oppure creando una nuova riga con il comando di inserimento.
+Dividiamo i form singoli in due categorie: 
+
+- form principale: in questo caso troviamo, tra gli altri, i bottoni "imposta ricerca", "effettua ricerca", "elimina", "inserisci", "salva
+- form dettaglio: sono form che visualizzano dettagli di una maschera principale, e hanno solo i bottoni "Ok" e "Annulla"
 
 Un form **"lista"** visualizza un grid, un tree o altri controlli multi riga in cui si può selezionare una riga e vedere la maschera aggiornarsi con i dati di quella riga (e subentità relative).
 
+## Creazioni di MetaPage
 
+Per creare una pagina, sarà necessario creare una classe derivata da MetaPage, con i canoni classici della programmazione javascript:
 
+```js
+
+        function(){
+            function meta_<tableName>() {
+                MetaPage.apply(this, arguments);
+                this.name = <NomePagina>;
+            }
+           metaPage_<tableName>.prototype = _.extend(
+               new MetaPage(<TableName>, <EditType>, <bool:iDetail>),
+               {
+                   constructor: metaPage_<tableName>,
+
+                   superClass: MetaPage.prototype,
+
+	             <funzione_classeBase_da_sovrascrivere>, 		
+    	             <funzioni_private>
+               }
+        )
+        }())
+```
 
 ## Metodi principali di una pagina
+
+
+### Costruttore
+
+Nel costruttore possono essere sovrascritte in maniera del tutto opzionale le seguenti proprietà booleane:
+
+- searchEnabled: indica se è permessa la ricerca. (default true)
+- mainSelectionEnabled:indica se è abilitata la funzione di “main select” (default true)
+- canInsert: indica se è permesso l’inserimento (default true)
+- canInsertCopy: indica se è permessa la copia e inserimento (default true)
+- canSave: indica se è permesso il salvataggio (default true)
+- canCancel: indica se è permessa la cancellazione (default true)
+- startEmpty: indica se la lista non deve essere riempita allo start dell’applicazione. (default false).
+
+Queste proprietà possono essere cambiate in ogni momento, un altro momento buono per impostarle è il metodo afterLink.
+
+E' possibile definire il tipo di pagina valorizzando le proprietà:
+
+- isList: indica che si tratta di form di tipo lista. (default false).
+- isTree: indica un form principale con un tree manager (default false).
+
+
+
+Inoltre si possono configurare i seguenti parametri:
+
+- startFilter: è un’espressione jsDataQuery che rappresenta un filtro sui dati che si vuole applicare a livello di pagina. 
+
+- additionalSearchCondition: è un espressione jsDataQuery che rappresenta un filtro da applicare al livello di pagina quando si fa una ricerca. Se ad esempio vogliamo che in fase di ricerca la maschera debba già filtrare un determinato campo allora si dovrà inserire sul costruttore della MetaPage la seguente riga di codice:
+
+```js
+    this.additionalSearchCondition = window.jsDataQuery.eq(“<nome_campo>”, “valore”).  
+
+```
+
+
+Naturalmente è possibile inserire qualsiasi tipo di espressione che si vuole. (Fare riferimento alla documentazione su [JsDataQuery](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataQuery.md))
+
+
+- defaultListType: è il listType di default che viene inizializzato dal framewrok alla stringa “default”. Bisogna sovrascriverlo se si utilizza un nuovo listType.
+  Bisogna inserire per questo una entry sulla tabella **web_listredir**, in cui c’è il mapping tra il tablename e listtype originali con quelli nuovi **newtablename** e **newlisttype**. La pagina in fase di ricerca effettuerà la query quindi sulla vista indicata nel campo newtablename. Naturalmente sarà necessario realizzare un metadato lato server del tipo meta_<newtablename>.
+
+- Se la pagina è pubblica, bisogna inserire nel costruttore della MetaPage derivata la chiamata alla funzione 
+
+```js
+        appMeta.connection.setAnonymous();
+```
+ In questo caso tutte le chiamate ai servizi web saranno autenticate in maniera anonima. Il token anonimo è per ora cablato a codice e condiviso con il backend. Nel backend per sicurezza tutte le connessioni anonime vengono filtrate ed eventualmente bloccate se eseguite su dataset non permessi. Per vedere la configurazione backend vedere il paragrafo 4.1.1
+ 
+
+Il costruttore di una classe derivata da MetaPage sarà qualcosa tipo:
+
+
+```js
+
+    function(){
+        function metaPage_<tableName>() {
+            MetaPage.apply(this, arguments);
+            this.name = <NomePagina>;
+        }
+    metaPage_<tableName>.prototype = _.extend(
+        new MetaPage(<TableName>, <EditType>, <bool:iDetail>),
+        {
+            constructor: metaPage_<tableName>,
+
+            superClass: MetaPage.prototype,
+            
+	        ...metodi classeBase da sovrascrivere, 		
+    	    ..funzioni_private
+        }
+    )
+    }())
+
+
+Le MetaPage sono caricate all'interno del contenitore il cui id è memorizzato in appMeta.rootElement
+
+```html
+
+<head>
+	<!-- Contiene gli script js del framework -->
+</head>
+
+<body>
+    <div id="appRoot">
+       <!-- div che ospita la barra del menù-->
+       <div id=”menu”></div>
+
+       <!-- div che ospita la toolbar -->
+       <div class="container" id="toolbar" hidden></div>
+
+     <!-- contenitore dove andranno ospitate le MetaPage -->
+       <div class="container" id="metaRoot"> </div>
+    </div>
+</body>
+
+```
+
+in questo esempio si è supposto che appMeta.rootElement sia "metaRoot"
+La classe AppMeta si aspetta che i bottoni della toolbar siano presenti nel contenitore di nome pari a appMeta.rootToolbar
+
 
 ### freshForm(refreshPeripherals, doPreFill)
 
@@ -290,8 +417,16 @@ E' pertanto cruciale nella ridefinizione dei metodi che seguono tener conto dell
 
 ###  \{Deferred\} afterLink
 
+**Richiamato una volta sola**
+
 Questo metodo di MetaPage è invocato quando la pagina è stata caricata nel dom, una volta sola per ogni istanza della MetaPage. In questo metodo si possono inserire operazioni da fare una-tantum, quali aggiunta di eventi ai controlli, abilitazioni/disabilitazioni una-tantum, aggiunta a runtime di controlli o prorietà alla maschera e simili
 
+Un'altra operazione che si può fare in questa fase è utilizzare il metodo setList(ctrl) per impostare la pagina come lista, ed indicare il manage lista della pagina. Il manager lista della pagina è un controllo html, quindi del tipo $(“#id_controllo_manager”) che può essere ad esempio un grid oppure un tree
+
+
+## \{Deferred\} beforeRowSelect(table, row) 
+
+Richiamata prima della selezione di una riga
 
 
 ## \{Deferred\} afterRowSelect(table, row) 
@@ -301,8 +436,11 @@ E' invocato ogni qualvolta è selezionata una riga row da una tabella table, e c
 
 ## \{Deferred\} beforeFill()
 
-E' invocato prima che una maschera è sia riempita con i dati del DataSet. Può essere usato per aggiungere alcuni controlli o rimuoverli o cambiare il tag di qualche controllo prima che questo controllo sia riempito con i dati. Farlo dopo non ne cambierebbe infatti il contenuto effettivo.
+E' invocato prima che una maschera sia riempita con i dati del DataSet. Può essere usato per aggiungere alcuni controlli o rimuoverli o cambiare il tag di qualche controllo prima che questo controllo sia riempito con i dati. Farlo dopo non ne cambierebbe infatti il contenuto effettivo.
 
+Inoltre in questa fase il contenuto del DataSet non è ancora stato riversato sulla pagina, quindi si fa ancora in tempo a modificare il DataSet per poi vedere le modifiche applicate ai controlli della pagina.
+
+Il fill di una pagina è effettuato in generale più volte, ad esempio quando viene aperta e poi chiusa una pagina di dettaglio. Ogni volta che ciò accade, saranno richiamati i metodi beforeFill e afterFill
 
 ## \{Deferred\} afterFill()
 
@@ -319,6 +457,17 @@ E' invocato prima dello svuotamento di una maschera a seguito da un comando di "
 
 E' invocato dopo lo svuotamento di una maschera a seguito da un comando di "imposta ricerca". Può essere usato per svuotare controlli privi di tag e riempiti in un metodo afterFill modificato
 
+Questo metodo è anche chiamato ogni volta che, scorrendo un elenco, si passa da una riga ad un'altra. In questo caso prima è effettuato un clear() e poi il form è riempito con i dati della nuova riga selezionata. 
+
+Quindi scatteranno, in sequenza, afterClear, beforeFill, afterFill
+
+
+
+## \{Deferred\} beforePost()
+
+E' invocato prima che sia effettuato il Post dei dati del form, ossia prima di inviarli al backend per scriverli su database, dopo aver acquisito dati dai controlli. 
+
+
 
 
 ## \{Deferred\} freshToolBar()
@@ -334,11 +483,30 @@ E' invocato quando c'è da visualizzare il titolo della pagina. Può essere usat
  
 ## \{Deferred\} beforeActivation()
 
-E' chiamato prima di effettuare il prefill delle tabelle di un form, la prima volta che viene mostrato. Può essere usato ad esempio per specificare tabelle aggiuntive di cui effettuare il prefill. Un altro punto utile a tale scopo è il metodo afterLink().
+**Richiamato una volta sola**
 
+E' chiamato prima di effettuare il prefill delle tabelle di un form, la prima volta che viene mostrato. Può essere usato ad esempio per specificare tabelle aggiuntive di cui effettuare il prefill (metterle in cache). Un altro punto utile a tale scopo è il metodo afterLink(). Si ricorda che le tabelle associate alle SELECT sono automaticamente messe in cache (lette una volta sola)
+
+Es.
+
+```js
+    appMeta.metaModel.cachedTable(table, true) //marca la tabella table come cached
+
+    ////imposta filtro statico
+    this.state.DS.tables.table1.staticFilter(window.jsDataQuery.eq("idtable1", id)); 
+    
+    //Marcare alcune tabelle come temporanee per far si che non siano lette/scritte dal db dalla libreria. 
+    //In questo caso sarà cura dello sviluppatore riempire o svuotare tali tabelle all’occorrenza
+    appMeta.metaModel.temporaryTable(table, true)
+
+
+
+```
 
 
 ## \{Deferred\} afterActivation()
+
+**Richiamato una volta sola**
 
 E' chiamato prima di visualizzare i dati di un form la prima volta, dopo aver effettuato il prefill delle tabelle del DataSet che eventualmente sono cached.
 

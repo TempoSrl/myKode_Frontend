@@ -60,7 +60,7 @@
 			appMeta.htmlPages = [];
 			appMeta.globalEventManager = new appMeta.EventManager();
 			// N.B non c'è bisogno passa per il proxy di Karma. (vedi nel Karma_e2e_app.conf.js
-			//appMeta.routing.changeUrlMethods("http://localhost:54471");
+			//appMeta.routing.setUrlPrefix("http://localhost:54471");
 		},
 
         /**

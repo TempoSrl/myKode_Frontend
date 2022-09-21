@@ -22,6 +22,9 @@
    function DropDownGridControl(el, helpForm, table, primaryTable, listType) {
       this.listManager = null;
       this.timeoutId = 0; // timer che permette di lanciare la query se tra 2 keyup passa più di mezzo secondo
+       
+      $(el).prop("autocomplete","off");
+      //$(el).attr("data-subentity"); non dovrebbe essere necessaria vista la presenza del tag di ricerca ?x
 
       this.helpForm = helpForm;
       this.DS = table.dataset;
@@ -31,7 +34,7 @@
       this.tag = $(el).data("tag");
       this.el = el;
       this.listingType = $(el).data("listtype");
-      this.columnList = helpForm.existsDataAttribute(el, "columnlist") ? $(el).data("columnlist") : null;
+      //this.columnList = helpForm.existsDataAttribute(el, "columnlist") ? $(el).data("columnlist") : null;
       this.isStandardFill = true;
       var dataParent = $(el).data("parent");
       // numero di caratteri per cui scatta la query
@@ -41,6 +44,7 @@
       this.rootElement = $("#" + dataParent).length ? $("#" + dataParent) : $(el).parent();
       this.lastText = this.getLastText();
       $(el).addClass(appMeta.cssDefault.autoChoose);
+      
       var startFilter = helpForm.getFilterFormDataAttribute(el);
       var kind = 'AutoChoose';
       this.startField = helpForm.getColumnName(this.tag);
@@ -55,13 +59,13 @@
       // comunque abilitato in inserimento.
       this.txtHiddenForId = helpForm.addInvisibleTextBox(this.ai);
       $(el).data("tag", helpForm.getStandardTag(this.tag) + "?x");
-      this.applyGrafichs();
+      this.applyGrapichs();
    }
 
    DropDownGridControl.prototype = {
       constructor: DropDownGridControl,
 
-      applyGrafichs: function () {
+      applyGrapichs: function () {
          var $parent = $(this.el).parent();
          $parent.addClass("oneRow");
          this.$buttonSearch = $('<button type="button" class="btn btn-outline-secondary">');
@@ -171,7 +175,7 @@
       },
 
       /**
-       * Slect the row on the underline control
+       * Select the row on the underline control
        * @param {DataRow} dtrow
        * @returns {Deferred}
        */
@@ -236,7 +240,7 @@
          }, ms || 0);
       },
 
-      // QUI INZIANO METODI DI INTERFACCIA Del CUSTOM CONTROL
+      // QUI INIZIANO METODI DI INTERFACCIA Del CUSTOM CONTROL
 
       /**
        * @method fillControl
@@ -250,9 +254,9 @@
          this.helpForm.setControl(el || this.el, dataTable, value, this.startField);
          this.lastText = this.getLastText();
 
-         // -> *** Le PROSSIMe RIGHE SERVONO A CORREGERE il caso in cui una subpage
-         // abbia un dropdowngrid e una select che dipende da lei. Quindi nell'afetRowSelect di pagina programmatore gestisce
-         // il filtraggio. (vecchio esempio missioni itinaration o itinerationsegview di rendicontattivitaprogetto) ma che al momento non è
+         // -> *** Le PROSSIME RIGHE SERVONO A CORREGGERE il caso in cui una subpage
+         // abbia un dropdowngrid e una select che dipende da lei. Quindi nell'afterRowSelect di pagina programmatore gestisce
+         // il filtraggio. (vecchio esempio missioni itineration o itinerationsegview di rendicontattivitaprogetto) ma che al momento non è
          // più implementato.) . quindi è stato disattivato, poichè genera un altro tipo di errore più grave
          // in pagina principale (es: progetto seg) in cui al salvataggio poi gli eventi non fanno popolare la combo slave.
          // -> *** LO LASCIAMO QUINDI COMMENTATO FINCHE' NON ABBIAMO UN CASO REALE DOVE PROVARE ENTRMABE I BUG.

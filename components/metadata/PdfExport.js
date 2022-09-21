@@ -955,14 +955,21 @@
             var tag = helpForm.getStandardTag(eltag); // recupero il tag, serve per prendere tabella e colonna
             var tableName = helpForm.getTableName(tag);
             var columnName = helpForm.getColumnName(tag);
-            var dt  = this.metaPage.state.DS.tables[tableName];
-            if (!dt) {
-                return
-            }
 
-            var dc = dt.columns[columnName];
-            if (!dc) {
-                return
+            var dt = null;
+            var dc = null;
+
+            //l'etichetta fa eccezione e non viene recuperato nulla dal dataset ma dall'html
+            if (tagName.toUpperCase() != "LABEL") {
+                dt = this.metaPage.state.DS.tables[tableName];
+                if (!dt && tagName.toUpperCase() != "LABEL") {
+                    return
+                }
+
+                dc = dt.columns[columnName];
+                if (!dc && tagName.toUpperCase() != "LABEL") {
+                    return
+                }
             }
            /* if (!$(el).is(":visible")) {
                 return;
@@ -996,6 +1003,8 @@
                     break;
                 case "TEXTAREA":
                     return [dc.caption, value];
+                case "LABEL":
+                    return ["", $(el)[0].innerHTML];
                 case "DIV":
                 case "SPAN":
                     break;

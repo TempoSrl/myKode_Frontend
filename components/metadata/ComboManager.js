@@ -578,6 +578,5 @@
         }
     };
 
-    window.appMeta.CustomControl("combo", ComboManager);
-
+    window.appMeta.CustomControl("combo", ComboManager);    
 }());

@@ -3,7 +3,7 @@
  * @description
  * Manages the graphics and the logic of an html GridControlXMultiSelect
  * This control permits to select one or more row with checkbox
- * Before to open the metapage child it creates the row and propagates the fields of the parent row on the child
+ * Before opening the metapage child it creates the row and propagates the fields of the parent row on the child
  */
 (function () {
     var cssDefault = appMeta.cssDefault;
@@ -15,10 +15,10 @@
      * Initializes the html grid control
      * @param {Html node} el
      * @param {HelpForm} helpForm
-     * @param {DataTable} table. this is the table corresponding to the tableName configured in the tag at the position 0
+     * @param {DataTable} table this is the table corresponding to the tableName configured in the tag at the position 0
      * (see function HelpForm.preScanCustomControl for the initialization)
      * @param {DataTable} primaryTable
-     * @param {string} listType. if it is called by in a listmanager, listType is passed
+     * @param {string} listType if it is called by in a listmanager, listType is passed
      * Contains all data of a grid
      */
     function GridControlXMultiSelect(el, helpForm, table, primaryTable, listType) {

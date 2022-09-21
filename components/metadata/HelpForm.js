@@ -588,7 +588,12 @@
             that.pageState.closeDisabled = true;
             var filter;
             var oldTag = $(textBox).data("tag");
-            that.metaPage.titleAutochoose = $("label[for='" + $(textBox).attr('id') + "']").length > 0 ? $("label[for='" + $(textBox).attr('id') + "']").text() : ai.startfield; // salvo in var campo su cui ho fatto autochoose, la msoterò sullsitmanger
+
+            //// salvo in var campo su cui ho fatto autochoose, la metterò sul listmanger
+            that.metaPage.titleAutochoose = $("label[for='" + $(textBox).attr('id') + "']").length > 0
+                ? $("label[for='" + $(textBox).attr('id') + "']").text() : 
+                ai.startfield; 
+
             if (ai.kind === "AutoManage") {
                 $(textBox).data("tag", null); // removes temporarily the tag from the textbox
                 filter = that.iterateGetSpecificSearchCondition(ai.G, ai.table);

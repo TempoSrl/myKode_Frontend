@@ -4,7 +4,19 @@ MetaApp è la classe che si occupa della gestione a più alto livello dell'appli
 
 E' un singleton e funge anche da Mediator tra le varie componenti. Ossia è il fulcro attorno a cui gira la creazione/visualizzazione e la chiusura delle pagine ed il relativo scambio di informazioni.
 
+myKode contiene una serie di pagine html, che costituiscono i template di alcuni componenti base utilizzati all’interno del framework come messageBox, indicatori di caricamento, toolbar etc. L’utente può ridefinire i suoi template e posizionarli in una qualsiasi cartella del suo progetto.
+
+E' possibile modificare i template usati dall'applicazione ed eventualmente la loro dislocazione usando il file Config.js, che tipicamente aggiunge all'istanza globale di appMeta la proprietà config con tutte le impostazioni.
+
+Nel file config.js i dettagli sulle singole proprietà personalizzabili.
+
+
 ## Metodi
+
+### start()
+
+Avvia l'applicazione, è il metodo da chiamare dopo aver creato e configurato le varie proprietà dell'applicazione
+
 
 ### addMetaPage(tableName, editType, metaPage) 
 
@@ -27,6 +39,8 @@ Restituisce il percorso dove sono dislocati il metadato, le metapage e gli html 
 Associa una classe derivante da MetaData alla sua relativa tabella
 
 Tipicamente nel file del metadato troveremo qualcosa di simile a:
+
+```js
 
     (function(_, metaModel, MetaData, Deferred) {
 		/** BOILERPLATE **/
@@ -88,6 +102,7 @@ Tipicamente nel file del metadato troveremo qualcosa di simile a:
 			(typeof appMeta === 'undefined') ? require('./../client/components/metadata/EventManager').Deferred : appMeta.Deferred,
 		)    
 
+```
 
 In questo codice si è assunto che ci sia una classe base per tutti i metadati dell'applicazione 
  di nome MetaApplicationData, derivante da MetaData, e che il nome della tabella associata al 
@@ -122,6 +137,22 @@ Da questa interfaccia è facile capire che ad ogni tabella tableName è possibil
 Apre una maschera identificata dalla coppia metaToCall-editType, e restituisce un deferred, che è true se l'editing si è concluso con un "Ok". wantsRow è un parametro che indica se il chiamante richiede la restituzione di una riga.
 Ove wantsRow sia true, la maschera che si apre ha l'aspetto di un pop up.
 
+All'apertura e visualizzazione di una pagina è anche generato un evento di tipo showPage, al quale è possibile registrarsi per effettuare specifice operazioni, ad esempio:
+
+```js
+
+
+	appMeta.globalEventManager.subscribe(appMeta.EventEnum.showPage, this.showPage, this);
+
+	...
+
+	showPage:function (metaPage) {
+		if (metaPage.detailPage) ...
+	}
+
+
+```
+
 ### Deferred\<object>callWebService (method, prms)
 
 Invoca un web service di nome "method" e con i parametri prms. Il risultato è girato pari pari al chiamante.
@@ -132,6 +163,6 @@ Il metodo "method" deve essere stato precedentemente registrato con il metodo
 Registra un web service nel sistema, prms deve avere i seguenti campi:
 
 - method: nome del metodo 
-- type: può essereGET/POST/DELETE
+- type: può essere GET/POST/DELETE
 - multipleResult: true se sono possibili più risposte
 - url: absolute url, es: http://mysite/mypath/method

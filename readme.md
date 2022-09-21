@@ -5,15 +5,13 @@ myKode frontend è un framework che consente di sviluppare maschere web anche mo
 Il frontend javascript è un rich client, quindi l'interazione avviene senza continui postback.
 
 Tramite dei servizi presenti nel backend (disponibile sia in versione Node.js che .NET), svolge un set di 
- operazioni che consentono una "normale ""operatività nelle maschere web, consentendo al tempo stesso una facile
- estendibilità sia dal punto di vista delle componenti visuali contenute nella maschera e sia delle funzioni
- di interazione specifiche che la maschera può prevedere.
+ operazioni che consentono una "normale ""operatività nelle maschere web, consentendo al tempo stesso una facile estendibilità sia dal punto di vista delle componenti visuali contenute nella maschera e sia delle funzioni di interazione specifiche che la maschera può prevedere.
 
 Una generica maschera si intenda associata ad un [DataSet](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataSet.md), (simile a quelli di ADO.NET) che contiene la copia locale di un set
   di righe che sono presenti sul database (o che lo saranno in futuro)
 
 
-Per "normale operatività" si intende, ad esempio:
+Per "normale operatività" si intende, a mero titolo di esempio:
 
 - la possibilità di impostare una ricerca in modalità "query by example", ossia immettendo i dati che si desidera confrontare
   nella maschera e poi avviare la ricerca sulla base dei dati inseriti [1]
@@ -21,24 +19,22 @@ Per "normale operatività" si intende, ad esempio:
 - inserire nuovi dati [2]
 - aprire delle maschere "di dettaglio" (anche di secondo o terzo livello ) sulle righe "figlie" della riga principale
 - cancellare una riga e con tutti i relativi dettagli
-- elenchi sulla selezione di righe parent della riga principale, al fine di valorizzare campi della tabella principale
+- visualizzare elenchi sulla selezione di righe parent della riga principale, al fine di valorizzare campi della tabella principale
 
 
 
-L'idea di base è avere un DataSet (simile a quelli di ADO.NET) per memorizzare la copia locale dei dati oggetti dell'elaborazione,
- e operare sul database sulla base di un insieme di convenzioni e proprietà delle colonne del DataSet, oltre che alle righe 
- (DataRow) contenute dei DataTable.
+L'idea di base è avere un DataSet (simile a quelli di ADO.NET) per memorizzare la copia locale dei dati oggetti dell'elaborazione, e operare sul database sulla base di un insieme di convenzioni e proprietà delle colonne del DataSet, oltre che alle righe (DataRow) contenute dei DataTable.
 
-Tuttavia il DataSet non si intende contenere un set di righe qualsiasi del database, ma dei dati che devono rispettare una certa 
- logica. 
+Tuttavia il DataSet non si intende contenere un set di righe qualsiasi del database, ma dei dati che devono rispettare una certa  logica. 
  
+
 ## Tabella principale e subentità
 
 
 
 In particolare, c'è una tabella "principale" che contiene una riga oggetto "principale" dell'elaborazione.
 
-La tabella principale nell'ambito del framework è definita *entità*.
+La tabella principale nell'ambito del framework è definita *entità*. Parleremo indifferentemente di tabella principale o entità principale di una maschera.
 
 Ad esempio potrebbe essere la riga di una tabella anagrafica o di una tabella ordine.
 
@@ -56,8 +52,7 @@ La relazione tra entità e subentità non è generica, ma deve collegare **tutta
  **campi chiave** della tabella child.
 
 Questo logicamente garantisce che non potrà mai esistere una riga della tabella subentità non collegata ad alcuna riga parent 
- (entità o subentità).
-
+ (entità o subentità). Una subentità è infatti da considerarsi un **dettaglio** dell'entità principale.
 
 
 
@@ -68,8 +63,7 @@ Ci possono essere poi nel DataSet altre tabelle referenziate, parent delle entit
  da parte della maschera. 
 
 Durante l'edit dei dati da parte dell'utente, la distinzione tra questi due insiemi di tabelle è cruciale, infatti le tabelle 
- oggetto di editing (entità e subentità) non saranno mai rilette dal database, altrimenti l'utente perderebbe le modifiche 
- che sta facendo. 
+ oggetto di editing (entità e subentità) non saranno mai rilette dal database mentre l'utente interagisce con la maschera, altrimenti l'utente perderebbe le modifiche che sta effettuando. 
 
 Anche una riga (DataRow) in stato di inserimento (entità o subentità) sarebbe persa se quella tabella fosse per sbaglio riletta nel 
  DataTable corrispondente.

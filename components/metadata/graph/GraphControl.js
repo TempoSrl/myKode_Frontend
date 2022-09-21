@@ -19,14 +19,10 @@
      */
     function GraphControl(el, helpForm, table, primaryTable, listType) {
         this.helpForm = helpForm;
-        this.tag = $(el).data("tag");
         this.el = el;
-        // recupero tableName  e columnName dal tag del controllo
-        this.tableName = helpForm.getField(this.tag, 0);
-        // dal tag prendo la colonna della tabella su cui verrà inserito l'id dell'attachment calcolato lato server
-        this.columnName = helpForm.getField(this.tag, 1);
+      
 
-        this.xaxestime = (typeof $(el).data("xaxestime") !== "undefined");
+        //this.xaxestime = (typeof $(el).data("xaxestime") !== "undefined"); non si capisce a cosa serve, lo rimuovo
         // ---> può essere "bar" o "line"
         this.type = (typeof $(el).data("type") === "undefined") ? 'line' : $(el).data("type");
         this.ycol = $(el).data("ycol");
@@ -40,7 +36,7 @@
         $(el).css('border-radius', '10px');
         $(el).css('box-shadow', '0px 2px 4px lightgrey');
 
-        // costrusice la grafica del controllo
+        // costruisce la grafica del controllo
         this.buildTemplateHtml();
     }
 
@@ -79,7 +75,7 @@
          * Fills the control.
          */
         fillControl:function(el){
-            var def = Deferred("upload-fillControl");
+            var def = Deferred("graph-fillControl");
             //  label che appare se l'allegato è caricato
             var table = this.metaPage.state.DS.tables[this.tname];
             var xvalues = this.getXValues(table.rows);
@@ -91,9 +87,9 @@
         getXValues:function(rows) {
             var self = this;
             return rows.map(function (row) {
-                if (self.xaxestime && row[self.xcol]) {
-                    return moment(row[self.xcol]).format("DD-MM-YYYY");
-                }
+                //if (self.xaxestime && row[self.xcol]) {
+                //    return moment(row[self.xcol]).format("DD-MM-YYYY");
+                //}
                 return row[self.xcol];
             });
         },
@@ -141,7 +137,7 @@
          * @returns {Deferred}
          */
         clearControl: function() {
-            var def = Deferred("upload-clearControl");
+            var def = Deferred("graph-clearControl");
             this.updateGraph([], []);
             return def.resolve();
         },
@@ -168,7 +164,7 @@
          * @returns {Deferred}
          */
         preFill: function(el, param) {
-            var def = Deferred("preFill-Upload");
+            var def = Deferred("preFill-graph");
             return def.resolve();
         },
 

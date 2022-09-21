@@ -27,10 +27,20 @@
         MDLW_VERSION : "0.0.1",
 
         // ********** path dei template dei controlli ******
+        // template della toobar principale dei bottoni
         path_maintoolBarTemplate: path_rootTemplate + "mainToolBar_Template.html",
+
+        // template del controllo per lo spostamento di righe da una griglia ad un’altra
         path_multiSelectTemplate: path_rootTemplate + "multiSelect_Template.html",
+
+        // template che contiene un indicatore di caricamento
         path_loaderTemplate : path_rootTemplate + "loader_Template.html",
+
+        // template della modale in cui viene ospitata la griglia degli errori che si ottengono quando si effettua un salvataggio dei dati
         path_procedureMessagesTemplate :  path_rootTemplate + "listProcedureMessages_Template.html",
+
+        // template della modale che contiene indicatore di caricamento, 
+        //  richiamata all’interno del framewrok quando si vuole attendere il termine di un’operazione
         path_modalLoaderTemplate:  path_rootTemplate + "modalLoader_Template.html",
         path_gridOption_Template:  path_rootTemplate + "gridOption_Template.html",
         env: envEnum.DEV,

@@ -543,7 +543,7 @@
                     var def = appMeta.Deferred('callWebService');
 
                     // osserva se il metodo è stato censito e registrato
-                    var objRouting  = appMeta.routing.methodRegistered(method);
+                    var objRouting  = appMeta.routing.getMethod(method);
                     if (!objRouting){
                         alert("method " + method + " not registered for this app. Add the configuration on Routing class calling " +
                             "routing.builderConnObj('method, 'GET/POST', 'my controller path', false, true);");

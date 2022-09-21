@@ -84,28 +84,30 @@
         appMeta.basePath = "/";
         this.services  = {};
         this.init();
+        this.backendUrl = "";
     }
 
     Routing.prototype = {
         constructor: Routing,
 
+
         /**
-         * @method changeUrlMethods
+         * @method setUrlPrefix
          * @public
          * @description SYNC
          * Utilizzata nei file html di debug. Ad esempio quelli sotto "test/testViewsHtml"
          * assegna la url passata per tuti i metodi
          * @param {string} prefixUrl the ip and port of the server for example http://localhost:54471
          */
-        changeUrlMethods:function (prefixUrl) {
+        setUrlPrefix:function (prefixUrl) {
             this.backendUrl = prefixUrl;
-            _.forEach(this.services, function (s) {
-                s.url = prefixUrl + s.url;
-            })
+            //_.forEach(this.services, function (s) {
+            //    s.url = prefixUrl + s.url;
+            //})
         },
 
         /**
-         * @method methodRegistered
+         * @method getMethod     //ex methodRegistered
          * @public
          * @description SYNC
          * Returns the obj that represents the configuration for this web "method":
@@ -118,8 +120,12 @@
          * @param {string} method
          * @returns {object|undefined}
          */
-        methodRegistered:function (method) {
-            return this.services[method];
+        getMethod:function (method) {
+            let ss = this.services[method];
+            if (!ss) return ss;
+            let service = _.clone(ss)
+            service.url = this.backendUrl+service.url;
+            return service;
         },
 
         /**
