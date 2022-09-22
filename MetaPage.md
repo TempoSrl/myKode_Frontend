@@ -215,6 +215,7 @@ E' invocato quando è premuto il bottone di insert collegato ad un grid.  E' anc
 
 E' invocato quando è premuto il bottone di delete collegato ad un grid.  E' anche generato l'evento deleteClick(grid) dell'eventManager.  "this" è il botton che ha scatenato il click.
 
+
 ### unlinkClick(metaPage, grid)
 
 E' invocato quando è premuto il bottone di unlink in un grid. L'unlink scollega la riga dalla tabella principale, ma non la cancella. E' anche generato l'evento unlinkClick(grid) dell'eventManager.  "this" è il botton che ha scatenato il click. 
@@ -231,6 +232,7 @@ Questo è utile quando si ha la necessità di ricalcolare alcuni controlli della
 ### registerFormula(elChild, fn)
 
 Registra la formula necessaria quando c'è da ricalcolare l'elemento elChild. Questa sarà invocata in automatico in base agli eventi sui controlli da cui elChild dipende.
+
 
 ### setDataTagAttr(el, value)
 
