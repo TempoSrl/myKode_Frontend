@@ -51,44 +51,32 @@ Nel caso di un caso di un ordine, potrebbe essere una tabella "dettaglio_ordine"
 La relazione tra entità e subentità non è generica, ma deve collegare **tutta la chiave** della tabella parent con 
  **campi chiave** della tabella child.
 
-Questo logicamente garantisce che non potrà mai esistere una riga della tabella subentità non collegata ad alcuna riga parent 
- (entità o subentità). Una subentità è infatti da considerarsi un **dettaglio** dell'entità principale.
+Questo logicamente garantisce che non potrà mai esistere una riga della tabella subentità non collegata ad alcuna riga parent (entità o subentità). Una subentità è infatti da considerarsi un **dettaglio** dell'entità principale.
 
 
 
-La riga "principale" è quella che si seleziona dalla ricerca effettuata con la "query by example" del punto [1] di cui sopra,
-  oppure la riga che si crea nel punto [2].
+La riga "principale" è quella che si seleziona dalla ricerca effettuata con la "query by example" del punto [1] di cui sopra, oppure la riga che si crea nel punto [2].
   
-Ci possono essere poi nel DataSet altre tabelle referenziate, parent delle entità e subentità, e che non sono oggetto di modifica
- da parte della maschera. 
+Ci possono essere poi nel DataSet altre tabelle referenziate, parent delle entità e subentità, e che non sono oggetto di modifica da parte della maschera. 
 
-Durante l'edit dei dati da parte dell'utente, la distinzione tra questi due insiemi di tabelle è cruciale, infatti le tabelle 
- oggetto di editing (entità e subentità) non saranno mai rilette dal database mentre l'utente interagisce con la maschera, altrimenti l'utente perderebbe le modifiche che sta effettuando. 
+Durante l'edit dei dati da parte dell'utente, la distinzione tra questi due insiemi di tabelle è cruciale, infatti le tabelle  oggetto di editing (entità e subentità) non saranno mai rilette dal database mentre l'utente interagisce con la maschera, altrimenti l'utente perderebbe le modifiche che sta effettuando. 
 
-Anche una riga (DataRow) in stato di inserimento (entità o subentità) sarebbe persa se quella tabella fosse per sbaglio riletta nel 
- DataTable corrispondente.
+Anche una riga (DataRow) in stato di inserimento (entità o subentità) sarebbe persa se quella tabella fosse per sbaglio riletta nel  DataTable corrispondente.
 
-Viceversa, le tabelle parent possono essere rilette, ad esempio per selezionare una nuova riga parent della riga principale, o 
- semplicemente per aggiornarle caso mai fossero nel frattempo cambiate, come può succedere in caso di tabelle dal contenuto
- molto volatile.
+Viceversa, le tabelle parent possono essere rilette, ad esempio per selezionare una nuova riga parent della riga principale, o semplicemente per aggiornarle caso mai fossero nel frattempo cambiate, come può succedere in caso di tabelle dal contenuto molto volatile.
 
-Quando si crea una maschera si deve decidere qual è la tabella principale e quali subentità consentire di modificare in quella maschera
- e nelle sue eventuali maschere di dettaglio, e tali tabelle vanno inserite nel DataSet e relazionate.
+Quando si crea una maschera si deve decidere qual è la tabella principale e quali subentità consentire di modificare in quella maschera e nelle sue eventuali maschere di dettaglio, e tali tabelle vanno inserite nel DataSet e relazionate.
  
-Le tabelle che servono a migliorare la visualizzazione del primo set di tabelle, tipicamente tabella parent, vanno aggiunte al DataSet
- e relazionate inserendo le DataRelation opportune.
+Le tabelle che servono a migliorare la visualizzazione del primo set di tabelle, tipicamente tabella parent, vanno aggiunte al DataSet e relazionate inserendo le DataRelation opportune.
 
 
 ## Lettura e scrittura automatica del DataSet
 
-Il vantaggio che si ottiene a questo punto è che il framework sa perfettamente riempire tutto il DataSet quando l'utente seleziona
-  una riga dall'elenco.
+Il vantaggio che si ottiene a questo punto è che il framework sa perfettamente riempire tutto il DataSet quando l'utente seleziona una riga dall'elenco.
 
-Allo stesso modo se l'utente decide di cancellare la riga principale, il framework sa già quali sono le righer delle tabelle di 
- dettaglio da eliminare.
+Allo stesso modo se l'utente decide di cancellare la riga principale, il framework sa già quali sono le righer delle tabelle di dettaglio da eliminare.
 
-Infine, durante l'inserimento, il framework sa l'ordine con cui inserire le righe e come propagare il calcolo dei campi chiave
- incrementali dalle tabelle parent alle child.
+Infine, durante l'inserimento, il framework sa l'ordine con cui inserire le righe e come propagare il calcolo dei campi chiave incrementali dalle tabelle parent alle child.
  
 All'opposto, le tabelle che non sono entità o subentità non saranno mai scritte nel salvataggio dei dati di una maschera.
 
@@ -100,11 +88,9 @@ Il disegno di una maschera web avviene con semplici tag HTML ove negli attributi
 
 In ogni maschera sono normalmente visibili ed editabili (a meno di inibire tale comportamento) i campi della tabella principale. 
 
-E' possibile anche, ove una subentità sia in rapporto 1:1 con l'entità (almeno nell'ambito della visualizzazione corrente), mostrare e consentire l'editing
- anche dei campi della sua riga. 
+E' possibile anche, ove una subentità sia in rapporto 1:1 con l'entità (almeno nell'ambito della visualizzazione corrente), mostrare e consentire l'editing anche dei campi della sua riga. 
 
-Un esempio di tale tabella potrebbe essere una tabella che contiene la dichiarazione dei redditi di un contribuente, e si decidesse di 
- visualizzare, in una certa maschera, solo la riga dell'anno corrente.
+Un esempio di tale tabella potrebbe essere una tabella che contiene la dichiarazione dei redditi di un contribuente, e si decidesse di visualizzare, in una certa maschera, solo la riga dell'anno corrente.
 
 In questo caso si potrebbe filtrare la tabella della dichiarazione per anno fiscale, e con questa premessa diventerebbe in rapporto 1:1 con la tabella del  contribuente, pertanto si potrebbero visualizzare i dati della dichiarazione fiscale anche in una maschera ove la tabella principale fosse il contribuente.
 
@@ -113,6 +99,7 @@ Negli altri casi, ovvero ove una tabella non sia subentità e/o non sia in rappo
 Grazie a queste premesse, il framework provvede in automatico a riempire i campi della maschera web che hanno l'attributo data-tag, che è del tipo "tabella.campo".
 
 Analogamente, quando occorre, il framework è in grado di leggere i dati della maschera e riportarli nelle opportune righe del DataSet.
+
 Ulteriori dettagli su come comporre l'html di una pagina in [MetaPage HTML](MetaPageHtml.md).
 
 ## Ciclo di modifica dei dati
@@ -121,12 +108,11 @@ E' possibile anche aggiungere qualsiasi comportamento alla maschera, e di base n
 
 Infatti la convenzione per leggere o scrivere i dati della maschera è utilizzare il seguente schema:
 
-1) invocare MetaPage.getFormData() che legge i dati della maschera aggiornando il contenuto del DataSet
+1) invocare il metodo getFormData() della MetaPage, che legge i dati della maschera aggiornando il contenuto del DataSet
 2) operare sui DataRow del DataSet a piacimento, modificando o inserendo dati nelle tabelle entità e subentità
-3) invocare MetaPage.freshForm() per visualizzare i dati del DataSet nella maschera web
+3) invocare metodo freshForm() della MetaPage, per visualizzare i dati del DataSet nella maschera web
 
-in questo modo il codice diviene slegato dalla conoscenza specifica di quale controllo e di che tipo contenga ogni campo che deve essere oggetto
- di una ipotetica elaborazione.
+in questo modo il codice diviene slegato dalla conoscenza specifica di quale controllo e di che tipo contenga ogni campo che deve essere oggetto di una ipotetica elaborazione.
 
 
 ## Struttura dell'applicazione
@@ -140,9 +126,7 @@ Se la tabella è oggetto di modifica in qualche pagina, ogni pagina è costruita
 Pertanto la coppia tableName-editType identifica una maschera nell'ambito dell'applicazione, ove tableName è la tabella 
  principale di quella maschera (e del DataSet sottostante)
 
-Se la tabella figura in qualche elenco visualizzabile dall'utente, i nomi dei campi e le caratteristiche dell'elenco sono
- descritte nel metadato. Poiché anche in questo caso potrebbe esserci la necessità di elencare una tabella (o vista) in diversi
- modi a seconda del contesto, ad ogni elenco è associato un codice, detto listingType.
+Se la tabella figura in qualche elenco visualizzabile dall'utente, i nomi dei campi e le caratteristiche dell'elenco sono descritte nel metadato. Poiché anche in questo caso potrebbe esserci la necessità di elencare una tabella (o vista) in diversi modi a seconda del contesto, ad ogni elenco è associato un codice, detto listingType.
 
 Pertanto la coppia tableName-listingType identifica un tipo di elenco nell'ambito dell'applicazione
 
