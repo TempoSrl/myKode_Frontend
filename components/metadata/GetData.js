@@ -1000,7 +1000,7 @@
 			};
 
 			// recupero dal routing prm da passare alla chiamata
-			var callConfigObj = appMeta.routing.connObj[objConn.method];
+			var callConfigObj = appMeta.routing.getMethod(objConn.method);
 
 			var options   = {
 				url: callConfigObj.url,

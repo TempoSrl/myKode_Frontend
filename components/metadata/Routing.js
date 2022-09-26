@@ -148,7 +148,7 @@
          * @param {string} type GET/POST/DELETE
          * @param {string} relativePath relative path in the url
          * @param {boolean} multipleResult in true is managed with progress deferred
-         * @param {boolean} auth undefined | true means need auth, false not need 
+         * @param {boolean} auth undefined | true means need auth, false doesn't need 
          */
         registerService:function (method, type, relativePath, multipleResult, auth) {
             if (auth === undefined) auth = true;

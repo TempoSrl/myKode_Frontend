@@ -559,7 +559,7 @@
                     };
                     appMeta.connection.call(objConn)
                         .then(function (jsonRes) {
-                            // non fa altro che risolvere il risultato, Lo sà chi lo chiama cosa fare con il risultato
+                            // non fa altro che risolvere il risultato, Lo sa chi lo chiama cosa fare con il risultato
                             def.resolve(jsonRes);
                         }).fail(function (err) {
                             def.reject(err);

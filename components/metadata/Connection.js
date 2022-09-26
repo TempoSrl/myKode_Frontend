@@ -78,7 +78,7 @@
             }
 
             // recupero dal routing prm da passare alla chiamata
-            var callConfigObj = appMeta.routing.connObj[objConn.method];
+            var callConfigObj = appMeta.routing.getMethod(objConn.method);
 
             // Calcola id richiesta
             var currIdRequest = this.getRequestId();
@@ -88,7 +88,7 @@
             var self = this;
 
             // Rilancio al chiamante, aggiungendo logica in questa fase se necessario
-            // N.B la progress quin non serve gestirla, la gestisce direttamente il chimanante finale
+            // N.B la progress quindi non serve gestirla, la gestisce direttamente il chiamante finale
             // poichè inutile qui, non aggiungo logica
             return this.currentBackendManager.call(callConfigObj, objConn)
                 .then(
@@ -171,10 +171,8 @@
                         var envs = [appMeta.config.envEnum.DEV, appMeta.config.envEnum.QA];
                         var showInfo = envs.includes(appMeta.config.env) || appMeta.config.forceShowErrorInfo;
 
-                        if (
-                            (objConn.method === 'login' ||
-                            objConn.method === 'loginLDAP')
-                            && objConn.prm) {
+                        //&& (objConn.method === 'login' || objConn.method === 'loginLDAP')
+                        if (objConn.prm && objConn.prm.password) {
                             objConn.prm.password = '************'
                         }
 

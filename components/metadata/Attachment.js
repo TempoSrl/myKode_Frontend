@@ -149,7 +149,7 @@
             var FD = new FormData();
             FD.append('file', chunk, fileName);
             // recupero dal routing prm da passare alla chiamata
-           var callConfigObj = appMeta.routing.connObj['uploadChunk'];
+            var callConfigObj = appMeta.routing.getMethod('uploadChunk');
            var myInit = {
                 method: callConfigObj.type,
                 body: FD,
@@ -179,7 +179,7 @@
             var def = Deferred("download");
             var self = this;
             var token = appMeta.connection.getAuthToken();
-            var callConfigObj = appMeta.routing.connObj['download'];
+            var callConfigObj = appMeta.routing.getMethod('download');
             var url = callConfigObj.url + '?idattach=' + idAttach;
             var filename = 'default';
             var myInit = { method: callConfigObj.type,
@@ -260,7 +260,7 @@
 
             var def = Deferred("downloadDbField");
             var token = appMeta.connection.getAuthToken();
-            var callConfigObj = appMeta.routing.connObj['downloadDbField'];
+            var callConfigObj = appMeta.routing.getMethod('downloadDbField');
             var url = callConfigObj.url + "?" + serialize(prms);
             var fname = '';
 
@@ -302,7 +302,7 @@
         //removeAttachment:function (idAttach) {
         //    var def = Deferred("removeAttachment");
         //    var token = appMeta.connection.getAuthToken();
-        //    var callConfigObj = appMeta.routing.connObj['remove'];
+        //    var callConfigObj = appMeta.routing.getMethod('remove');
         //    $.ajax({
         //        type: callConfigObj.type,
         //        url: callConfigObj.url +  "?idattach=" + idAttach,//appMeta.routing.backendUrl + '/file/remove?idattach=' + idAttach,

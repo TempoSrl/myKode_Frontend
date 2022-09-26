@@ -40,16 +40,14 @@ Ad esempio potrebbe essere la riga di una tabella anagrafica o di una tabella or
 
 Poi (opzionalmente) vi sono un insieme di tabelle "subentità", che rappresentano i dettagli della riga principale.
  
-Nel caso di un'anagrafica potrebbero essere una tabella "indirizzo" con i vari indirizzi di quella persona (ufficio,
-  domicilio fiscale, residenza, etc.) o una tabella "telefono" con i vari numeri telefonici.
+Nel caso di un'anagrafica potrebbero essere una tabella "indirizzo" con i vari indirizzi di quella persona (ufficio, domicilio fiscale, residenza, etc.) o una tabella "telefono" con i vari numeri telefonici.
 
 Nel caso di un caso di un ordine, potrebbe essere una tabella "dettaglio_ordine" con i dettagli della merce ordinata.
 
 
 ### Relazione entità - subentità o subentità-subentità
 
-La relazione tra entità e subentità non è generica, ma deve collegare **tutta la chiave** della tabella parent con 
- **campi chiave** della tabella child.
+La relazione tra entità e subentità non è generica, ma deve collegare **tutta la chiave** della tabella parent con  **campi chiave** della tabella child.
 
 Questo logicamente garantisce che non potrà mai esistere una riga della tabella subentità non collegata ad alcuna riga parent (entità o subentità). Una subentità è infatti da considerarsi un **dettaglio** dell'entità principale.
 

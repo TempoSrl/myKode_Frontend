@@ -1097,7 +1097,7 @@
 
             var def = Deferred("download");
             var token = appMeta.connection.getAuthToken();
-            var callConfigObj = appMeta.routing.connObj['download'];
+            var callConfigObj = appMeta.routing.getMethod('download');
             var url = callConfigObj.url + '?idattach=' + idAttach;
             var filename = 'default';
             var myInit = { method: callConfigObj.type,
