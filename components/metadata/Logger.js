@@ -31,6 +31,10 @@
     Logger.prototype = {
         constructor: Logger,
 
+        setLanguage: function(lan){
+            localResource=lan;
+        },
+
         /**
          * @method log
          * @public

@@ -13,7 +13,7 @@
      * @constructor FormProcedureMessage
      * @description
      * Initializes the form for the db procedure messages
-     * @param {Html node} rootElement
+     * @param {node} rootElement
      * @param {DbProcedureMessage []} messages. They are the messages returned form the server, after the post command.
      * @param {MetaPage} metaPage
      * @param {boolean} canIgnore. Indicates that all messages can be ignored
@@ -24,12 +24,13 @@
         this.rootElement = rootElement || document.body;
         this.messages = messages;
         this.templateFileHtmlPath  = appMeta.basePath + appMeta.config.path_procedureMessagesTemplate;
+        console.log(this.templateFileHtmlPath);
         this.columnNames = ["id", "description"];
         this.columnCaptions = [locale.prodMess_id, locale.prodMess_lonMsg];
 
-        // dichiara il deferred di cui verrà fatta la promise alla fine del fillcontrol, cioè qaundo sarà
+        // dichiara il deferred di cui verrà fatta la promise alla fine del fillcontrol, cioè quando sarà
         // mostrato il form, e si rimane in attesa dell'operazione dell'utente.
-        // infatti il def verrà risolto alla pressione dei pulsanti salva o i ognora
+        // infatti il def verrà risolto alla pressione dei pulsanti salva o ignora
         this.def = Deferred('FormProcedureMessage.loadTemplate');
 
         this.canignore = canIgnore;
@@ -135,7 +136,8 @@
                 $(".procedureMessage_btn_ignoreandsave").show();
                 $(".procedureMessageWarningIcon").show();
                 $(".procedureMessage_btn_ignoreandsave").text(locale.procedureMessage_btn_ignoreandsave).on("click", _.partial(this.ignoreAndSave, this));
-            }else{
+            }
+            else{
                 $(".procedureMessageErrorIcon").show();
             }
 

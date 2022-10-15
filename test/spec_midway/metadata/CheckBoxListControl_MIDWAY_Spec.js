@@ -17,7 +17,7 @@ describe("CheckBoxListControl",
           
         });
         
-        beforeEach(function () {
+        beforeEach(function (done) {
             jasmine.getFixtures().fixturesPath = "base/test/spec/fixtures";
 
             // costrusico ogetto stato e ds
@@ -109,183 +109,186 @@ describe("CheckBoxListControl",
                 '</div>';
             $("html").html(mainwin);
             // aggiungo stili, così a runtime li vedo
-            $('body').append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-            $('body').append('<link rel="stylesheet" href="/base/app/styles/app.css">');
-            helpForm.preScanControls();
-            check1 = $("#check1").data("customController");
+            $('body').append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+            $('body').append('<link rel="stylesheet" href="/base/test/app/styles/app.css">');
+
+            helpForm.preScanControls()
+            .then(()=>{
+                helpForm.addEvents(metapage);
+                check1 = $("#check1").data("customController");
+                done();
+            });
+
         });
 
         afterAll(function () {
             appMeta.basePath = "/";
         });
-        
-        describe("methods work",
-            function () {
 
-                it("getMiddleTable returns the 'middle' table", function () {
-                    var m = check1.getMiddleTable(t1, t2);
-                    expect(m).toBe(middle);
-                });
+        it("getMiddleTable returns the 'middle' table", function () {
+            var m = check1.getMiddleTable(t1, t2);
+            expect(m).toBe(middle);
+        });
                 
-                it("preFill populates the list, with first column with checkboxes", function (done) {
+        it("preFill populates the list, with first column with checkboxes", function (done) {
 
-                    helpForm.lastSelected(t1, objrow6);
-                    check1.preFill($("#check1"),{tableWantedName:"table2"})
-                        .then(function() {
-                            expect($("#check1").find("tr").length).toBe(6);
+            helpForm.lastSelected(t1, objrow6);
+            check1.preFill($("#check1"),{tableWantedName:"table2"})
+                .then(function() {
+                    expect($("#check1").find("tr").length).toBe(6);
 
-                            // controllo che sulla prima colonna ci siano checkbox
-                            var tr1 = $("#check1").find("tr")[1];
-                            var td1 = $(tr1).find("td")[0];
-                            var inputType =  $(td1).find("input").attr("type");
-                            expect(inputType).toBe("checkbox");
+                    // controllo che sulla prima colonna ci siano checkbox
+                    var tr1 = $("#check1").find("tr")[1];
+                    var td1 = $(tr1).find("td")[0];
+                    var inputType =  $(td1).find("input").attr("type");
+                    expect(inputType).toBe("checkbox");
 
-                            var countExpect = 0;
-                            _.forEach($("#check1").find("tr"), function (tr, index) {
-                                if (index > 0){
-                                    var tds  = $($(tr)[0]).find("td");
+                    var countExpect = 0;
+                    _.forEach($("#check1").find("tr"), function (tr, index) {
+                        if (index > 0){
+                            var tds  = $($(tr)[0]).find("td");
 
-                                    _.forEach(tds, function (td, indexTd) {
-                                        var inputType =  $(td).find("input").attr("type");
-                                        // nella prima ci sono checkbox
-                                        if (indexTd === 0){
-                                            expect(inputType).toBe("checkbox");
-                                        } else {
-                                            expect(inputType).not.toBe("checkbox");
-                                        }
-                                        countExpect++;
-                                    });
+                            _.forEach(tds, function (td, indexTd) {
+                                var inputType =  $(td).find("input").attr("type");
+                                // nella prima ci sono checkbox
+                                if (indexTd === 0){
+                                    expect(inputType).toBe("checkbox");
+                                } else {
+                                    expect(inputType).not.toBe("checkbox");
                                 }
+                                countExpect++;
                             });
+                        }
+                    });
 
-                            // la prefill esegue anche il fill se nel dt ci sono righe, quindi in questo caso ci sono e valuto
-                            var tr1, td1, ischecked;
+                    // la prefill esegue anche il fill se nel dt ci sono righe, quindi in questo caso ci sono e valuto
+                    var tr1, td1, ischecked;
+                    tr1  = $("#check1").find("tr")[1];
+                    td1 = $(tr1).find("td")[0];
+                    ischecked =  $(td1).find("input").prop("checked");
+                    expect(ischecked).toBeFalsy();
+
+                    tr1 = $("#check1").find("tr")[2];
+                    td1 = $(tr1).find("td")[0];
+                    ischecked =  $(td1).find("input").prop("checked");
+                    expect(ischecked).toBeFalsy();
+
+                    tr1 = $("#check1").find("tr")[3];
+                    td1 = $(tr1).find("td")[0];
+                    ischecked =  $(td1).find("input").prop("checked");
+                    expect(ischecked).toBeTruthy();
+
+                    tr1 = $("#check1").find("tr")[4];
+                    td1 = $(tr1).find("td")[0];
+                    ischecked =  $(td1).find("input").prop("checked");
+                    expect(ischecked).toBeTruthy();
+
+                    tr1 = $("#check1").find("tr")[5];
+                    td1 = $(tr1).find("td")[0];
+                    ischecked =  $(td1).find("input").prop("checked");
+                    expect(ischecked).toBeFalsy();
+
+                    expect(countExpect).toBe(15); // 5 righe dati per tre colonne
+                    done();
+                });
+
+        }, 5000);
+
+        it("preFill populates + fillcontrol selects checkboxes", function (done) {
+
+            helpForm.lastSelected(t1, objrow6);
+            check1.preFill($("#check1"),{tableWantedName:"table2"})
+                .then(function() {
+                    check1.fillControl($("#check1"))
+                      .then(function () {
+                          var tr1, td1, ischecked;
+                          tr1  = $("#check1").find("tr")[1];
+                          td1 = $(tr1).find("td")[0];
+                          ischecked =  $(td1).find("input").prop("checked");
+                          expect(ischecked).toBeFalsy();
+
+                          tr1 = $("#check1").find("tr")[2];
+                          td1 = $(tr1).find("td")[0];
+                          ischecked =  $(td1).find("input").prop("checked");
+                          expect(ischecked).toBeFalsy();
+
+                          tr1 = $("#check1").find("tr")[3];
+                          td1 = $(tr1).find("td")[0];
+                          ischecked =  $(td1).find("input").prop("checked");
+                          expect(ischecked).toBeTruthy();
+
+                          tr1 = $("#check1").find("tr")[4];
+                          td1 = $(tr1).find("td")[0];
+                          ischecked =  $(td1).find("input").prop("checked");
+                          expect(ischecked).toBeTruthy();
+
+                          tr1 = $("#check1").find("tr")[5];
+                          td1 = $(tr1).find("td")[0];
+                          ischecked =  $(td1).find("input").prop("checked");
+                          expect(ischecked).toBeFalsy();
+
+                          done();
+                       });
+                });
+
+        }, 5000);
+
+        it("preFill populates + fillcontrol selects checkboxes + select check + getcontrol -> ds has changes", function (done) {
+
+            helpForm.lastSelected(t1, objrow6);
+            check1.preFill($("#check1"),{tableWantedName:"table2"})
+                .then(function() {
+                    check1.fillControl($("#check1"))
+                        .then(function () {
+                            var tr1,tr2,tr3,tr4,tr5, td1,td2,td3,td4,td5, ischecked;
                             tr1  = $("#check1").find("tr")[1];
                             td1 = $(tr1).find("td")[0];
                             ischecked =  $(td1).find("input").prop("checked");
                             expect(ischecked).toBeFalsy();
 
-                            tr1 = $("#check1").find("tr")[2];
-                            td1 = $(tr1).find("td")[0];
-                            ischecked =  $(td1).find("input").prop("checked");
+                            tr2= $("#check1").find("tr")[2];
+                            td2 = $(tr2).find("td")[0];
+                            ischecked =  $(td2).find("input").prop("checked");
                             expect(ischecked).toBeFalsy();
 
-                            tr1 = $("#check1").find("tr")[3];
-                            td1 = $(tr1).find("td")[0];
-                            ischecked =  $(td1).find("input").prop("checked");
+                            tr3 = $("#check1").find("tr")[3];
+                            td3 = $(tr3).find("td")[0];
+                            ischecked =  $(td3).find("input").prop("checked");
                             expect(ischecked).toBeTruthy();
 
-                            tr1 = $("#check1").find("tr")[4];
-                            td1 = $(tr1).find("td")[0];
-                            ischecked =  $(td1).find("input").prop("checked");
+                            tr4 = $("#check1").find("tr")[4];
+                            td4 = $(tr4).find("td")[0];
+                            ischecked =  $(td4).find("input").prop("checked");
                             expect(ischecked).toBeTruthy();
 
-                            tr1 = $("#check1").find("tr")[5];
-                            td1 = $(tr1).find("td")[0];
-                            ischecked =  $(td1).find("input").prop("checked");
+                            tr5 = $("#check1").find("tr")[5];
+                            td5 = $(tr5).find("td")[0];
+                            ischecked =  $(td5).find("input").prop("checked");
                             expect(ischecked).toBeFalsy();
 
-                            expect(countExpect).toBe(15); // 5 righe dati per tre colonne
+                            // seleziono primo check e deseleziono il terzo che era selezionato
+                            $(td1).find("input").prop("checked", true);
+                            $(td3).find("input").prop("checked", false);
+                            // invoco funzione
+                            check1.getControl();
+
+                            // verifico che il ds abbia le righe nello stato che mi aseptto
+                            // la objrow8 è la stessa della num zero del ds
+                            expect(middle.rows[0]).toBe(objrow8);
+                            expect(middle.rows[0].getRow().state).toBe(jsDataSet.dataRowState.deleted); // deselezionata
+
+                            expect(middle.rows[1].getRow().state).toBe(jsDataSet.dataRowState.unchanged); // non ho fatto nulla su questa riga
+                            expect(middle.rows[2].getRow().state).toBe(jsDataSet.dataRowState.added); // selezionata
+
+                            // verifico che la riga added sia quella che mia aspetto
+                            expect(middle.rows[2].getRow().current.id1).toBe(11);
+                            expect(middle.rows[2].getRow().current.id2).toBe(1);
                             done();
                         });
-                    
-                }, 5000);
+                });
 
-                it("preFill populates + fillcontrol selects checkboxes", function (done) {
+        }, 5000);
 
-                    helpForm.lastSelected(t1, objrow6);
-                    check1.preFill($("#check1"),{tableWantedName:"table2"})
-                        .then(function() {
-                            check1.fillControl($("#check1")) 
-                              .then(function () {
-                                  var tr1, td1, ischecked;
-                                  tr1  = $("#check1").find("tr")[1];
-                                  td1 = $(tr1).find("td")[0];
-                                  ischecked =  $(td1).find("input").prop("checked");
-                                  expect(ischecked).toBeFalsy();
-
-                                  tr1 = $("#check1").find("tr")[2];
-                                  td1 = $(tr1).find("td")[0];
-                                  ischecked =  $(td1).find("input").prop("checked");
-                                  expect(ischecked).toBeFalsy();
-
-                                  tr1 = $("#check1").find("tr")[3];
-                                  td1 = $(tr1).find("td")[0];
-                                  ischecked =  $(td1).find("input").prop("checked");
-                                  expect(ischecked).toBeTruthy();
-
-                                  tr1 = $("#check1").find("tr")[4];
-                                  td1 = $(tr1).find("td")[0];
-                                  ischecked =  $(td1).find("input").prop("checked");
-                                  expect(ischecked).toBeTruthy();
-
-                                  tr1 = $("#check1").find("tr")[5];
-                                  td1 = $(tr1).find("td")[0];
-                                  ischecked =  $(td1).find("input").prop("checked");
-                                  expect(ischecked).toBeFalsy();
-
-                                  done();
-                               });
-                        });
-
-                }, 5000);
-
-                it("preFill populates + fillcontrol selects checkboxes + select check + getcontrol -> ds has changes", function (done) {
-
-                    helpForm.lastSelected(t1, objrow6);
-                    check1.preFill($("#check1"),{tableWantedName:"table2"})
-                        .then(function() {
-                            check1.fillControl($("#check1"))
-                                .then(function () {
-                                    var tr1,tr2,tr3,tr4,tr5, td1,td2,td3,td4,td5, ischecked;
-                                    tr1  = $("#check1").find("tr")[1];
-                                    td1 = $(tr1).find("td")[0];
-                                    ischecked =  $(td1).find("input").prop("checked");
-                                    expect(ischecked).toBeFalsy();
-
-                                    tr2= $("#check1").find("tr")[2];
-                                    td2 = $(tr2).find("td")[0];
-                                    ischecked =  $(td2).find("input").prop("checked");
-                                    expect(ischecked).toBeFalsy();
-
-                                    tr3 = $("#check1").find("tr")[3];
-                                    td3 = $(tr3).find("td")[0];
-                                    ischecked =  $(td3).find("input").prop("checked");
-                                    expect(ischecked).toBeTruthy();
-
-                                    tr4 = $("#check1").find("tr")[4];
-                                    td4 = $(tr4).find("td")[0];
-                                    ischecked =  $(td4).find("input").prop("checked");
-                                    expect(ischecked).toBeTruthy();
-
-                                    tr5 = $("#check1").find("tr")[5];
-                                    td5 = $(tr5).find("td")[0];
-                                    ischecked =  $(td5).find("input").prop("checked");
-                                    expect(ischecked).toBeFalsy();
-
-                                    // seleziono primo check e deseleziono il terzo che era selezionato
-                                    $(td1).find("input").prop("checked", true);
-                                    $(td3).find("input").prop("checked", false);
-                                    // invoco funzione
-                                    check1.getControl();
-
-                                    // verifico che il ds abbia le righe nello stato che mi aseptto
-                                    // la objrow8 è la stessa della num zero del ds
-                                    expect(middle.rows[0]).toBe(objrow8);
-                                    expect(middle.rows[0].getRow().state).toBe(jsDataSet.dataRowState.deleted); // deselezionata
-
-                                    expect(middle.rows[1].getRow().state).toBe(jsDataSet.dataRowState.unchanged); // non ho fatto nulla su questa riga
-                                    expect(middle.rows[2].getRow().state).toBe(jsDataSet.dataRowState.added); // selezionata
-
-                                    // verifico che la riga added sia quella che mia aspetto
-                                    expect(middle.rows[2].getRow().current.id1).toBe(11);
-                                    expect(middle.rows[2].getRow().current.id2).toBe(1);
-                                    done();
-                                });
-                        });
-
-                }, 5000);
-            });
         
         
     });

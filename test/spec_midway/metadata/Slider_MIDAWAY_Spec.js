@@ -22,7 +22,7 @@ describe("Slider",
             appMeta.initToolBarManager();
         });
 
-        beforeEach(function () {
+        beforeEach(function (done) {
             jasmine.getFixtures().fixturesPath = "base/test/spec/fixtures";
             // nomi colonne
             var cName = "c_name";
@@ -98,6 +98,7 @@ describe("Slider",
             appMeta.getData.doGet = function () {
                 return new $.Deferred().resolve().promise();
             }
+            done();
         });
 
         afterEach(function () {
@@ -108,8 +109,7 @@ describe("Slider",
             appMeta.basePath = "/";
         });
 
-        describe("methods work",
-            function () {
+
 
                 it("slider fillControl() binded ok", function (done) {
                     // costrusico ogetto stato e ds
@@ -166,21 +166,23 @@ describe("Slider",
                     $("html").html(mainwin);
 
                     // aggiungo stili, così a runtime li vedo
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/app.css">');
-
-                    helpForm2.preScanControls();
-                    spyOn(metapage2, "showMessageOkCancel");
-                    slider = $("#slider1").data("customController");
-                    slider.addEvents(null, metapage2);
-                    slider.fillControl($("#slider1"))
+                    $('body').append('<link rel="stylesheet" href="base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $('body').append('<link rel="stylesheet" href="base/test/app/styles/app.css">');
+                    helpForm2.preScanControls()
+                    .then(()=>{
+                        spyOn(metapage2, "showMessageOkCancel");
+                        slider = $("#slider1").data("customController");
+                        slider.addEvents(null, metapage2);
+                        slider.fillControl($("#slider1"))
                         .then(function() {
                             expect(state2.currentRow).toBe(r3);
                             expect(slider.getValue()).toBe(11);
                             done();
-                    });
+                        });
+                    })
 
-                }, 5000);
+
+                });
 
                 it("slider getControl() binded ok", function (done) {
                     // costrusico ogetto stato e ds
@@ -237,21 +239,21 @@ describe("Slider",
                     $("html").html(mainwin);
 
                     // aggiungo stili, così a runtime li vedo
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/app.css">');
+                    $('body').append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $('body').append('<link rel="stylesheet" href="/base/test/app/styles/app.css">');
 
-                    helpForm2.preScanControls();
+                    helpForm2.preScanControls()
+                    .then(()=>{
+                        helpForm.lastSelected(t2Ds2, r3);
 
-                    helpForm.lastSelected(t2Ds2, r3);
+                        slider = $("#slider1").data("customController");
+                        slider.addEvents(null, metapage2);
+                        $('#' + slider.idRange).val(25);
+                        metapage2.helpForm.getControls();
+                        expect(state2.currentRow.field1).toBe(25);
+                        done();
+                    });
+                });
 
-                    slider = $("#slider1").data("customController");
-                    slider.addEvents(null, metapage2);
-                    $('#' + slider.idRange).val(25);
-                    metapage2.helpForm.getControls();
-                    expect(state2.currentRow.field1).toBe(25);
-                    done();
-                }, 5000);
-
-            });
 
     });

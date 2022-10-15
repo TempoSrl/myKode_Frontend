@@ -8,9 +8,15 @@ describe("MultiSelectControl",
 
         var multiSelectControl, originalCreateTableByName, originalRunSelectIntoTable;
 
+        beforeAll(function () {
+            appMeta.basePath = "base/";
+        });
+
         beforeEach(function () {
-            
-            jasmine.getFixtures().fixturesPath = "base/test/spec/fixtures";
+
+            //jasmine.getFixtures().fixturesPath = 'base/test/spec_midway/fixtures';
+
+            jasmine.getFixtures().fixturesPath = "base/test/spec_midway/fixtures";
             appMeta.basePath = "base/";
 
             // mock funzione asyn describeColumns()
@@ -91,9 +97,10 @@ describe("MultiSelectControl",
             var mainwin = '<div id="rootelement">' +
                 "</div>";
             $("html").html(mainwin);
-            $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-            $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+            $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+            $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
             var el = $("#rootelement");
+
 
             multiSelectControl = new appMeta.MultiSelectControl(el, metapage, t1, filter, "listingType");
 
@@ -126,8 +133,8 @@ describe("MultiSelectControl",
                 });
 
                 it("1. fillControl(), 2. row selected on upper grid, 3. Add_button pressed, -> moves the row from toAddTable to addedTable",function (done) {
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
                     
                     multiSelectControl.fillControl()
                         .then(function () {

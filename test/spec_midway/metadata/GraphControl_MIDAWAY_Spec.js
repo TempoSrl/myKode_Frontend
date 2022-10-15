@@ -30,13 +30,10 @@ describe("GraphControl",
         });
 
         afterAll(function () {
-            appMeta.basePath = "/";
+            //appMeta.basePath = "/";
         });
 
-        describe("methods work",
-            function () {
-
-                fit("GraphControl line default fillControl() binded ok", function (done) {
+                it("GraphControl line default fillControl() binded ok", function (done) {
                     // costrusico ogetto stato e ds
                     var state1 = new appMeta.MetaPageState();
                     var state2 = new appMeta.MetaPageState();
@@ -77,24 +74,27 @@ describe("GraphControl",
                     $("html").html(mainwin);
 
                     // aggiungo stili, così a runtime li vedo
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/app.css">');
+                    $('body').append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $('body').append('<link rel="stylesheet" href="/base/test/app/styles/app.css">');
 
-                    helpForm1.preScanControls();
-
-                    graph1 = $("#graph1").data("customController");
-                    graph1.addEvents(null, metapage1);
-                    graph1.fillControl($("#graph1"))
+                    helpForm1.preScanControls()
+                    .then(()=>{
+                        helpForm1.addEvents(metapage1);
+                        graph1 = $("#graph1").data("customController");
+                        graph1.addEvents(null, metapage1);
+                        graph1.fillControl($("#graph1"))
                         .then(function() {
                             expect(_.isEqual(graph1.myNewChart.data.datasets[0].data, [1,2,3,4])).toBe(true);
                             expect(_.isEqual(graph1.myNewChart.data.labels, [11,12,13,14])).toBe(true);
                             expect(graph1.myNewChart.config.type).toBe("line");
                             done();
+                        });
+
                     });
 
-                }, 50000);
+                });
 
-                fit("GraphControl bar fillControl() binded ok", function (done) {
+                it("GraphControl bar fillControl() binded ok", function (done) {
                     // costrusico ogetto stato e ds
                     var state1 = new appMeta.MetaPageState();
                     var state2 = new appMeta.MetaPageState();
@@ -135,22 +135,24 @@ describe("GraphControl",
                     $("html").html(mainwin);
 
                     // aggiungo stili, così a runtime li vedo
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/app.css">');
+                    $('body').append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $('body').append('<link rel="stylesheet" href="/base/test/app/styles/app.css">');
 
-                    helpForm1.preScanControls();
-
-                    graph1 = $("#graph1").data("customController");
-                    graph1.addEvents(null, metapage1);
-                    graph1.fillControl($("#graph1"))
+                    helpForm1.preScanControls()
+                    .then(()=>{
+                        graph1 = $("#graph1").data("customController");
+                        graph1.addEvents(null, metapage1);
+                        graph1.fillControl($("#graph1"))
                         .then(function() {
                             expect(_.isEqual(graph1.myNewChart.data.datasets[0].data, [1,2,3,4])).toBe(true);
                             expect(_.isEqual(graph1.myNewChart.data.labels, [11,12,13,14])).toBe(true);
                             expect(graph1.myNewChart.config.type).toBe("bar");
                             done();
                         });
+                    });
 
-                }, 50000);
 
-            });
+
+                });
+
     });

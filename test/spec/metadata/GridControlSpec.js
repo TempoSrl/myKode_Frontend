@@ -239,8 +239,8 @@ describe("GridControlX",
 
                 it("fillControl() should fill the cells",function (done) {
                     // aggiungo stili, così a runtime li vedo
-                    $('body').append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $('body').append(' <link rel="stylesheet" href="/base/app/styles/app.css">');
+                    $('body').append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $('body').append(' <link rel="stylesheet" href="/base/test/app/styles/app.css">');
                     grid.addEvents(null, metapage);
 
                     grid.fillControl($("#grid1"))

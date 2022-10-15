@@ -10,8 +10,8 @@ describe("TreeViewManager",
             var mainwin = '<head></head><div id="tree" data-tag="table1.default">' +
                 "</div>";
             $("html").html(mainwin);
-            $("head").append('<script defer src="/base/app/styles/fontawesome/fontawesome-all.js"></script>');
-            $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+            $("head").append('<script defer src="/base/test/app/styles/fontawesome/fontawesome-all.js"></script>');
+            $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
             // prox riga serve epr vedere la giusta grafica del tree
             // $("body").append('<link rel="stylesheet" href="/base/bower_components/jstree/dist/themes/default/style.css" />');
             $("body").append('<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default/style.min.css" />');
@@ -26,7 +26,7 @@ describe("TreeViewManager",
 
             function () {
 
-                it("treeviewManagerLeveled derivad from treeViewMaanger", function () {
+                it("treeviewManagerLeveled derived from treeViewMaanger", function () {
 
                     // ********************** creo dt di prova ************************************************
                     var ds = new jsDataSet.DataSet("temp");
@@ -38,7 +38,7 @@ describe("TreeViewManager",
                     t.setDataColumn("campo2", "String");
                     
                     // aggiungo  righe alla t
-                    var r1 = { "id_table": 1, "parid_table":1, "campo1": "f1", "campo2": "c1" };
+                    var r1 = { "id_table": 1, "parid_table":null, "campo1": "f1", "campo2": "c1" };
                     var r2 = { "id_table": 2, "parid_table":1, "campo1": "f2", "campo2": "c2" };
                     var r3 = { "id_table": 3, "parid_table":2, "campo1": "f3", "campo2": "c3" };
                     var r4 = { "id_table": 4, "parid_table":2, "campo1": "f4", "campo2": "c4" };
@@ -72,10 +72,11 @@ describe("TreeViewManager",
                     appMeta.addMeta('table1', m );
                     var helpForm = new appMeta.HelpForm(state, "table1", "#rootelement");
 
+                    var nodeDispatcher = new nodeDispatcherDerived();
                     // override della funz describeTree, mi faccio tornare quello che serve, cioè il filtro root e il dispatcher
                     state.meta.describeTree = function () {
-                        var d = $.Deferred();
-                        return  d.resolve();
+                        let d = $.Deferred();
+                        return  d.resolve({nodeDispatcher:nodeDispatcher,  rootCondition:q.isNull("parid_table")});
                     };
 
                     // instanzio il manger
@@ -107,8 +108,8 @@ describe("TreeViewManager",
                     appMeta.addMeta('table1', m );
                     var helpForm = new appMeta.HelpForm(state, "table1", "#rootelement");
                     state.meta.describeTree = function () {
-                        var d = $.Deferred();
-                        return  d.resolve();
+                        let d = $.Deferred();
+                        return  d.resolve({nodeDispatcher:nodeDispatcher,  rootCondition:q.eq("parid_table",1)});
                     };
                     var tvm = new appMeta.TreeViewManager($("#tree"), helpForm, t, t);
                     var n1  = new appMeta.TreeNode(r1);
@@ -153,8 +154,8 @@ describe("TreeViewManager",
                     appMeta.addMeta('table1', m );
                     var helpForm = new appMeta.HelpForm(state, "table1", "#rootelement");
                     state.meta.describeTree = function () {
-                        var d = $.Deferred();
-                        return  d.resolve();
+                        let d = $.Deferred();
+                        return  d.resolve({nodeDispatcher:nodeDispatcher,  rootCondition:q.eq("parid_table",1)});
                     };
                     var tvm = new appMeta.TreeViewManager($("#tree"), helpForm, t, q.like("campo1", "%f"));
                     var n1  = new appMeta.TreeNode(r1);
@@ -181,7 +182,37 @@ describe("TreeViewManager",
 
                 });
 
-                xit("treeviewManager fillNodes() 1. builds a tree view -> collapsed and with children in the structure" +
+                // *********** node dispatcher mock ******************************************************
+                function nodeDispatcherDerived() {
+                    this.name = 'nodeDispatcherDerived';
+                }
+
+                nodeDispatcherDerived.prototype = _.extend(
+                    new appMeta.TreeNode_Dispatcher(),
+                    {
+                        constructor: nodeDispatcherDerived,
+
+                        /**
+                         * @param parentRow
+                         * @param childRow
+                         * @returns {*|TreeNode}
+                         */
+                        getNode:function (parentRow, childRow) {
+                            let node = new appMeta.TreeNode(childRow);
+                            let text = childRow["id_table"] + " - " + childRow["parid_table"]+ " - "+
+                                childRow["campo1"] + " - " + childRow["campo2"];
+                            // crea l'oggetto che rappresenta il nodo nel jstree
+                            //console.log("creating node "+text);
+                            //if (parentRow) console.log("parent node is "+parentRow["id_table"]);
+                            node.text = text;
+
+                            return node;
+                        },
+
+                        superClass: appMeta.TreeNode_Dispatcher
+                    });
+
+                it("treeviewManager fillNodes() 1. builds a tree view -> collapsed and with children in the structure" +
                     " 2. select a node given a datarow",
                     function (done) {
 
@@ -209,8 +240,40 @@ describe("TreeViewManager",
 
 
                          */
+
+                        t.key("id_table");
+                        t.tableForReading("table1");
+                        // aggiungo relazione. table 2 è collegata a table 1 tramite la colonna c_name
+                        ds.newRelation("r1", "table1", ["id_table"], "table1", ["parid_table"]);
+
                         // aggiungo  righe alla t
-                        var r1 = { "id_table": 1, "parid_table":1, "campo1": "f1", "campo2": "c1" };
+                        // var rr = [
+                        //     { "id_table": 1, "parid_table":null, "campo1": "f1", "campo2": "c1" },
+                        //
+                        //     { "id_table": 2, "parid_table":1, "campo1": "f2", "campo2": "c2" },
+                        //
+                        //     { "id_table": 3, "parid_table":2, "campo1": "f3", "campo2": "c3" },
+                        //     { "id_table": 4, "parid_table":2, "campo1": "f4", "campo2": "c4" },
+                        //     { "id_table": 5, "parid_table":2, "campo1": "f5", "campo2": "c5" },
+                        //     { "id_table": 6, "parid_table":2, "campo1": "f6", "campo2": "c6" },
+                        //
+                        //     { "id_table": 7, "parid_table":3, "campo1": "f7", "campo2": "c7" },
+                        //     { "id_table": 8, "parid_table":3, "campo1": "f8", "campo2": "c8" },
+                        //     { "id_table": 9, "parid_table":3, "campo1": "f9", "campo2": "c9" },
+                        //     { "id_table": 10, "parid_table":3, "campo1": "f10", "campo2": "c10" },
+                        //     { "id_table": 11, "parid_table":3, "campo1": "f11", "campo2": "c11" },
+                        //
+                        //     { "id_table": 1, "parid_table":12, "campo1": "f12", "campo2": "c12" },
+                        //
+                        //     { "id_table": 2, "parid_table":13, "campo1": "f13", "campo2": "c13" }
+                        // ];
+                        // rr.forEach(r =>{
+                        //     let par = t.select(q.eq("id_table",r["parid_table"]));
+                        //     if (par.length>0) par = par[0];
+                        //     t.add(r,par);
+                        // });
+                        // aggiungo  righe alla t
+                        var r1 = { "id_table": 1, "parid_table":null, "campo1": "f1", "campo2": "c1" };
                         var r2 = { "id_table": 2, "parid_table":1, "campo1": "f2", "campo2": "c2" };
                         var r3 = { "id_table": 3, "parid_table":2, "campo1": "f3", "campo2": "c3" };
                         var r4 = { "id_table": 4, "parid_table":2, "campo1": "f4", "campo2": "c4" };
@@ -221,18 +284,23 @@ describe("TreeViewManager",
                         var r9 = { "id_table": 9, "parid_table":3, "campo1": "f9", "campo2": "c9" };
                         var r10 = { "id_table": 10, "parid_table":3, "campo1": "f10", "campo2": "c10" };
                         var r11 = { "id_table": 11, "parid_table":3, "campo1": "f11", "campo2": "c11" };
-                        var r12 = { "id_table": 1, "parid_table":12, "campo1": "f12", "campo2": "c12" };
-                        var r13 = { "id_table": 2, "parid_table":13, "campo1": "f13", "campo2": "c13" };
+                        var r12 = { "id_table": 12, "parid_table":null, "campo1": "f12", "campo2": "c12" };
+                        var r13 = { "id_table": 13, "parid_table":null, "campo1": "f13", "campo2": "c13" };
 
                         // aggiungo le righe con il ciclo for. utilizzando eval()
                         for(var i = 1; i<=13;i++ ){
                             t.add(eval('r'+i));
                         }
 
-                        t.key("id_table");
-                        t.tableForReading("table1");
-                        // aggiungo relazione. table 2 è collegata a table 1 tramite la colonna c_name
-                        ds.newRelation("r1", "table1", ["id_table"], "table1", ["parid_table"]);
+
+
+
+                        // aggiungo le righe con il ciclo for. utilizzando eval()
+                        // for(var i = 1; i<=13;i++ ){
+                        //     t.add(eval('r'+i));
+                        // }
+
+
                         // ************* fine config dt treeTable di test ***************************************
 
 
@@ -243,63 +311,49 @@ describe("TreeViewManager",
                         state.meta  = m;
                         appMeta.addMeta('table1', m );
                         var helpForm = new appMeta.HelpForm(state, "table1", "#rootelement");
-                        
 
-                        // *********** node dispatcher mock ******************************************************
-                        function nodeDispatcherDerived() {
-                            this.name = 'nodeDispatcherDerived';
-                        }
 
-                        nodeDispatcherDerived.prototype = _.extend(
-                            new appMeta.TreeNode_Dispatcher(),
-                            {
-                                constructor: nodeDispatcherDerived,
 
-                                /**
-                                 *
-                                 * @param parentRow
-                                 * @param childRow
-                                 * @returns {*|TreeNode}
-                                 */
-                                getNode:function (parentRow, childRow) {
 
-                                    var node = new appMeta.TreeNode(childRow);
-
-                                    var text = childRow["id_table"] + " - " + childRow["parid_table"]+ " - " + childRow["campo1"] + " - " + childRow["campo2"];
-                                    // crea l'oogetto che rappresenta il nodo nel jstree
-                                    node.text = text;
-
-                                    return node;
-                                },
-
-                                superClass: appMeta.TreeNode_Dispatcher
-                            });
                         var nodeDispatcher = new nodeDispatcherDerived();
                         state.meta.describeTree = function () {
-                            var d = $.Deferred();
-                            return  d.resolve({nodeDispatcher:nodeDispatcher,  rootCondition:q.like("campo1", "%f")});
+                            //console.log("invoking describeTree");
+                            let d = $.Deferred();
+                            return  d.resolve({nodeDispatcher:nodeDispatcher,  rootCondition:q.isNull("parid_table")});
                         };
                         // ******************** fine mock node dispatcher    ****************************************
 
-                        // instanzio il manger
+                        // instanzio il manager
                         var tvm = new appMeta.TreeViewManager($("#tree"),helpForm , t, t);
 
+                        let metaPage = new appMeta.MetaPage("table","dummy",false);
+                        metaPage.beforeSelectTreeManager = ()=> $.Deferred().resolve(true);
+
+                        tvm.metaPage = metaPage;
+
+
+
+                        //console.log("manually invoking fillNodes");
                         // eseguo la fill
                         tvm.fillNodes()
                             .then(function () {
+                                //console.log($("html").html());
 
-                                // verifico che siano non esapnsi. cioè mi aspetto solo le root nell'ordine giusto
-                                expect($("li:first > a").text()).toBe("1 - 12 - f12 - c12");
-                                expect($("li:nth-child(2) > a").text()).toBe("2 - 13 - f13 - c13");
-                                expect($("li:nth-child(3) > a").text()).toBe("3 - 2 - f3 - c3");
+                                // verifico che siano non espansi. Cioé mi aspetto solo le root nell'ordine giusto
+                                expect($("li:first > a").text()).toBe("1 - null - f1 - c1");
+                                expect($("li:nth-child(2) > a").text()).toBe("12 - null - f12 - c12");
+                                expect($("li:nth-child(3) > a").text()).toBe("13 - null - f13 - c13");
+                                expect($("li:nth-child(4) > a").text()).toBe("");
 
                                 // VERIFICO presenza dei figli, anche se non si vedono su html perchè da espandere
                                 // recupero dato l'id del 1o nodo i figli
-                                var childIDdNode1 = $("#tree").jstree( "get_node",$("li:nth-child(1) > a").prop("id")).children;
+                                var childIDdNode1 = $("#tree").jstree( "get_node",$("li:nth-child(1) > a").
+                                    prop("id")).children;
                                 // recupero il 1o nodo associato al child di prima.
                                 var childNode = $("#tree").jstree( "get_node", childIDdNode1[0]);
                                 expect(childIDdNode1.length).toBe(1);
-                                expect(childNode.children.length).toBe(4); // il primo nodo figlio ha a sua volta 4 child, cioè da r2-r6
+                                // il primo nodo figlio ha a sua volta 4 child, cioè da r2-r6
+                                expect(childNode.children.length).toBe(4);
 
 
                                 // -> seleziono nodo
@@ -307,10 +361,10 @@ describe("TreeViewManager",
                                     .then(function () {
                                     // recupero oggetto riga del nodo selezionato
                                     var selectedRow = tvm.selectedRow();
-                                    //  mi aspetto siua proprio quella che avevo selzionato
-                                    expect(selectedRow).toBe(r6);
+                                    //  mi aspetto sia proprio quella che avevo selezionato
+                                    expect(selectedRow).toEqual(r6);
                                     done();
-                                })
+                                });
                                
                             });
                 });

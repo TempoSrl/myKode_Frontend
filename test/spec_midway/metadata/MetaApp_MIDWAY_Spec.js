@@ -3,11 +3,13 @@
 describe('MetaApp',
     function() {
         var appMeta;
+        var oldFixture;
         beforeEach(function() {
+            oldFixture = jasmine.getFixtures().fixturesPath;
             jasmine.getFixtures().fixturesPath = 'base/test/spec_midway/fixtures';
             // inizializzo per ogni test l'oggetto appMeta        
             appMeta = window.appMeta;
-            appMeta.init();
+            //appMeta.init(); this has already been executed, when executed breaks registered controllers
             appMeta.basePath = 'base/test/spec_midway/';
             //console.log('beforeEach:');
             $("html").html('<head></head><body></body>');
@@ -16,7 +18,7 @@ describe('MetaApp',
         });
         
         afterEach(function () {
-            appMeta.basePath = '/'; 
+            appMeta.basePath = oldFixture; //'/';
         });
 
         describe("MetaApp class",
@@ -100,7 +102,7 @@ describe('MetaApp',
                     });
                 
                 // *** TEST addMetaPage e getMetaPage
-                describe("add/getMetaPage",
+                xdescribe("add/getMetaPage",
                     function() {
                         
                         it('after invoking addMetaPage, getMetaPage returns data as a promise',
@@ -126,8 +128,7 @@ describe('MetaApp',
                                         expect(error).toBeUndefined();
                                         done();
                                     });                                
-                            },
-                            2000);
+                            });
 
                         // test caricamento a runtime, poichè la pagina non è stata instanziata
                         it('getMetaPage retrieves data from server',
@@ -154,8 +155,8 @@ describe('MetaApp',
                                         done();
                                     });
 
-                            },
-                            2000);
+                            }
+                            );
                     });
 
                 describe("add/getPage",
@@ -180,8 +181,7 @@ describe('MetaApp',
                                         done();
                                     });
 
-                            },
-                            2000);
+                            });
 
                         // test caricamento a runtime, poichè la pagina non è stata instanziata
                         it('getPage should be async and return exact data',
@@ -223,8 +223,8 @@ describe('MetaApp',
                                         done();
                                     });
 
-                            },
-                            2000);
+                            }
+                            );
 
                         // test caricamento a runtime di pagine multiple con js
                         it('when loading multiple pages, last one overwrites previous',
@@ -281,8 +281,8 @@ describe('MetaApp',
                                         expect(error).toBeUndefined();
                                         done();
                                     });
-                            },
-                            2000);
+                            }
+                            );
 
                         it('getPage runs javascript contained in the retrieved html every time it is rendered',
                             function(done) {
@@ -316,8 +316,8 @@ describe('MetaApp',
                                         expect(error).toBeUndefined();
                                         done();
                                     });
-                            },
-                            2000);
+                            }
+                            );
                         
                     });
 

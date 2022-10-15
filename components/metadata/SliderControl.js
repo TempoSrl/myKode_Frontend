@@ -144,7 +144,6 @@
         /**
          * @method addEvents
          * @public
-         * @description ASYNC
          * @param {html node} el
          * @param {MetaPage} metaPage
          * @param {boolean} subscribe

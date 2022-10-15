@@ -14,12 +14,11 @@
             function MetaApp() {
                 "use strict";
                 this.init();
+
             }
 
             MetaApp.prototype = {
                 constructor: MetaApp,
-
-
                 /**
                  * @method init
                  * @public
@@ -102,7 +101,7 @@
                         // ReSharper disable once NativeTypePrototypeExtending
                         String.prototype.startsWith = function(str) {
                             return !this.indexOf(str);
-                        }
+                        };
                     }
                     
                     // se non è definito endsWith lo estedno sul prototipo di String
@@ -115,7 +114,7 @@
                     if (!String.prototype.contains) {
                         String.prototype.contains = function (str) {
                             return this.indexOf(str) !== -1;
-                        }
+                        };
                     }
                 },
 
@@ -159,7 +158,9 @@
                  * Force to close opened ui dialog
                  */
                 forceClosePopupDialog:function () {
-                    if (this.currentMetaPage) this.currentMetaPage.closeListManagerResultsSearch(); 
+                    if (this.currentMetaPage) {
+                        this.currentMetaPage.closeListManagerResultsSearch();
+                    }
                 },
 
                 /**
@@ -169,7 +170,9 @@
                  * Initializes the toolbar manager if it is not already initiated
                  */
                 initToolBarManager:function () {
-                    if (!this.toolBarManager)  this.toolBarManager = new appMeta.MainToolBarManager(this.rootToolbar, null);
+                    if (!this.toolBarManager)  {
+                        this.toolBarManager = new appMeta.MainToolBarManager(this.rootToolbar, null);
+                    }
                 },
 
                 /**
@@ -334,7 +337,9 @@
                  */
                 getMeta: function (tableName) {
                     var meta = this.allMeta[tableName];
-                    if (!meta) return new this.MetaData(tableName);
+                    if (!meta) {
+                        return new this.MetaData(tableName);
+                    }
                     return meta;
                 },
 
@@ -343,9 +348,10 @@
                  * @public
                  * @description SYNC
                  * Loads and caches an html page from server and renders in rootElement of current page
+                 * @param {element} rootElement
                  * @param {string} tableName
                  * @param {string} editType
-                 * @returns {Deferred(html page)}
+                 * @returns {Deferred<html page>)}
                  */
                 getPage: function(rootElement, tableName, editType) {
                     var res = this.Deferred("getPage");
@@ -402,7 +408,7 @@
                                         .then(function (res) {
                                             canOpenPage = !!res;
                                             return true;
-                                        })
+                                        });
                                 })._else(function(){
                                     // chiudo eventuale form di ricerca lista, altrimenti creo incongruenza con nuova metaPage
                                      //self.currentMetaPage.closeListManagerResultsSearch();
@@ -414,8 +420,8 @@
                                     var newChild = $(self.rootElement)[0].cloneNode(false);
                                     // 4. esegue replace del contenuto
                                     $(parentRoot)[0].replaceChild(newChild, self.currentMetaPage.savedRoot[0]);
-                                    return true
-                                })
+                                    return true;
+                                });
                         })
                         .then(function(){
                             // esco se non posso chiudere la precedente, perchè magari ci sono modifiche e l'utente deve prima accettare
@@ -461,8 +467,8 @@
                                     // torno il deferred della pagina appena aperta. Si risolverà nel mainsave nel caso di dettaglio di un edit di una riga del grid,
                                     // o nel mainSelect nel caso di autoManage
                                     return createdPage.deferredResult;
-                                })
-                        })
+                                });
+                        });
 
 
                 },

@@ -413,6 +413,31 @@
 
     };
 
+     _.assign(methodEnum,
+        {
+            login : "login",
+            loginSSO : "loginSSO",
+            loginLDAP : "loginLDAP",
+            register : "register",
+            resetPassword : "resetPassword",
+            nuovaPassword: "nuovaPassword",
+            cambiaRuolo: "cambiaRuolo",
+            sendMail: "sendMail"
+        });
+     
+    // METODI LOGIN Autenticazione
+    appMeta.routing.registerService(methodEnum.login, 'POST', 'auth', false, false);
+    appMeta.routing.registerService(methodEnum.loginSSO, 'POST', 'auth', false, false);
+    appMeta.routing.registerService(methodEnum.loginLDAP, 'POST', 'auth', false, false);
+    appMeta.routing.registerService(methodEnum.register, 'POST', 'auth', false, false);
+    appMeta.routing.registerService(methodEnum.resetPassword, 'GET', 'auth', false, false);
+    appMeta.routing.registerService(methodEnum.nuovaPassword, 'GET', 'auth', false, false);
+    appMeta.routing.registerService(methodEnum.sendMail, 'POST', 'data', false, true);    
+    appMeta.routing.registerService(methodEnum.cambiaRuolo, 'POST', 'data', false, true);
+
+   
+
+      // cambio ruolo
     appMeta.authManager = new AuthManager();
 
 }());

@@ -303,24 +303,25 @@
          * @returns {Deferred}
          */
         rowSelect: function(sender, t, r) {
+
             var self = this;
             var waitingHandler;
 
             var result = this.beforeRowSelect(t, r)
                 .then(function() {
                     self.helpForm.lastSelected(t, r);
-                    //console.log("resolved beforeRowSelect");
                     if (t.name !== self.primaryTableName) {
                         var parent = $(sender).parent();
                         self.helpForm.iterateFillRelatedControls(parent, sender, t, r);
                         return true;
                     }
-                    // in questo caso mostro indicatore di attesa poichè devo aggiornare i controlli
+                    // in questo caso mostro indicatore di attesa poiché devo aggiornare i controlli
                     waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update, true);
                     self.state.currentRow = r;
                     // la riga potrebbe essere cancellata, quindi detachata poichè si preme sulla stessa riga aggiunta ma si vuole fare il
                     // discard delle modifiche, quindi eseguo questo check
                     var dtRow = r ? (r.getRow ? r.getRow() : null) : null;
+
 
                     return getData.doGet(self.state.DS, dtRow, self.primaryTableName, false) // fresh peripherals table, not entity tables
                         .then(function() {
@@ -335,8 +336,8 @@
                     return self.eventManager.trigger(appMeta.EventEnum.ROW_SELECT, sender, t, r)
                         .then(function () {
                             if (waitingHandler) self.hideWaitingIndicator(waitingHandler);
-                            return  self.afterRowSelect(t, r)
-                        })
+                            return  self.afterRowSelect(t, r);
+                        });
                 });
 
             return Deferred("rowSelect").from(result);
@@ -684,6 +685,7 @@
                     return self.doPreFill();
                 })
                 .then(utils.optBind(self.setCaptions, self, self.editType))
+                .then(utils.optBind(self.setSubentityDefaults, self))
                 .then(utils.optBind(self.describeEntityColumnsStructure, self))
                 .then(self.fnMethod(toOverrideEvent.doActivation))
                 //.then(self.fnMethod(toOverrideEvent.afterActivation))
@@ -698,6 +700,33 @@
                     self.hideWaitingIndicator(waitingHandler);
                     return true;
                 })
+        },
+
+        /***
+         * To call only once, sets all subentities defaults
+         * */
+        setSubentityDefaults: function () {
+            /* DataTable */
+            let mainTable = this.getPrimaryDataTable();
+            if (!mainTable) return;
+            let relations = mainTable.childRelations();
+            _.forEach(relations, function (rel) {
+                let childTableName = rel.childTable;
+                let childTable = this.getDataTable(this.childTableName);
+                if (!metaModel.isSubEntity(childTable, destRow.getRow().table)) {
+                    return true; // continua nel ciclo
+                }
+
+                let metaChild = appMeta.getMeta(childTableName);
+                metaChild.setDefaults(childTable);
+            });
+
+            _.forEach(self.state.extraEntities, function (tableName) {
+                let extra = this.getDataTable(tableName);              
+
+                let metaExtra = appMeta.getMeta(tableName);
+                metaExtra.setDefaults(extra);
+            })
         },
 
         /**
@@ -1826,6 +1855,7 @@
                             return getData.getPagedTable(searchTableName, 1, appMeta.config.listManager_nRowPerPage, mergedFilter, listingType, null)
 
                                 .then(function(dataTablePaged, totPage, totRows) {
+
                                     dataTablePaged.dataset = self.state.DS;
                                     if ((!toMerge) && (totRows === 0)) {
                                         var mergedFilterString = (mergedFilter) ? mergedFilter.toString() : "";
@@ -1842,6 +1872,7 @@
                                             appMeta.localResource.cancel,
                                             msgNoRowFound).show(self)
                                             .then(function() {
+                                                console.log("show was ok");
                                                 self.hideWaitingIndicator();
                                                 return def.resolve(null);
                                             });
@@ -2794,6 +2825,8 @@
 
         },
 
+        
+
         /**
          *
          * @param {ObjectRow} destRow
@@ -3105,7 +3138,7 @@
             metaChild.setDefaults(childTable);
             var res =  metaChild.getNewRow(rowToInsert, childTable, this.editType)
                 .then(function (newChildRow) {
-                    // costrusico oggetto js oltre che con il rusltato della getNewRow, anche con i vari parametri utili poi nella successvia logica
+                    //costruisco oggetto js oltre che con il risultato della getNewRow, anche con i vari parametri utili poi nella successiva logica
                     var objres = {metaChild:metaChild, childRow: childRow, newChildRow: newChildRow.current, childTableName:childTable.name, rel:rel };
                     return def.resolve(objres);
                 });
@@ -3117,7 +3150,7 @@
          * @method doDelete
          * @private
          * @description ASYNC
-         * Called in two points in cmdMainDelete(). Performs the deleteCascade on dataset and then posts the modifies on the database
+         * Called in two points in cmdMainDelete(). Performs the CascadeDelete on dataset and then posts the modifies on the database
          * @param {ObjectRow} currEntityRow
          * @returns {Deferred}
          */
@@ -4308,8 +4341,8 @@
                                     // Questa è stata valorizzata nel child sull'Ok
                                     currDR = self.state.newSourceRow;
 
-                                    // Deve essere child della tab principale + tuttele chaiv della primaria devono essere anceh chiavi della child
-                                    // Ade sempio un grid apre un dettaglio in edit, le mod vengono riversate sul padre, se e solo se lui è condierato subentity
+                                    // Deve essere child della tab principale + tuttele chiave della primaria devono essere anceh chiavi della child
+                                    // Ade sempio un grid apre un dettaglio in edit, le mod vengono riversate sul padre, se e solo se lui è considerato subentity
                                     // e quindi la tabella child sul dataset deve avere la chiave della tab padre
                                     if (metaModel.isSubEntity(sourceTable, self.getPrimaryDataTable())) self.entityChanged = true;
 
@@ -4649,7 +4682,7 @@
                     // Lato js faccio il setDefaults, eventualmente sarà metodo del derivato di MetaData.
 
                     var meta = appMeta.getMeta(sourceTable.tableForReading());
-                    meta.setDefaults(sourceTable); // andrebbe  usata con moderazione, perchè sovrascrive i valori impostati nella pagina
+                    //meta.setDefaults(sourceTable); // andrebbe  usata con moderazione, perchè sovrascrive i valori impostati nella pagina
 
                     return meta.getNewRow(parentDataRow.getRow(), sourceTable, self.editType)
 

@@ -49,8 +49,8 @@
 
 			// inserisco html con il "metaRoot"
 			setFixtures("<h3>My App Test</h3><div id='toolbar'></div><div id='metaRoot'></div>");
-			$("body").append('<link rel="stylesheet" href="base/app/styles/bootstrap/css/bootstrap.css" />');
-			$("body").append('<link rel="stylesheet" href="base/app/styles/app.css" />');
+			$("body").append('<link rel="stylesheet" href="base/test/app/styles/bootstrap/css/bootstrap.css" />');
+			$("body").append('<link rel="stylesheet" href="base/test/app/styles/app.css" />');
 			appMeta.toolBarManager = null;
 			appMeta.initToolBarManager();
 			// rebase del path poichè i file necessari per il test, in particolare la MetAPage derivata sta sotto base/test/spec_e2e_app/registry

@@ -56,13 +56,12 @@ describe("GridMultiSelectControl",
         afterEach(function () {
         });
 
-        describe("GridMultiSelectControl methods",
-            function () {
+
 
                 it("GridMultiSelectControl builds a grid and selects rows with ctrl", function (done) {
                   
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
                     
                     var gridMultiSelectControl = new appMeta.GridMultiSelectControl("#rootelement", t1, helpForm);
                     gridMultiSelectControl.fillControl(null)
@@ -99,8 +98,8 @@ describe("GridMultiSelectControl",
 
                 it("GridMultiSelectControl builds a grid and selects row in mousedown", function (done) {
                  
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
 
                     var gridMultiSelectControl = new appMeta.GridMultiSelectControl("#rootelement", t1, helpForm);
                     gridMultiSelectControl.fillControl(null)
@@ -137,8 +136,8 @@ describe("GridMultiSelectControl",
 
                 it("GridMultiSelectControl builds a grid and multiselects rows with shift, from index < to index >", function (done) {
                 
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
 
                     var gridMultiSelectControl = new appMeta.GridMultiSelectControl("#rootelement", t1, helpForm);
                     gridMultiSelectControl.fillControl(null)
@@ -183,8 +182,8 @@ describe("GridMultiSelectControl",
 
                 it("GridMultiSelectControl builds a grid and multiselects rows with shift, from index > to index <", function (done) {
                    
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
 
                     var gridMultiSelectControl = new appMeta.GridMultiSelectControl("#rootelement", t1, helpForm);
                     gridMultiSelectControl.fillControl(null)
@@ -228,8 +227,8 @@ describe("GridMultiSelectControl",
 
                 it("GridMultiSelectControl builds a grid and multiselects all rows with right mouse click", function (done) {
 
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                    $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
 
                     var gridMultiSelectControl = new appMeta.GridMultiSelectControl("#rootelement", t1, helpForm);
                     gridMultiSelectControl.fillControl(null)
@@ -256,5 +255,5 @@ describe("GridMultiSelectControl",
                             })
                         })
                 });
-            });
+
     });

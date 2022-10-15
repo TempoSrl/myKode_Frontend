@@ -256,7 +256,6 @@ Quando verrà scelto un valore dalla lista visualizzata, la lista verrà chiusa 
 La tabella dell’autochoose solitamente è padre della tabella principale del dataset di pagina
 
 
-
 Per permettere l’edit durante la modifica oppure l’edit durante l’inserimento di un nuovo oggetto nella maschera, di un campo di una tabella che non sia quella principale (main questo caso dovrebbe essere una subentità), bisogna indicare sul controllo html l’attributo “data-subentity=true”.
 
 Il framework, tramite le DataRelation presente sul DataSet sarà in grado di propagare il valore del <campo_chiave> sulla riga principale dopo la scelta. Il framework infatti cerca ricorsivamente una tabella che sia relazionata tramite parent-child o child-parent con una chiave, “singola”, e se la trova inserisce tale valore sul record della tabella individuata. 

@@ -15,9 +15,9 @@ describe("MainTooBarManager",
             var mainwin = '<head></head><div id="rootelement">' +
                 "</div>";
             $("html").html(mainwin);
-            $("head").append('<script defer src="/base/app/styles/fontawesome/fontawesome-all.js"></script>');
-            $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-            $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+            $("head").append('<script defer src="/base/test/app/styles/fontawesome/fontawesome-all.js"></script>');
+            $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+            $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
             
             metapage = new MetaPage('t', 'def', false);
             state = new appMeta.MetaPageState();

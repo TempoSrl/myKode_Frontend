@@ -134,8 +134,8 @@ describe('ListManager', function () {
             '<div id="lm1"></div>' +
             "</div>";
         $("html").html(mainwin);
-        $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-        $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+        $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+        $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
         helpForm = new HelpForm(state, "table1", "#rootelement");
         metapage.helpForm = helpForm;
 
@@ -262,7 +262,7 @@ describe('ListManager', function () {
 
             it("method show() modal builds grid", function(done) {
                 $('body').append(
-                    '<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
+                    '<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
                 var lm =  new ListManager("table1", "listType", null, true, $("#lm1"), metapage);
                 lm.init();
                 lm.show();
@@ -283,7 +283,7 @@ describe('ListManager', function () {
             it("show MODAL:false resolve promise", function (done) {
                 var lm =  new ListManager("table1", "listType", null, false, $("#lm1"), metapage);
                 lm.init();
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
                 lm.show().
                 then(function (res) {
                     expect(res).toBeUndefined();
@@ -294,8 +294,8 @@ describe('ListManager', function () {
             it("show MODAL:false multiple click invoke row select on metaPage", function (done) {
                 var lm =  new ListManager("table1", "listType", null, false, $("#lm1"), metapage);
                 lm.init();
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
                 spyOn(metapage, "reFillControls").and.callThrough(); // verifico venga scatenato rowSelect su metapage, vedendo se viene chiamato il metodo interno freshForm
 
                 lm.show().then(function(res) {
@@ -329,7 +329,7 @@ describe('ListManager', function () {
             it("show MODAL:false button close works", function (done) {
                 var lm =  new ListManager("table1", "listType", null, false, $("#lm1"), metapage);
                 lm.init();
-                $('body').append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
+                $('body').append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
                 $('body').append('<link rel="stylesheet" href="https://code.jquery.com/ui/1.11.3/themes/smoothness/jquery-ui.css" />');
 
                 lm.show()
@@ -348,7 +348,7 @@ describe('ListManager', function () {
             });
 
             it("show MODAL:true resolve promise after click close btn", function (done) {
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
                 var lm =  new ListManager("table1", "listType", null, true, $("#lm1"), metapage);
                 lm.init();
                 lm.show();
@@ -368,7 +368,7 @@ describe('ListManager', function () {
             });
 
             it("show MODAL:true resolve promise after dblClick on data row number 2", function (done) {
-                $('body').append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
+                $('body').append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
                 var lm =  new ListManager("table1", "listType", null, true, $("#lm1"), metapage);
                 lm.init();
                 lm.show();
@@ -389,8 +389,8 @@ describe('ListManager', function () {
             });
 
             xit("show MODAL:true resolve click row + click nav button + dblclick", function (done) {
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
 
                 var lm =  new ListManager("table1", "listType", null, true, $("#lm1"), metapage);
                 lm.init();
@@ -429,7 +429,7 @@ describe('ListManager', function () {
             });
 
             it("show MODAL:true, with ds, selectCount(), getPagedTable() mocked, with toMerge table", function (done) {
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
 
                 var mp = new appMeta.MetaPage('registry', 'anagrafica', false);
                 var state = new appMeta.MetaPageState();

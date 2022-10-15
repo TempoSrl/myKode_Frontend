@@ -25,7 +25,6 @@
         this.helpForm = helpForm;
         this.tag = $(el).data("tag");
         this.el = el;
-
         // disegna sempre tutto il tachimetro. se true allora non arriva al amx se questo è > del maxValue
         this.limitMax = false;
 
@@ -228,8 +227,7 @@
         /**
          * @method addEvents
          * @public
-         * @description ASYNC
-         * @param {html node} el
+         * @param {node} el
          * @param {MetaPage} metaPage
          * @param {boolean} subscribe
          */
@@ -242,7 +240,7 @@
          * @public
          * @description ASYNC
          * Executes a prefill of the control
-         * @param {Html node} el
+         * @param {node} el
          * @param {Object} param {tableWantedName:tableWantedName, filter:filter, selList:selList}
          * @returns {Deferred}
          */

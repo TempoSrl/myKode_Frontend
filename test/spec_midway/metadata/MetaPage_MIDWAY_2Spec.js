@@ -3,6 +3,7 @@
 describe('MetaPage with Clock', function () {
     var MetaPage = appMeta.MetaPage;
     var localResource = appMeta.localResource;
+
     var metapage;
     var metapage2, state1, state2, r1,r2, r3, r4, r5, r6;
     var q = window.jsDataQuery;
@@ -286,16 +287,42 @@ describe('MetaPage with Clock', function () {
                 function () {
                     
                     var origDoGet;
-                    
+                    var origGetPagedTable;
+                    var originalBootstrapModal;
                     beforeEach(function () {
                         origDoGet =  appMeta.getData.doGet;
+                        origGetPagedTable =  appMeta.getData.getPagedTable;
+                        originalBootstrapModal= appMeta.BootstrapModal;
+
                         appMeta.getData.doGet = function () {
                             return new $.Deferred().resolve().promise();
+                        };
+                        appMeta.getData.getPagedTable = function (tableName) {
+                            //console.log("invoked dummy getPagedTable");
+                            return new $.Deferred().resolve(new jsDataSet.DataTable(tableName),0,0).promise();
+                        };
+
+                        function FakeBoostrap(x,y){
+                            // console.log(x,y);
+                            // console.log("fakeBoostrap created");
+
                         }
+                        FakeBoostrap.prototype = {
+                            constructor: FakeBoostrap,
+                            show :  ()=> {
+                                // console.log("show called");
+                                return $.Deferred().resolve(true).promise();
+                            }
+                        };
+
+                        appMeta.BootstrapModal =FakeBoostrap;
+
                     });
 
                     afterEach(function () {
                         appMeta.getData.doGet = origDoGet;
+                        appMeta.getData.getPagedTable = origGetPagedTable;
+                        appMeta.BootstrapModal = originalBootstrapModal;
                     });
 
                    it( 'manageSelectedRow', function (done) {
@@ -333,7 +360,7 @@ describe('MetaPage with Clock', function () {
                                 expect($("#txtBox2").val()).toBe("k2");
                                 done();
                             }
-                        )
+                        );
                         
                     });
 
@@ -373,7 +400,7 @@ describe('MetaPage with Clock', function () {
                             function () {
                                 done();
                             }
-                        )
+                        );
                        
                     });
 
@@ -464,26 +491,25 @@ describe('MetaPage with Clock', function () {
                        
                     });
                     
-                   xit( 'choose command, with filter=notclear', function (done) {
+                   it( 'choose command, with filter=notclear', function (done){
 
-                        var mainwin = '<div id="rootelement">' +
-                            '<input type="text" name="myname" id="txtBox1" data-tag="table2.key" value="k1"><br>' +
-                            '<div id="currRootElement">' +
-                            '<input type="text" name="yourname" id="txtBox2" data-tag="table2.key" value="k2"><br>' +
-                            '</div>' +
-                            '</div>';
-                        $("html").html(mainwin);
+                       var mainwin = '<div id="rootelement">' +
+                           '<input type="text" name="myname" id="txtBox1" data-tag="table2.key" value="k1"><br>' +
+                           '<div id="currRootElement">' +
+                           '<input type="text" name="yourname" id="txtBox2" data-tag="table2.key" value="k2"><br>' +
+                           '</div>' +
+                           '</div>';
+                       $("html").html(mainwin);
 
-                        var filter = q.eq(q.field("key"), "key1");
-                        metapage2.choose("choose.table2.unknown.notclear", filter, "#currRootElement").then(
-                            function () {
-                                expect($("#txtBox2").val()).toBe("")
-                                done();
-                            }
-                        )
+                       var filter = q.eq(q.field("key"), "key1");
 
-
-                    });
+                       metapage2.choose("choose.table2.unknown.notclear", filter, "#currRootElement").then(
+                           function (){
+                               expect($("#txtBox2").val()).toBe("k2");
+                               done();
+                           }
+                       );
+                   });
 
                 });
             

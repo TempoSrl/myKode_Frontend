@@ -38,20 +38,14 @@
         customServerMethod: "customServerMethod",
 
         read : "read",
-        login : "login",
-        loginSSO : "loginSSO",
-        loginLDAP : "loginLDAP",
-        register : "register",
-        resetPassword : "resetPassword",
-        nuovaPassword: "nuovaPassword",
-        cambiaRuolo: "cambiaRuolo",
+       
 
         uploadChunk: "uploadChunk",
         remove : "remove",
         download : "download",
 
         downloadDbField: "downloadDbField",
-        sendMail: "sendMail"
+       
     };
 
 
@@ -121,9 +115,9 @@
          * @returns {object|undefined}
          */
         getMethod:function (method) {
-            let ss = this.services[method];
+            var ss = this.services[method];
             if (!ss) return ss;
-            let service = _.clone(ss)
+            var service = _.clone(ss)
             service.url = this.backendUrl+service.url;
             return service;
         },
@@ -184,14 +178,7 @@
             // metodo di test e2e per le notify asincrone
             this.registerService("testNotify", 'GET', 'data', true,true);
 
-            // METODI LOGIN Autenticazione
-            this.registerService(methodEnum.login, 'POST', 'auth', false, false);
-            this.registerService(methodEnum.loginSSO, 'POST', 'auth', false, false);
-            this.registerService(methodEnum.loginLDAP, 'POST', 'auth', false, false);
-            this.registerService(methodEnum.register, 'POST', 'auth', false, false);
-            this.registerService(methodEnum.resetPassword, 'GET', 'auth', false, false);
-            this.registerService(methodEnum.nuovaPassword, 'GET', 'auth', false, false);
-            this.registerService(methodEnum.sendMail, 'POST', 'data', false, true);
+         
 
             // Metodi vari utilizzati all'interno del codice per recupero dati dal database
             this.registerService(methodEnum.selectCount, 'POST', 'data', false, true);
@@ -216,8 +203,7 @@
             this.registerService(methodEnum.setUsrEnv, 'POST', 'data', false, true);
             this.registerService(methodEnum.doReadValue, 'POST', 'data', false, true);
 
-            // cambio ruolo
-            this.registerService(methodEnum.cambiaRuolo, 'POST', 'data', false, true);
+          
 
             // gestori attachment
             this.registerService(methodEnum.uploadChunk, 'POST', 'file', false, true);

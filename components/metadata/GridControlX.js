@@ -797,7 +797,7 @@
       },
 
       /**
-       * @method editClick
+       * @method insertClick
        * @private
        * @description SYNC
        * Manages the click on add button. it calls the specific method of metapage

@@ -24,7 +24,7 @@
      *  {string} data-displayMember
      *  {string} [data-no-blank] : if present a blank row is not wanted
      *  {string} [data-master]  : name of Master table which this combo depends on
-     * @param {Html element} el
+     * @param {element} el
      * @param {HelpForm} helpForm
      */
     function ComboManager(el, helpForm) {
@@ -86,7 +86,7 @@
         //name of Master table which this combo depends on
         this.comboMaster = $(el).data("master") || null;
         this.initVarsForMaster();
-         $(this.el).select2({minimumResultsForSearch: appMeta.config.minimumResultsForSearch});
+        $(this.el).select2({minimumResultsForSearch: appMeta.config.minimumResultsForSearch});
         this.isStandardFill = true; // segue la fillControl del framework
         this.rowChangeDisabled = false;
         return this;
@@ -102,7 +102,7 @@
          * @description SYNC
          * Returns a sqlFun that represents the clause to filter the data in the form.
          * The clause is built reading the column to filter from the tag, and the value from the control itself.
-         * @param {html node} el
+         * @param {node} el
          * @param {DataColumn} col
          * @param {string} tagSearch
          * @returns {sqlFun}
@@ -137,14 +137,16 @@
          * @private
          * @description SYNC
          * Add the events to the table control
-         * @param {html element} el
+         * @param {element} el
          * @param {MetaPage} metaPage
          */
         addEvents: function(el, metaPage) {
             this.metaPage = metaPage;
             //genera eventualmente una RowSelect sulla metaPage
-            $(this.el).on("select2:select", _.partial(this.controlChanged, this));
-            if (metaPage) metaPage.eventManager.subscribe(appMeta.EventEnum.ROW_SELECT, this.selectRowCallBack, this);
+            $(this.el).on("change", _.partial(this.controlChanged, this)); //select2:select
+            if (metaPage) {
+                metaPage.eventManager.subscribe(appMeta.EventEnum.ROW_SELECT, this.selectRowCallBack, this);
+            }
         },
 
         /**
@@ -159,7 +161,7 @@
             if (that.rowChangeDisabled) return false;
             return that.setRow(that.getCurrentRow().row, undefined)
                 .then(function () {
-                    return that.metaPage.eventManager.trigger(appMeta.EventEnum.afterComboChanged, that)
+                    return that.metaPage.eventManager.trigger(appMeta.EventEnum.afterComboChanged, that);
             });
         },
 
@@ -324,7 +326,7 @@
          * @public
          * @description ASYNC
          * Executes the fill of the combo (Seelct html).
-         * @param {html node} comboBox
+         * @param {node} comboBox
          * @param {object} val
          */
         fillControl: function (comboBox, val) {
@@ -350,7 +352,7 @@
         /**
          * Reads data from the control - actually does nothing on a combo
          * @method getControl
-         * @param {html element} el
+         * @param {element} el
          * @param {ObjectRow} r       row to fill
          * @param {string} field    field to fill
          */
@@ -390,7 +392,7 @@
          * Fills the html combo options with comboRows content
          */
         fillComboBoxOptions: function() {
-            var comboBox = this.el;
+            let comboBox = this.el;
             $(comboBox).empty();
             this.rowChangeDisabled = true;
             // se non c'è l'ozione noBlank,

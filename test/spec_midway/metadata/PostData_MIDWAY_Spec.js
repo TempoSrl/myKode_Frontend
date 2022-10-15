@@ -79,11 +79,11 @@ describe('PostData', function () {
                 var mainwin = '<div id="metaRoot">' +
                     "</div>";
                 $("html").html(mainwin);
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/bootstrap/css/bootstrap.css" />');
-                $("body").append('<link rel="stylesheet" href="/base/app/styles/app.css" />');
-                $("head").append('<script defer src="/base/app/styles/fontawesome/fontawesome-all.js"></script>');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
+                $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
+                $("head").append('<script defer src="/base/test/app/styles/fontawesome/fontawesome-all.js"></script>');
                // $("head").append('<script defer src="/base/bower_components/jquery/dist/jquery.js"></script>');
-                $("head").append('<script defer src="/base/app/styles/bootstrap/js/bootstrap.js"></script>');
+                $("head").append('<script defer src="/base/test/app/styles/bootstrap/js/bootstrap.js"></script>');
 
                 metapage = new MetaPage('table1', 'table1_def.json', false);
                 state1 = new appMeta.MetaPageState();

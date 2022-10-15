@@ -60,7 +60,7 @@
 
     /**
      *
-     * @param {html node} elTree
+     * @param {node} elTree
      * @param {DataTable} treeTable
      * @param {HelpForm} helpform
      * @patram {DataTable} primaryTable
@@ -79,6 +79,7 @@
         var tag = $(elTree).data("tag");
         this.tag = tag; // lo espongo,lo usa helpform
         this.meta = appMeta.getMeta(this.treeTable.tableForReading());
+
         this.listType =  this.helpform.getField(tag, 1);
 
         // calcolo autorelazione
@@ -86,7 +87,7 @@
 
         // var private
         this.doubleClickForSelect = true; // se true al dblclick lanbcia òla select
-        this.fixedData = false; // indica se il tree è caricato tutto all'inzio cioè true, false nel caso incrementale
+        this.fixedData = false; // indica se il tree è caricato tutto all'inizio cioè true, false nel caso incrementale
         this.inited= false;
         this.treeNodes = [];
         this.jsTreeMethod = jsTreeMethod;
@@ -185,7 +186,7 @@
 
                 var tree = $(this).jstree();
                 var node = tree.get_node(event.target);
-                self.dblclickEv(node, true)
+                self.dblclickEv(node, true);
 
             });
 
@@ -371,8 +372,12 @@
                         });
 
                     var filterChild = getData.getWhereKeyClauseByColumns(dtRow, parentCols, childCols, self.treeTable,false);
+                    // console.log(filterChild.toString());
                     //var sort = r.getRow().table.orderBy();
+
                     var filterChildList  = dtRow.table.select(filterChild);
+                    // console.log(filterChildList);
+
                     var allAddrowDeferred = [];
 
                     // TODO canSelect è async : gestire nel loop
@@ -408,7 +413,7 @@
          *
          * @param {treenode js} parentNode
          * @param {ObjectRow} childRow
-         * @returns {Deferred(jsTreeNode)}
+         * @returns {Deferred<jsTreeNode>)}
          */
         addRow:function(parentNode, childRow){
             var def = Deferred("addRow");
@@ -483,7 +488,7 @@
                     }
                 });
 
-            return def.promise()
+            return def.promise();
         },
 
         /**
@@ -525,6 +530,7 @@
          * @returns {Deferred}
          */
         fillNodes:function (isToSelect, last) {
+            // console.log('executing fillNodes');
             var def = Deferred('filNodes');
             var self = this;
             var sort = this.getSorting(this.treeTable);
@@ -625,7 +631,7 @@
          * @method fillChildsNode
          * @private
          * @description ASYNC
-         * @param {jstree node} parentNode
+         * @param {node} parentNode
          * @param {ObjectRow} parentRow
          * @returns {Deferred}
          */
@@ -641,7 +647,7 @@
             // le createnode sono asyncrone dentro un ciclo, metto in array e risolvo in when()
             var allCreateNodeDeferred = [];
             _.forEach(childList, function (childRow) {
-                if (childRow === parentRow) return true; // promssima iterazione
+                if (childRow === parentRow) return true; // prossima iterazione
 
                 // TODO canSelect è async : gestire nel loop
                 if (!security.canSelect(childRow)){
@@ -653,20 +659,16 @@
                 allCreateNodeDeferred.push(self.createNewNode(parentRow, childRow));
             });
 
-            var res =  $.when.apply($, allCreateNodeDeferred)
+            var res = $.when.apply($, allCreateNodeDeferred)
                 .then(function() {
-
                     var allfillChildsNodeDeferred = [];
                     _.forEach(arguments, function (newNode) {
-
                         self.addNode(parentNode, newNode);
                         allfillChildsNodeDeferred.push(self.fillChildsNode(newNode, newNode.dataRow));
-
                     });
 
                     return $.when.apply($, allfillChildsNodeDeferred)
                         .then(function(defObj) {
-
                             // if fixed data don't add dummy nodes
                             if (self.fixedData) return def.resolve();
 
@@ -677,9 +679,7 @@
                                     parentNode.toExplore = true;
                                 }
                             }
-
                             return def.resolve();
-
                         });
 
                 });
@@ -695,7 +695,7 @@
          * @param {ObjectRow} parentRow
          * @param {ObjectRow} childRow
          * Creates a new TreeNode and returns a js object the representation of the node in jstree
-         * @returns {Deferred (TreeNode)}
+         * @returns {Deferred<TreeNode>)}
          */
         createNewNode:function (parentRow, childRow) {
             return this.nodeDispatcher.getNode(parentRow, childRow);
@@ -717,7 +717,7 @@
                     this.tree.jstree(jsTreeMethod.RENAME_NODE, n2 , n1.text );
                 }
 
-                return true
+                return true;
             }
             return false;
         },
@@ -763,7 +763,8 @@
 
             // recupero l'autogenerato id e lo lego al nodo jstree
             var retNodeId = this.tree.jstree(jsTreeMethod.CREATE_NODE , parentNode, node, 'last', false, false);
-            // il node non viene modificato, quindi configuro l'id autogenerato tramite il emtodo setJsTreeNodeId() della classe TreeNode
+            // il node non viene modificato, quindi configuro l'id autogenerato tramite il metodo setJsTreeNodeId()
+            //   della classe TreeNode
             // N.B id è importante per la lib jstree per aggiungere i nodi al posto giusto
             node.setJsTreeNodeId(retNodeId);
 
@@ -780,9 +781,9 @@
          * Returns true if the node "node" is linked to the row "dataRow" , false otherwise
          * @returns {boolean}
          */
-        compareNode:function (node, dataRow) {
+        compareNode:function (node, dataRow){
             if (!node.dataRow || !dataRow) return false;
-            return this.compareNodeByRow(node.dataRow, dataRow)
+            return this.compareNodeByRow(node.dataRow, dataRow);
         },
 
         /**
@@ -791,12 +792,15 @@
          * @description SYNC
          * Selects the TreeNode corresponding to a given DataRow
          * @param {ObjectRow} dataRow
+         * @param {boolean} propagate
          */
         selectNodeByRow:function(dataRow, propagate){
             var def = Deferred('selectNodeByRow');
             // **** **** **** ***
-            // ===> N:B Commentata riga 3823 della libreria jstree.js poichè la extend perde la getRow() dell'ObjectRow linkato al nodo in fase di costruzione.
-            // capire il motivo, se possibile, oppure modificare la libreria commentando apputno tale riga che estende un ogetto plaintrxt vuoto con il nodo passato
+            // ===> N:B Commentata riga 3823 della libreria jstree.js poichè la extend perde la getRow() dell'ObjectRow
+            //  linkato al nodo in fase di costruzione.
+            // capire il motivo, se possibile, oppure modificare la libreria commentando appunto tale riga che
+            //   estende un ogetto plaintext vuoto con il nodo passato
             // "node = $.extend(true, {}, node);
 
             var self = this;
@@ -806,7 +810,7 @@
             return this.selectNodeByNode(retNode, propagate)
                 .then(function () {
                     def.resolve(retNode);
-                })
+                });
         },
 
         /**
@@ -836,6 +840,7 @@
          * @public
          * @description SYNC
          * @param  {TreeNode} nodeToSelect
+         * @param {boolean} propagate
          */
         selectNodeByNode:function (nodeToSelect, propagate) {
             var def = Deferred('selectNodeByNode');
@@ -851,7 +856,7 @@
                 .then(function () {
                     def.resolve();
                 });
-            return def.from(res).promise()
+            return def.from(res).promise();
         },
 
         /**
@@ -882,10 +887,8 @@
         selectedNode:function () {
             var selectedNodes = this.tree.jstree( jsTreeMethod.GET_SELECTED, true); // torna un array. dovrebbe essere sempre di lunghezza 1
             if (selectedNodes.length > 0){
-                var selNode = selectedNodes[selectedNodes.length - 1];
-                return selNode;
+                return  selectedNodes[selectedNodes.length - 1];
             }
-
             return null;
         },
 
@@ -896,9 +899,11 @@
          * @description ASYNC
          * Reads all the rows parent pf a row "r" and select it on the tree
          * @param {DataRow} r
-         * @return {Deferred(DataRow)}
+         * @param {string} listType
+         * @return {Deferred<DataRow>)}
          */
         selectRow:function( r,  listType) {
+            //console.log("executing selectRow");
             var def = Deferred("selectRow_treeViewManager");
             var self = this;
 
@@ -934,9 +939,8 @@
                                     return self.selectNodeByRow(toSelect, true)
                                         .then(function () {
                                             return def.resolve(toSelect);
-                                        }) // lancerà evento di selezione riga su metapage
-
-                                })
+                                        }); // lancerà evento di selezione riga su metapage
+                                });
                         });
                 });
 
@@ -951,7 +955,7 @@
          * @param startCondition
          * @param startValueWanted
          * @param startFieldWanted
-         * @returns {Deferred(null|ObjectRow)}
+         * @returns {Deferred<null|ObjectRow>}
          */
         startWithField:function(startCondition, startValueWanted, startFieldWanted) {
             var def = Deferred("startWithField");
@@ -972,7 +976,6 @@
                         }
                     }
 
-
                     return self.defDescribeTree
                         .then(function (res){
                             // dopo la describeTree assegno le 2 prop che servono per il popolamento
@@ -988,12 +991,9 @@
                                         .then(function () {
                                             self.helpform.lastSelected(self.treeTable, dtRow);
                                             return def.resolve(dtRow);
-                                        })
-
+                                        });
                                 });
                         }) ;
-
-
                 });
         },
 
@@ -1006,6 +1006,7 @@
          * @returns {Deferred}
          */
         start:function( rootFilter,  clear) {
+            // console.log("executing start");
             var def =  Deferred("start");
             var self = this;
 
@@ -1044,7 +1045,7 @@
                             newR[col.name] = toCopy[col.name];
                             // TreeTable.Rows.Add(newR);
                             newR.acceptChanges();
-                        })
+                        });
                     });
 
                     var rowsChild  = [];
@@ -1065,7 +1066,8 @@
         },
 
         // ********************************************************************************************************************** //
-        // INIZIO FUNZIONI PER ALGIRITMO PER RECUPERARE I PARENTS di un set di child, e poi recuperarne tutti i chhilddi primo livello
+        // INIZIO FUNZIONI PER ALGORITMO PER RECUPERARE I PARENTS di un set di child, e poi
+        //  recuperarne tutti i children di primo livello
 
         /**
          * @method populateTreeFromChilds
@@ -1108,7 +1110,7 @@
                         });
                 });
 
-            return def.from(res).promise()
+            return def.from(res).promise();
         },
 
         /**
@@ -1118,6 +1120,7 @@
          * Returns all the child rows of the table "treeTable"
          */
         expandChilds:function (list) {
+            // console.log("invoking expandChilds");
             var childFilter = null;
             var self = this;
             var def = Deferred("getParents");
@@ -1280,7 +1283,8 @@
             return  def.from(res).promise();
         },
 
-        // FINE FUNZIONI PER ALGIRITMO PER RECUPERARE I PARENTS di un set di child, e poi recuperarne tutti i chhilddi primo livello
+        // FINE FUNZIONI PER ALGORITMO PER RECUPERARE I PARENTS di un set di children, e poi recuperarne tutti i children
+        //  di primo livello
         // ********************************************************************************************************************** //
 
         /***
@@ -1290,6 +1294,7 @@
          * @returns {*}
          */
         fillControl:function (el, value) {
+            // console.log("executing fillControl");
             var def = Deferred('fillComtrol-treeview');
             if (this.treeTable.name === this.helpform.primaryTableName) return def.resolve();
             var res = this.fillNodes(false);
@@ -1298,7 +1303,6 @@
 
         /**
          * Reads some row related to a tree in order to display it at beginning
-         * @param el
          * @param {jsDataQuery} filter
          * @param {boolean} skipPrimary
          * @returns {Deferred}
@@ -1323,13 +1327,13 @@
 
         /**
          *
-         * @param {Html node} el
+         * @param {node} el
          * @param {Object} param {tableWantedName:tableWantedName, filter:filter, selList:selList}
          * @returns {*}
          */
         preFill: function(el, param) {
             // Metodo di interfaccia del customControl
-            var def = Deferred("preFill-treeviewManager");
+            let def = Deferred("preFill-treeviewManager");
 
             if(param.tableWantedName && param.tableWantedName !== this.treeTable.name ) return def.resolve();
 

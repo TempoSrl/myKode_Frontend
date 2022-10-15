@@ -298,6 +298,7 @@
                                 case "Double":
                                 case "Float":
                                 case "Single":
+                                    // console.log("adding events to ",el.tagName);
                                     $(el).on("focus", _.partial(this.enterNumTextBox, this));
                                     $(el).on("blur", this.generalLeaveTextBox);
                                     break;
@@ -544,6 +545,7 @@
          * @returns {Deferred}
          */
         textBoxGotFocus: function (that) {
+            console.log("txt got focus");
             if ($(this).prop("readonly")) return;
             if ($(this).prop("disabled")) return;
             if (that.insideTextBoxLeave) return; // does nothing where another textbox is still leaving focus
@@ -563,6 +565,7 @@
          * @returns {Deferred}
          */
         textBoxLostFocus: function(that, ev) {
+            console.log("textBoxLostFocus received");
             var def = Deferred('textBoxLostFocus' + $(this).attr("id"));
             if (that.insideTextBoxLeave) return def.resolve(false);
             var textBox = this;
@@ -619,7 +622,7 @@
                     return that.metaPage.choose("choose." + ai.table + ".unknown.clear", null, ai.G).then(function () {
                         selected = true;
                         return true;
-                    })
+                    });
                 })
                 .then(function () {
 
@@ -668,8 +671,8 @@
                                     ai.busy = false;
                                     that.pageState.closeDisabled = saved;
                                     return def.resolve(true);
-                                })
-                        })
+                                });
+                        });
                 });
 
 
@@ -977,7 +980,7 @@
          * @private
          * @description SYNC
          * Returns true if the control "el" is an html button
-         * @param {Html element} el
+         * @param {element} el
          * @returns {boolean}
          */
         isButtonControl:function (el) {
@@ -994,6 +997,7 @@
          * @param {HelpForm} that
          */
         enterNumTextBox: function(that) {
+            // console.log("enterNumTextBox from ",$(this).data("tag"));
             if ($(this).prop("disabled")) return;
             if ($(this).prop("readonly")) return;
             var val = $(this).val();
@@ -1009,7 +1013,7 @@
             }
             if (fieldType === "c") {
                 s = s.replace(currencySymbol, "");
-                s = s.replace(currencyGroupSeparator, "");
+                s = s.replace(currencyGroupSeparator, "").trim();
                 $(this).val(s.trim());
                 return;
             }
@@ -2273,11 +2277,15 @@
          * @public
          * @description SYNC
          * Instantiates all customController for any html elements that requires it
+         * @returns {Deferred}
          */
         preScanControls: function () {
-            this.iterateOverTag("tag", "preScanControl");
-            this.iterateOverTag("custom-control", "preScanCustomControl");
-            this.iterateOverTag("custom-container", "preScanCustomContainer");
+            return this.iterateOverTag("tag", "preScanControl")
+                .then(()=>this.iterateOverTag("custom-control", "preScanCustomControl"))
+                .then(()=>this.iterateOverTag("custom-container", "preScanCustomContainer"))
+            //.then(()=>console.log("preScanControls done"));
+
+
         },
 
         /**
@@ -2293,6 +2301,7 @@
         iterateOverTag: function(tag, task, optParam) {
             var self = this;
             var allCtrlPromise = [];
+            // console.log("iterating over tag doing ",task);
             $(this.rootElement)
                 .find(" [data-" + tag + "]")
                 .each(function () {
@@ -3821,7 +3830,7 @@
          * @public
          * @description SYNC
          * Returns true if data-attr is configured on control el
-         * @param {Html node} el
+         * @param {node} el
          * @param {string} attr
          * @returns {boolean}
          */
