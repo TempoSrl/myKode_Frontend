@@ -717,7 +717,7 @@
             _.forEach(this.orderedCols,
                 function(c, index) {
                     var csortId = self.getIdColumnSort(c.name);
-                    var thid = appMeta.utils.getUnivoqueId();
+                    var thid = appMeta.utils.getUniqueId();
                     var $th = $('<th  id="' + thid + '">');
 
                    

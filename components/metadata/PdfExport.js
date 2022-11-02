@@ -165,7 +165,7 @@
             var self = this;
             this.def = Deferred("PdfExport.exportToPdf");
             this.calcTabs();
-            this.dialogid = "dialogid" + appMeta.utils.getUnivoqueId();
+            this.dialogid = "dialogid" + appMeta.utils.getUniqueId();
             this.dialogrootelement = $('<div id="' +  this.dialogid + '">');
             var htmlInfo = this.getModalHtml();
             $(this.metaPage.rootElement).append(this.dialogrootelement);

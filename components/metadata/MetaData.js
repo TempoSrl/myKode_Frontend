@@ -1,21 +1,30 @@
+/*globals ObjectRow,DataRelation,define,self,jsDataSet,sqlFun,metaModel,appMeta,_ */
+
+
 /**
  * @module MetaData
  * @description
  * Contains all the information for a MetaData
  */
-(function() {
-    var metaModel = appMeta.metaModel;
-    var localResource = appMeta.localResource;
-    var Deferred = appMeta.Deferred;
-    var getDataUtils  = appMeta.getDataUtils;
-    var getData  = appMeta.getData;
-    var methodEnum = appMeta.routing.methodEnum;
-    var logger = appMeta.logger;
-    var logType = appMeta.logTypeEnum;
-    var modal = appMeta.BootstrapModal;
-    var sec = appMeta.security;
+(function(_,metaModel,localResource,Deferred,
+          getDataUtils,logger,logType,getMeta,getDataExt,/*{CType}*/ CType,securityExt) {
+    /** Detect free variable `global` from Node.js. */
+    let freeGlobal = typeof global === 'object' && global && global.Object === Object && global;
+    /** Detect free variable `self`. */
+    let freeSelf = typeof self === 'object' && self && self.Object === Object && self;
+    /** Used as a reference to the global object. */
+    let root = freeGlobal || freeSelf || Function('return this')();
+    /** Detect free variable `exports`. */
+    let freeExports = typeof exports === 'object' && exports && !exports.nodeType && exports;
+    /** Detect free variable `module`. */
+    let freeModule = freeExports && typeof module === 'object' && module && !module.nodeType && module;
 
-    
+
+    //noinspection JSUnresolvedVariable
+    /** Detect free variable `global` from Node.js or Browserified code and use it as `root`. (thanks lodash)*/
+    let moduleExports = freeModule && freeModule.exports === freeExports;
+
+
 
 
     /**
@@ -28,14 +37,35 @@
         this.tableName = tableName;
         this.metaPage= null;
         this.listTop = 0;
-
         return this;
     }
 
     MetaData.prototype = {
         constructor: MetaData,
 
+        /**
+         * Preserve method code. Used server side.
+         * @param {Request} req
+         */
+        setRequest: function (req){
+            if (!req) return;
+            const ctx = req.app.locals.context;
 
+            //This applies to backend. On the frontend side they are assigned to LocalResource prototype once at the beginning
+            //  cause they are unique in the client side.
+            this.localResource = ctx.localResource;
+            this.getData = ctx.getDataInvoke;
+            this.security = ctx.environment;
+            this.getMeta = ctx.getMeta;
+        },
+
+        /**
+         *
+         * @param {string} lan
+         */
+        setLanguage: function (lan){
+            this.localResource = localResource.prototype.getLocalResource(lan);
+        },
 
         /**
          * @method isValid
@@ -45,65 +75,64 @@
          * @param {DataRow} r
          * @returns {Deferred} can be null or Object
          */
-        isValid: function(r) {
-            var emptyKeyMsg = localResource.emptyKeyMsg;
-            var emptyFieldMsg = localResource.emptyFieldMsg;
-            var stringTooLong =  localResource.stringTooLong;
-            var noDataSelected =  localResource.noDataSelected;
-            var emptyDate = "1000-01-01";
-            var outMsg = null;
-            var outField = null;
-            var val;
-            var outCaption  = '';
-            var foundCondition = false;
-            var self = this;
+         isValid: function(r) {
+            const emptyKeyMsg = this.localResource.dictionary.emptyKeyMsg;
+            const emptyFieldMsg = this.localResource.dictionary.emptyFieldMsg;
+            const stringTooLong = this.localResource.dictionary.stringTooLong;
+            const noDataSelected = this.localResource.dictionary.noDataSelected;
+            const emptyDate = "1000-01-01";
+            let outMsg = null;
+            let outField = null;
+            let val;
+            let outCaption = '';
+            let foundCondition = false;
+            const self = this;
 
-            if (!r) return self.getPromiseIsValidObject(noDataSelected, noDataSelected, outCaption, r);            
+            if (!r) return self.createIsValidResult(noDataSelected, noDataSelected, outCaption, r);
 
             _.forEach(
                 r.table.key() ,
-                function(cname) {
-                    var col = r.table.columns[cname];
+                function(colName) {
+                    const col = r.table.columns[colName];
 
-                    outCaption = cname;
+                    outCaption = colName;
                     if (col.caption && col.caption !== "") outCaption = col.caption;
 
-                    val =  r.current[cname];
-                    if (col.caption && col.caption !== "" && col.caption !== cname) outCaption = col.caption;
+                    val =  r.current[colName];
+                    if (col.caption && col.caption !== "" && col.caption !== colName) outCaption = col.caption;
 
                     if ((val === null)) {
                         outMsg = emptyKeyMsg;
-                        outField = cname;
+                        outField = colName;
                         foundCondition = true;
                         return false;
                     }
-                    if (col.ctype === "DateTime"){ //( typeof val === "object" && val.constructor === Date) {
+                    if (col.ctype === CType.date){ //( typeof val === "object" && val.constructor === Date) {
 
                         if (!val) {
                             outMsg = emptyKeyMsg;
-                            outField = cname;
+                            outField = colName;
                             foundCondition = true;
                             return false;
                         }
                         if (val.getTime && val.getTime() === new Date(emptyDate).getTime()){
                             outMsg = emptyKeyMsg;
-                            outField = cname;
+                            outField = colName;
                             foundCondition = true;
                             return false;
                         }
                     }
-
-                    if ( col.ctype === "String"  &&
+                    if ( col.ctype === CType.string  &&
                         (val.replace(/\s*$/,"") === "")) { //Esegue il trimEnd
                         outMsg = emptyKeyMsg;
-                        outField = cname;
+                        outField = colName;
                         foundCondition = true;
                         return false;
                     }
 
                     if (!metaModel.allowZero(col) && metaModel.isColumnNumeric(col) && val === 0) {
                         outMsg = emptyKeyMsg;
-                        outField = cname;
+                        outField = colName;
                         foundCondition = true;
                         return false;
                     }
@@ -111,23 +140,27 @@
                 });
 
             // esco con promise se ho trovato una condizione di uscita
-            if (foundCondition) return self.getPromiseIsValidObject(outMsg, outField, outCaption, r);
+            if (foundCondition) return self.createIsValidResult(outMsg, outField, outCaption, r);
 
 			outCaption = '';
-            _.forEach(
+            _.forOwn(
                 r.table.columns ,
+                /**
+                 * @param {DataColumn} c
+                 * @return {boolean}
+                 */
                 function(c) {
-                    var colname = c.name;
+                    let colname = c.name;
                     val = r.current[colname];
 
                     // caption è valorizzata dal back da colDescr oppure tramite la setCaption dal programmatore.
                     outCaption = colname;
                     if (c.caption && c.caption !== "") outCaption = c.caption;
 
-                    if (c.ctype === "String") {
-                        var thislen = val ? val.toString().length : 0;
-                        var maxlen = metaModel.getMaxLen(c);
-                        if (maxlen > 0 && thislen > maxlen) {
+                    if (c.ctype === CType.string) {
+                        const thisLen = val ? val.toString().length : 0;
+                        const maxLen = metaModel.getMaxLen(c);
+                        if (maxLen > 0 && thisLen > maxLen) {
                             outMsg = stringTooLong;
                             outField = colname;
                             return false;
@@ -144,10 +177,10 @@
                         return false;
                     }
 
-                    if (c.ctype === "DateTime") {
+                    if (c.ctype === CType.date || c.ctype === CType.DateTime ) {
                         if (!val) {
                             outMsg = emptyKeyMsg;
-                            outField = cname;
+                            outField = colname;
                             return false;
                         }
                         if (val.getTime && val.getTime() === new Date(emptyDate).getTime()) {
@@ -158,7 +191,7 @@
                     }
 
                     // E' passato il   if ((val === null) || (val === undefined))  ma devo fare attenzione a stringa vuota o a zero
-                    if ((c.ctype === "String") && (val.replace(/\s*$/, "") === "")) {
+                    if ((c.ctype === CType.string) && (val.replace(/\s*$/, "") === "")) {
                         outMsg = emptyFieldMsg;
                         outField = colname;
                         return false;
@@ -174,52 +207,65 @@
 
                 });
 
-            return self.getPromiseIsValidObject(outMsg, outField, outCaption, r);
+            return self.createIsValidResult(outMsg, outField, outCaption, r);
         },
 
         /**
          * @method setCaption
          * @private
          * @description SYNC
-         * To override on extended class if user want to assign a caption to the column.
-         * N.B:captions are set on backend, if there is a configuration o coldesr
-         * This column appears on isValid message
+         * To override in extended classes if user want to assign a friendly name to the column.
+         * Friendly names are used in isValid messages
+         * N.B:captions are set on backend, if there is a configuration o coldescr
          * @param {DataTable} table
          * @param {string} edittype
          */
         setCaption: function(table, edittype) {
         },
 
+
         /**
-         * @method getPromiseIsValidObject
+         * @method primaryKey
+         * @public
+         * @description SYNC
+         * Returns the list of primary key fields, this has to be redefined for views.
+         * @return {string[]}
+         */
+        primaryKey: function() {
+            return  [];
+        },
+
+        /**
+         * @method createIsValidResult
          * @private
          * @description ASYNC
          * Auxiliar function that builds the result of the isValid promise
-         * @param {string} errmess
+         * ex  getPromiseIsValidObject
+         * @param {string} errMessage
          * @param {string} colname
          * @param {string} outCaption
          * @param {DataRow} row
-         * @param {string} warningMessage
+         * @param {string} [warningMessage]
          * @returns {Deferred}
          */
-        getPromiseIsValidObject: function (errmess, colname, outCaption, row, warningMessage) {
-            var def = Deferred("getPromiseIsValidObject");
-            if(!errmess && !colname) return def.resolve(null);
-            var objres = {
+        createIsValidResult: function (errMessage, colname, outCaption, row, warningMessage) {
+            let def = Deferred("createIsValidResult");
+            if (!errMessage) return def.resolve(null);
+            let objRes = {
                 warningMsg: warningMessage,
-                errMsg: errmess + " (" + outCaption + ")",
+                errMsg: errMessage , //+ " (" + outCaption + ")"
                 errField: colname,
                 outCaption: outCaption,
                 row: row
             };
-            return def.resolve(objres)
+            return def.resolve(objRes).promise();
         },
 
         /**
          * @method describeColumnsStructure
          * @public
          * @description ASYNCH
-         * Sets DenyNull and Format properties of Columns. They are usually set on backend.
+         * Sets Captions, DenyNull and Format properties of Columns. They are usually set on backend.
          * @param {DataTable} table
          * @returns {*}
          */
@@ -228,7 +274,7 @@
         },
 
         /**
-         * @method describeColumnsStructure
+         * @method describeAColumn
          * @public
          * @description SYNC
          * Set some information (useful on visualization) on column "cName"
@@ -240,7 +286,7 @@
          * @param {Number} maxLen
          */
         describeAColumn: function (t, cName, caption, format, pos, maxLen) {
-            var c = t.columns[cName];
+            const c = t.columns[cName];
             if (!c) return;
             c.caption = (caption === '') ? '' : caption || c.name;
             if (format) c.format = format;
@@ -253,20 +299,20 @@
          * @method insertFilter
          * @public
          * @description SYNC
-         * @returns {undefined}
+         * @returns {jsDataQuery|null}
          */
         insertFilter:function() {
-            return undefined;
+            return null;
         },
 
         /**
          * @method searchFilter
          * @public
          * @description SYNC
-         * @returns {undefined}
+         * @returns {jsDataQuery|null}
          */
         searchFilter: function () {
-            return undefined;
+            return null;
         },
 
         /**
@@ -276,44 +322,44 @@
          * Describes a listing type (captions, column order, formulas, column formats and so on)
          * @param {DataTable} table
          * @param {string} listType
-         * @returns {Deferred(DataTable)}
+         * @returns {Promise<DataTable>}
          */
         describeColumns: function (table, listType) {
-           var def = Deferred("describeColumns");
-           var self = this;
-           // recupero dal server o dalla cache la tabella di cui è fatto il describe columns
-           var res = getData.describeColumns(table, listType)
-               .then(function (dtDescribed) {
-                 // applico alle colonne della output table quelle calcolate dalla describeColumns
-                   self.copyColumnsPropertiesToDescribe(dtDescribed.columns, table.columns);
-                   // 2. applico sorting e staticFilter che sono static calcolati in questa fase
-                   var sorting = self.getSorting(listType);
-                   metaModel.sorting(table, sorting ? sorting : metaModel.sorting(dtDescribed));
-                   table.staticFilter(dtDescribed.staticFilter());
-                   def.resolve();
-           });
-            
-           return def.from(res).promise(); 
+            let def = Deferred("describeColumns");
+            // let self = this;
+            // // recupero dal server o dalla cache la tabella di cui è fatto il describe columns
+            // const res = getData.describeColumns(table, listType)
+            //     .then(function (dtDescribed) {
+            //         // applico alle colonne della output table quelle calcolate dalla describeColumns
+            //         self.copyColumnsPropertiesToDescribe(dtDescribed.columns, table.columns);
+            //         // 2. applico sorting e staticFilter che sono static calcolati in questa fase
+            //         const sorting = self.getSorting(listType);
+            //         metaModel.sorting(table, sorting ? sorting : metaModel.sorting(dtDescribed));
+            //         table.staticFilter(dtDescribed.staticFilter());
+            //         def.resolve();
+            //     });
+            return def.resolve(table).promise();
         },
 
-        /**
-         * @method copyColumnsPropertiesToDescribe
-         * @public
-         * @description SYNC
-         * Copies the properties "columnsKeysDescribed" of the column from src to dest.
-         * @param {DataColumn[]} colsSrc
-         * @param {DataColumn[]} colsDest
-         */
-        copyColumnsPropertiesToDescribe:function (colsSrc, colsDest) {
-            _.forEach(colsSrc, function (colSrc) {
-                var colDest = colsDest[colSrc.name];
-                if (!colDest) return true; // prossima iterazione
-                // copio solo le proprietà che mi aspetto
-                _.forEach(['caption', 'listColPos', 'format', 'expression'], function (key) {
-                    colDest[key] = colSrc[key];
-                });
-            });
-        },
+        // /**
+        //  * @method copyColumnsPropertiesToDescribe
+        //  * @public
+        //  * @description SYNC
+        //  * Copies the properties "columnsKeysDescribed" of the column from src to dest.
+        //  * @param {{DataColumn}} colsSrc
+        //  * @param {{DataColumn}} colsDest
+        //  */
+        // copyColumnsPropertiesToDescribe:function (colsSrc, colsDest) {
+        //     _.forIn(colsSrc, function (colSrc) {
+        //         const colDest = colsDest[colSrc.name];
+        //         if (!colDest) {
+        //             return true; // prossima iterazione
+        //         }
+        //         _.forEach(['caption', 'listColPos', 'format', 'expression'], function (key) {
+        //             colDest[key] = colSrc[key];
+        //         });
+        //     });
+        // },
 
         /**
          * @method describeTree
@@ -322,33 +368,10 @@
          * Describes the table of the tree
          * @param {DataTable} table
          * @param {string} listType
-         * @returns {*}
+         * @returns {{rootCondition: sqlFun, nodeDispatcher: TreeNode_Dispatcher, maxDepth: int}}
          */
         describeTree:function (table, listType) {
-            var def = Deferred("describeTree");
-            
-            // lato server torna rootcondition e poi vedremo cosa altro
-            var resDef = getData.describeTree(table, listType)
-            // N.B: ----> quando ritorno al treeview chiamante, torno le prorietà custom che si aspetta.
-            // il default si aspetta solo  "rootCondition"
-                .then(function (res) {
-
-                    // recupero il filtro jsDataQuery dal json
-                    var rootCondition = getDataUtils.getJsDataQueryFromJson(res.rootCondition);
-
-                    def.resolve({
-	                    rootCondition: rootCondition,
-	                    withdescr: res.withdescr,
-	                    maxDepth: res.maxDepth,
-                        nodeDispatcher: new appMeta.TreeNode_Dispatcher()
-
-                        //.... @remarks nell'override passerò diversi prm a seconda del tree
-                        //prop1: "prop1",
-                        //propN: "propN"
-                    })
-                });
-              
-            return def.from(resDef).promise();
+            return Deferred.resolve(true).promise();
         },
 
         /**
@@ -357,6 +380,7 @@
          * @description ASYNC
          * Gets the static filter associated to the "listType"
          * @param listType
+         * @return {jsDataQuery | null}
          */
         getStaticFilter:function (listType) {
             return null;
@@ -379,12 +403,12 @@
                                         if (metaModel.temporaryColumn(c)) return false;
                                         if (c.name.startsWith("!")) return false;
                                         // if (!c.listColPos) return false;
-                                        if (c.listColPos === -1) return false;
-                                        return true;
+                                        return c.listColPos !== -1;
+
                                     }),
                                 'listColPos'),
                             function (dc) {
-                                return dc.name
+                                return dc.name;
                             }),
                     ",");
         },
@@ -414,6 +438,15 @@
         },
 
         /**
+         * @method setOrderBy
+         * @public
+         * @description SYNC
+         * Sets the static filter
+         */
+        setSorting: function() {
+        },
+
+        /**
          * @method getSorting
          * @public
          * @description SYNC
@@ -428,86 +461,29 @@
         /**
          * @method getNewRow
          * @public
-         * @description ASYNCH
+         * @description ASYNC
          * Gets new row, having ParentRow as Parent, and adds it on DataTable "dtDest"
          * @param {DataRow} parentRow. Parent Row of the new Row to create, or null if no parent is present
-         * @param {DataTable} dtDest. Table in which row has to be added
-         * @returns {Deferred(DataRow|null)}
+         * @param {DataTable} dtDest  Table in which row has to be added
+         * @returns {Deferred<DataRow|null>}
          */
         getNewRow:function (parentRow, dtDest) {
-            var def = Deferred("getNewRow");
-            var self = this;
-            var jsonTableChild = getDataUtils.getJsonFromDataTable(dtDest);
-            var jsonTableParent = null;
-            var relFound = null;
-
-            // per individuare la riga lato server, passo tabella + filtro
-            if (parentRow){
-                // recupero relazione padre figlio che servirà lto backend per recuperare le info per creare la riga figlia a seocnda del padre
-                var relsFound = dtDest.dataset.getParentChildRelation(parentRow.table.name, dtDest.name);
-                if (relsFound && relsFound.length) {
-                    relFound = relsFound[0];
-                } else {
-                    logger.log(logType.ERROR, "Nessuna relazione trovata tra tabella padre: " + parentRow.table.name + " e tabella figlia: " + dtDest.name);
-                    return def.resolve(null);
-                }
-
-                var tParentClone = parentRow.table.clone();
-                tParentClone.importRow(parentRow.current);
-                jsonTableParent = getDataUtils.getJsonFromDataTable(tParentClone);
-            }
-
-            var objConn = {
-                method: methodEnum.getNewRow,
-                prm: {
-                    dtChild:jsonTableChild,
-                    dtParent:jsonTableParent,
-                    rel:getDataUtils.getDataRelationSerialized(relFound) // serializzo la Relazione
-                }
-            };
-
-            return  appMeta.connection.call(objConn)
-                .then(function (json) {
-                    // il json di risposta contiene 2 oggetti serializzati. 1. il dt 2. il filtro della riga inserita
-                    var jsonDtOut  = json.dt;
-                    var jsonFilterOut = json.filter;
-                    // deserializzo
-                    var dtOut = getDataUtils.getJsDataTableFromJson(jsonDtOut);
-                    var filter = getDataUtils.getJsDataQueryFromJson(jsonFilterOut);
-                    // recupero riga
-                    var rowAdded = dtOut.select(filter);
-
-                    if (rowAdded.length === 1){
-                        // eseguo merge delle righe
-                        getDataUtils.mergeRowsIntoTable(dtDest, rowAdded, true);
-
-                        // E' necessario restituire la riga trasferita nel dataset originale e non quella del dataset temporaneo
-                        var rowInsertedDtDest = dtDest.select(dtOut.keyFilter(rowAdded[0]))[0];
-
-                        self.copyExtraPropertiesTable(dtOut, dtDest);
-
-                        // torno la riga appena inserita
-                        return def.resolve(rowInsertedDtDest.getRow());
-                    }
-
-                    logger.log(logType.ERROR, "error adding new row. rows added " + rowAdded.length);
-                    return def.resolve(null);
-
-                }, function(err) {
-                    return def.reject(err).promise();
-                })
+            let def = new Deferred("getNewRow");
+            let realParentObjectRow = parentRow ? parentRow.current : undefined;
+            let objRow = dtDest.newRow({}, realParentObjectRow);
+            // restituisco la dataRow creata
+            return def.resolve(objRow.getRow());
         },
 
         /**
          * @method copyExtraPropertiesTable
          * @public
          * @description SYNC
-         * Copies some useful properties form dtIn to dtOut
+         * Copies some structure properties form dtIn to dtOut
          * @param {DataTable} dtIn
          * @param {DataTable} dtDest
          */
         copyExtraPropertiesTable:function (dtIn, dtDest) {
-            var self = this;
             // copio tutte le proprietà delle colonne eventualmente ricalcolate, tranne
             // quelle descritte nella describeColumns, cioè posizione e caption e formato
             _.forEach(dtIn.columns, function (c) {
@@ -525,60 +501,8 @@
 
 
         /**
-         * @method getNewRowCopyChilds
-         * @public
-         * @description ASYNC
-         * Does the copy of primary row selected and its child
-         * @param {DataRow} primaryRowCopy main row already copied
-         * @param {DataRow} rowToInsert main row in dsTarget copied
-         * @param {DataSet} dsCopy dataset to copy
-         * @param {DataSet} dsTarget dataset target. is the metapage dataset
-         * @param {string} tableName main table name
-         * @param {string} editType
-         * @returns {deferred} def
-         */
-        getNewRowCopyChilds:function (primaryRowCopy, rowToInsert, dsCopy, dsTarget ,tableName, editType) {
-            var def  = Deferred("getCopyChilds");
-            var self = this;
-
-            // tabella principale dove c'è la riga appena inserita
-            var dtPrimary = dsTarget.tables[tableName];
-            var objConn = {
-                method: methodEnum.getNewRowCopyChilds,
-                prm: {
-                    dsIn: getDataUtils.getJsonFromJsDataSet(dsCopy, true), // dataset da copiare
-                    dtPrimary: getDataUtils.getJsonFromDataTable(dtPrimary), // tabella principale del ds di pagina per recuperare la row appena inserita lato backend
-                    tableName:tableName,
-                    editType:editType,
-                    filterPrimary:  getDataUtils.getJsonFromJsDataQuery(primaryRowCopy.table.keyFilter(primaryRowCopy.current)), // filtro sulla riga già copaita sul nuovo ds
-                    filterInsertRow:  getDataUtils.getJsonFromJsDataQuery(rowToInsert.table.keyFilter(rowToInsert.current)) // filtro sullariga inseita sul ds principale
-                }
-            };
-            return  appMeta.connection.call(objConn)
-                .then(function (dsJson) {
-                        var myDSout = getDataUtils.getJsDataSetFromJson(dsJson);
-                        // metto le righe sul ds target cioè quello di pagina
-                        getDataUtils.mergeDataSet(dsTarget, myDSout, true);
-
-                        // copio alcune proprietà che vengono valorizzate sulla getNewRow
-                        _.forEach(myDSout.tables, function (table) {
-                            var dtDest = dsTarget.tables[table.name];
-                            // per la tab principale non copio le proprietà , le quali già sono corrette, perche getNewrow sulla pricipale è stata fatta prima lato client
-                            if (dtDest && table.name !== tableName) {
-                                self.copyExtraPropertiesTable(table, dtDest);
-                            }
-                        });
-
-                       return def.resolve(myDSout);
-                    }, function(err) {
-                       return def.reject(err).promise();
-                    }
-                )
-        },
-
-        /**
          * @method doDelete
-         * @private
+         * @public
          * @description SYNC
          * To override eventually. Copies the value of the column col of the row "source" on the row "dest"
          * @param {DataColumn} col
@@ -597,17 +521,17 @@
          * the filter, and it is a selectable row. Otherwise returns null
          * @param {jsDataQuery} filter
          * @param {string} tableName
-         * @returns {Deferred(DataRow)} A row belonging to a table equal to PrimaryTable
+         * @returns {Deferred<DataRow>} A row belonging to a table equal to PrimaryTable
          */
         selectByCondition:function (filter, tableName) {
-            var def = Deferred("selectByCondition");
-            var self = this;
-            var res =  getData.selectCount(tableName, filter)
-                .then(function(resultCount) {
+            const def = Deferred("selectByCondition");
+            const self = this;
+            const res = this.getData.selectCount(tableName, filter)
+                .then(function (resultCount) {
                     if (resultCount !== 1) return def.resolve(null);
-                    return getData.runSelect(self.primaryTableName, "*", filter, null)
-                        .then(function(dataTable) {
-                            if (dataTable.rows.length===0) return def.resolve(null);
+                    return self.getData.runSelect(self.primaryTableName, "*", filter, null)
+                        .then(function (dataTable) {
+                            if (!dataTable.rows.length) return def.resolve(null);
                             return def.from(self.checkSelectRow(dataTable, dataTable.rows[0].getRow()));
                         });
                 });
@@ -616,30 +540,36 @@
         },
 
         /***
+         * Client function
          * @method checkSelectRow
          * @private
          * @description ASYNC
-         * "public virtual"
+         * @public
          * Resolves a Deferred with dataRow if dataRow is selectable, null otherwise
          * @param {DataTable} t
          * @param {DataRow} dataRow
-         * @returns {Deferred(null | DataRow)}
+         * @returns {Deferred<null | DataRow>}
          */
         checkSelectRow:function(t, dataRow) {
-            var def = Deferred("MetaData-checkSelectRow");
+            if (typeof appMeta=== undefined)return ;
+            const modal = appMeta.BootstrapModal;
+
+            const def = Deferred("MetaData-checkSelectRow");
             if (!dataRow) return def.resolve(null);
-            var res = this.canSelect(dataRow)
+            const res = this.canSelect(dataRow)
                 .then(function (result) {
-                    if (result) return def.resolve(dataRow);
-                    var winModal = new modal(
-                        localResource.alert,
-                        localResource.itemChooseNotSelectable, [localResource.ok],
+                    if (result) {
+                        return def.resolve(dataRow);
+                    }
+                    const winModal = new modal(
+                        this.localResource.dictionary.alert,
+                        this.localResource.dictionary.itemChooseNotSelectable, [this.localResource.dictionary.ok],
                         null,
                         null);
                     return winModal.show()
                         .then(function () {
-                         return def.resolve(null);
-                    })
+                            return def.resolve(null);
+                        });
                 });
             return def.from(res).promise();
 
@@ -648,14 +578,139 @@
         /**
          *
          * @param {DataRow} dataRow
-         * @returns {Deferred(boolean)}
+         * @returns {Promise<boolean>}
          */
         canSelect:function (dataRow) {
-            return sec.canSelect(dataRow)
-        }
+        	if(typeof appMeta === 'undefined')
+            	return securityExt.canSelect(dataRow);
+            else
+            	return Deferred().resolve(true).promise();
+        },
+
+        recusiveNewCopyChilds: recusiveNewCopyChilds
     };
 
-    appMeta.MetaData = MetaData;
-    
-}());
+    /** Take effect on client side **/
+
+    MetaData.prototype.localResource = localResource;
+    MetaData.prototype.getData = getDataExt;        //this is replaced server side with ctx.getDataInvoke
+    MetaData.prototype.security = securityExt;      //this is replaces server side with ctx.environment;
+    MetaData.prototype.getMeta = getMeta;           //this is replaces server side with ctx.getMeta;
+
+
+
+    /**
+     *
+     * @param {ObjectRow} destRow
+     * @param {ObjectRow} sourceRow
+     */
+    function recusiveNewCopyChilds (destRow, sourceRow) {
+        /* DataTable */
+        let sourceTable = sourceRow.getRow().table;
+        /* DataSet */
+        let dsSource = sourceTable.dataset;
+        let relations = sourceTable.childRelations();
+
+        let allNewChildRowDeferred = [];
+
+        _.forEach(relations,
+            /**
+             * @param {DataRelation} rel
+             * @return {boolean}
+             */
+            function (rel) {
+
+                let childTableName = rel.childTable;
+                let /* DataTable */ childTable = dsSource.tables[childTableName];
+                if (childTable.skipInsertCopy()) return true;
+
+                if (!metaModel.isSubEntity(childTable, destRow.getRow().table)) {
+                    return true; // continua nel ciclo
+                }
+
+                if (childTableName === sourceTable.tableName) {
+                    return true; // continua nel ciclo
+                }
+
+
+                let childRowCopy = rel.getChild(sourceRow); //  sourceRow.getRow().getChildRows(rel.name);
+
+                let metaChild = this.getMeta(childTableName);
+                metaChild.setDefaults(childTable);
+                metaChild.setSorting(childTable);
+
+                // creo catena di deferred iterative, ognuna ha bisogno del risultato precedente. poichè se ci sono più child devo inserire in
+                // self.state.DS.tables[defObj.childTableName] le righe con id momentaneo calcolato diverso. Lui riesce a calcolare
+                // l'id ovviamente solo se già ci sono le righe messe in precedenza. Nel vecchi metodo prima di questa modifica,
+                // metteva solo una riga l'ultima poichè l'id era sempre lo stesso. nel ciclo passavo sempre la tabella vuota all'inizio
+                let chain = Deferred.resolve(true);
+
+                _.forEach(childRowCopy, function (childSourceRow) {
+
+                    chain = chain.then(function () {
+
+                        return metaChild.getNewRow(destRow,childTable)
+                            .then(function (newChildRow) {
+                                // copio la riga child calcolata sul dt destinazione, così vado ogni volta ad incrementare le righe.
+                                // nel successivo .then della catena il dt sarà modificato
+                                _.forIn(childTable.columns,
+                                    /**
+                                     * @param {DataColumn} childCol
+                                     * @param {string} childColName
+                                     */
+                                    function (childCol, childColName) {
+                                        if (rel.childCols.some( c => c === childColName )) return true; // continuo nel ciclo
+                                        metaChild.insertCopyColumn(childCol, childSourceRow, newChildRow);
+                                    });
+                                return recusiveNewCopyChilds(newChildRow, childSourceRow);
+                            });
+
+                    });
+
+                    // inserisco array di deferred , cioè uno per ogni relazione di cui eventualmente devo vedere i figli
+                    allNewChildRowDeferred.push(chain);
+                });
+
+            }); // chiude primo for sulle relazioni
+
+        return Deferred.when.apply(Deferred, allNewChildRowDeferred);
+    }
+
+    if (freeExports && freeModule) {
+        // Export for a browser or Rhino.
+        if (root.appMeta) {
+            root.appMeta.MetaData = MetaData;
+        }
+        else {
+            if (moduleExports) { // Export for Node.js or RingoJS.
+                (freeModule.exports = MetaData).MetaData = MetaData;
+            }
+            else { // Export for Narwhal or Rhino -require.
+                freeExports.MetaData = MetaData;
+            }
+        }
+    }
+    else {
+        // Export for a browser or Rhino.
+        if (root.appMeta){
+            root.appMeta.MetaData = MetaData;
+        }
+        else {
+            root.MetaData=MetaData;
+        }
+    }
+
+}(  (typeof _ === 'undefined') ? require('lodash') : _,
+    (typeof appMeta === 'undefined') ? require('./MetaModel').metaModel : appMeta.metaModel,
+    (typeof appMeta === 'undefined') ? require('./LocalResource').localResource : appMeta.LocalResource,
+    (typeof appMeta === 'undefined') ? require('./EventManager').Deferred : appMeta.Deferred,
+    (typeof appMeta === 'undefined') ? require('./GetDataUtils') : appMeta.getDataUtils,
+    (typeof appMeta === 'undefined') ? require('./Logger').logger : appMeta.logger,
+    (typeof appMeta === 'undefined') ? require('./Logger').logTypeEnum : appMeta.logTypeEnum,
+    (typeof appMeta === 'undefined') ? undefined : appMeta.getMeta.bind(appMeta),
+    (typeof appMeta === 'undefined') ? undefined : appMeta.getData,
+    (typeof jsDataSet === 'undefined') ? require('./../metadata/jsDataSet').CType : jsDataSet.CType,
+    (typeof appMeta === 'undefined') ? undefined : appMeta.security,
+    )
+);
 

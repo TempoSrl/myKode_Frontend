@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>     
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <a name="description" content="">
+    <meta name="author" content="">
+    <title>Client side of Portale base project</title>
+
+    <!-- Bootstrap -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+
+    <!-- Font-awesome -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha512-xh6O/CkQoPOWDdYTDqeRdPCVd1SpvCA9XXcUnZS2FmJNp1coAFzvtCN9BmamE+4aHK8yyUHUSCcJHgXloTyT2A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" href="styles/app.css">
+
+    <script src="../../bower_components/jquery/dist/jquery.js"></script>
+    <script src="../../bower_components/jquery-ui/jquery-ui.js"></script>
+    <script src="../../bower_components/lodash/lodash.js"></script>
+    <script src="../../bower_components/observe-js/src/observe.js"></script>
+    <script src="../../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+    <script src="../../bower_components/jsDataSet/src/jsDataSet.js"></script>
+
+    <!-- Bootstrap -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/2.9.2/umd/popper.min.js" integrity="sha512-2rNj2KJ+D8s1ceNasTIex6z4HWyOnEYLVC3FigGOmyQCZc2eBXKgOxQmo3oKLHyfcj53uz4QMsRCWNbLd32Q1g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.min.js" integrity="sha384-IDwe1+LCz02ROU9k972gdyvl+AESN10+x7tBKgc9I5HFtuNz0wWnPclzo6p9vxnk" crossorigin="anonymous"></script>
+
+    <!-- script src="app/styles/bootstrap/js/bootstrap.js"></script -->
+    <script src="../../components/metadata/MetaApp.js"></script>
+    <script src="../../components/metadata/Config.js"></script>
+    <script src="../../components/metadata/Logger.js"></script>
+    <script src="../../components/metadata/Routing.js"></script>
+    <script src="../../components/metadata/ConnWebService.js"></script>
+    <script src="../../components/metadata/ConnWebSocket.js"></script>
+    <script src="../../components/metadata/Connection.js"></script>
+    <script src="../../components/metadata/EventManager.js"></script>
+    <script src="../../components/metadata/LocalResource.js"></script>
+    <script src="../../components/metadata/LoaderControl.js"></script>
+    <script src="../../components/metadata/GetDataUtils.js"></script>
+    <script src="../../components/metadata/GetData.js"></script>
+    <script src="../../components/metadata/PostData.js"></script>
+    <script src="../../components/metadata/BootstrapModal.js"></script>
+    <script src="../../components/metadata/ListManager.js"></script>
+    <script src="../../components/metadata/CssDefault.js"></script>
+    <script src="../../components/metadata/TypedObject.js"></script>
+    <script src="../../components/metadata/MetaPageState.js"></script>
+    <script src="../../components/metadata/MetaModel.js"></script>
+    <script src="../../components/metadata/HelpForm.js"></script>
+    <script src="../../components/metadata/MetaData.js"></script>
+    <script src="../../components/metadata/MetaPage.js"></script>
+    <script src="../../components/metadata/GridControl.js"></script>
+    <script src="../../components/metadata/ComboManager.js"></script>
+    <script src="../../components/metadata/Utils.js"></script>
+    <script src="../../components/metadata/AuthManager.js"></script>
+    <script src="../../components/metadata/ConfigDev.js"></script>
+
+
+    <script>
+        $(document).ready(function(){
+            $("#registerButton").on("click", doRegister);
+        })
+
+        function doRegister() {
+            //questi servono per impedire che il form reinizializzi la pagina
+            //dopo aver cliccato il pulsante.
+            event.preventDefault();
+            event.stopPropagation();
+
+            var nome = $("#nome").val(),
+                cognome = $("#cognome").val(),
+                codiceFiscale = $("#codiceFiscale").val(),
+                partitaIva = $("#partitaIva").val(),
+                username = $("#username").val(),
+                email = $("#email").val(),
+                password = $("#password").val(),
+                confermaPassword = $("#confermaPassword").val(),
+                dataNascita = $("#dateborn").val();
+            //DEBUG: le credenziali vengono sovrascritte con
+            //credenziali valide per motivi di debugging
+            /*nome = appMeta.configDev.nome;
+            cognome = appMeta.configDev.cognome;
+            dataNascita = appMeta.configDev.dataNascita;
+            codiceFiscale = appMeta.configDev.codiceFiscale;
+            partitaIva = appMeta.configDev.partitaIva;
+            username = appMeta.configDev.userName; 
+            email = appMeta.configDev.email;
+            password = appMeta.configDev.password;
+            */
+			appMeta.routing.setUrlPrefix("http://localhost:54471");
+            appMeta.authManager.register(username, password, email, codiceFiscale, partitaIva, cognome, nome, dataNascita)
+            .then(function (res) {
+                if (res) {
+                    console.log("Registrazione riuscita")
+                    window.location.href = "main.html"
+                } else {
+                    console.log("C'è stato qualche problema nella registrazione")
+                }
+            })
+
+        }
+        
+    </script>
+</head>
+
+<body>
+   
+    <div class="container">
+        <div class="row align-items-center justify-content-center">
+            <h3>Registrazione</h3>
+        </div>
+
+        <form>
+            <div class="form-row">
+                <div class="form-group col-4">
+                    <label for="nome">Nome</label>
+                    <input type="text" class="form-control" id="nome" placeholder="Nome">
+                </div>
+                <div class="form-group col-4">
+                    <label for="cognome">Cognome</label>
+                    <input type="text" class="form-control" id="cognome" placeholder="Cognome">
+                </div>
+                <div class="form-group col-4">
+                    <label for="dateborn">Data di nascita</label>
+                    <input type="text" class="form-control" id="dateborn" placeholder="gg/mm/aaa">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="codiceFiscale">Codice Fiscale</label>
+                    <input type="text" class="form-control" id="codiceFiscale" placeholder="Cod. Fis.">
+                </div>
+                <div class="form-group col-6">
+                    <label for="partitaIva">Partita IVA</label>
+                    <input type="text" class="form-control" id="partitaIva" placeholder="p. IVA">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="username">Username</label>
+                    <input type="text" class="form-control" id="username" placeholder="Username">
+                </div>
+                <div class="form-group col-6">
+                    <label for="email">Email</label>
+                    <input type="text" class="form-control" id="email" placeholder="email@email.it">
+                </div>
+            </div>
+                
+            <div class="form-row">
+                <div class="form-group col-6">
+                    <label for="password">Password</label>
+                    <input type="password" class="form-control" placeholder="********" id="password">
+                </div>
+                <div class="form-group col-6">
+                    <label for="inputEmail3">Conferma password</label>
+                    <input type="password" class="form-control" placeholder="********" id="confermaPassword">
+                </div>
+            </div>   
+
+            <button type="submit" class="btn btn-primary" id="registerButton">Registrati</button>    
+        </form>
+    </div>
+
+</body>
+</html>
+    

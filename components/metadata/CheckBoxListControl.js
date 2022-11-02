@@ -691,7 +691,7 @@
 
             _.forEach(cols,
                 function(c, index) {
-                    var thid = appMeta.utils.getUnivoqueId();
+                    var thid = appMeta.utils.getUniqueId();
                     var $th = $('<th id="' + thid + '" style="border-bottom:1pt solid black;">');
                     // lego la colonna al th per il drop e successivo spostamento della colonna
                     $th.data("mdlcolumn", c);

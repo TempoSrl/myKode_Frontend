@@ -32,7 +32,6 @@
         describeColumns : "describeColumns",
         describeTree: "describeTree",
         getSpecificChild : "getSpecificChild",
-        getNewRowCopyChilds: "getNewRowCopyChilds",
         setUsrEnv: "setUsrEnv",
         doReadValue: "doReadValue",
         customServerMethod: "customServerMethod",
@@ -195,7 +194,6 @@
             this.registerService(methodEnum.doGet, 'POST', 'data', false, true);
             this.registerService(methodEnum.saveDataSet, 'POST', 'data', false, true);
             this.registerService(methodEnum.getNewRow, 'POST', 'data', false, true);
-            this.registerService(methodEnum.getNewRowCopyChilds, 'POST', 'data', false, true);
             this.registerService(methodEnum.describeColumns, 'POST', 'data', false, true);
             this.registerService(methodEnum.describeTree, 'POST', 'data', false, true);
             this.registerService(methodEnum.getSpecificChild, 'POST', 'data', false, true);

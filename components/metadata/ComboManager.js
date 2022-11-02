@@ -44,10 +44,11 @@
         this.valueMember = $(el).data("valueMember");
         if (!this.valueMember)  logger.log(logType.ERROR, "No value member specified in combobox " + this.el);
 		this.displayMember = $(el).data("displayMember") || this.valueMember;
+
 		//di base la combo è ordinata per il displayMember
 		this.sortMember = $(el).data("sortMember") || this.displayMember;
 
-        var tag = helpForm.getStandardTag($(el).data("tag"));
+        let tag = helpForm.getStandardTag($(el).data("tag"));
         if (!tag) logger.log(logType.ERROR, "Bad data-tag specified in combobox " + this.el);
 
         if (this.dataTable) {
@@ -158,7 +159,9 @@
          * @returns {Deferred}
          */
         controlChanged: function (that) {
-            if (that.rowChangeDisabled) return false;
+            if (that.rowChangeDisabled) {
+                return false;
+            }
             return that.setRow(that.getCurrentRow().row, undefined)
                 .then(function () {
                     return that.metaPage.eventManager.trigger(appMeta.EventEnum.afterComboChanged, that);
@@ -175,8 +178,10 @@
          * @returns {Deferred}
          */
         setRow: function (row, propagate) {
-            var def = Deferred("setRow");
-            if (row === this.currentRow) return def.resolve(true);
+             var def = Deferred("setRow");
+            if (row === this.currentRow) {
+                return def.resolve(true);
+            }
             if (propagate === undefined) propagate = true;
             this.currentRow = row;
             if (this.metaPage && propagate) {
@@ -197,19 +202,27 @@
          */
         setIndex: function(index, propagate) {
             var def = Deferred("setIndex");
+
             if (index < this.firstDataRow) {
+
+                this.rowChangeDisabled = true;
                 $(this.el).val(null).trigger('change');
                 this.el.selectedIndex = index; //may or may not raise an onChange
+                this.rowChangeDisabled = false;
+
                 return def.from(this.setRow(null, propagate)); //assure that row is properly selected
             }
 
             if (index >= this.comboRows.length + this.firstDataRow) {
                 index = this.comboRows.length + this.firstDataRow - 1;
             }
-
-            $(this.el).val(this.comboRows[index - this.firstDataRow][this.valueMember]);
+            let selectedIndex = index - this.firstDataRow;
+            $(this.el).val(this.comboRows[selectedIndex][this.valueMember]);
+            this.rowChangeDisabled = true;
             $(this.el).trigger('change');
-            return def.from(this.setRow(this.comboRows[index - this.firstDataRow], propagate)); // assure that row is properly selected
+            this.rowChangeDisabled = false;
+            // assure that row is properly selected
+            return def.from(this.setRow(this.comboRows[index - this.firstDataRow], propagate));
         },
 
         /**
@@ -229,7 +242,7 @@
                 def.from(this.setIndex(this.blankLineIndex, propagate));
             } else {
                 var index = _.findIndex(this.comboRows, function(r) {
-                        return r[that.valueMember] == value;
+                        return r[that.valueMember] === value;
                     });
                 if (index >= 0) {
                     def.from( this.setIndex(index + this.firstDataRow, propagate));
@@ -292,7 +305,7 @@
         },
 
         /**
-         * @method fillControl
+         * @method waitMasterDetail
          * @public
          * @description ASYNC
          * Put a loading indicator for the detail combo
@@ -331,12 +344,13 @@
          */
         fillControl: function (comboBox, val) {
             var def = Deferred("ComboManager.fillControl");
-            if (this.helpForm.comboBoxToRefill) this.checkComboBoxSource(val);
+            if (this.helpForm.comboBoxToRefill) {
+                this.checkComboBoxSource(val);
+            }
             // se c'è una sola riga dati ed è deny null+insert, scegli quella punto e basta
             if (this.comboRows.length === 1 && this.isDenyNull && this.pageState.isInsertState()) return  def.from(this.setIndex(this.firstDataRow));
             return def.from(this.setValue(val));
         },
-
 
         /**
          * @method clearControl
@@ -407,7 +421,7 @@
             _.forEach(
                 this.comboRows,
                 function(dataRow) {
-                    var opt = document.createElement("option");
+                    let opt = document.createElement("option");
                     opt.textContent = dataRow[that.displayMember];
                     opt.value = dataRow[that.valueMember];
                     comboBox.appendChild(opt); //$(comboBox).append(el);
@@ -439,6 +453,7 @@
             if (!metaModel.insertFilter(t)) {
                 this.comboRows = t.select(this.masterFilter);
 				this.comboRows = _.sortBy(this.comboRows, [this.sortMember]);
+
                 this.fillComboBoxOptions(); //tutte le righe
                 return;
             }
@@ -446,8 +461,9 @@
             //Esaminiamo ora il caso in cui T HA filtro per insert. In questo caso può accadere che
             //  DataSetName = mkytemp_insert o mkytemp_special
             if (this.pageState.isSearchState()) {
-                this.comboRows = t.select(this.helpForm.mergeFilters(metaModel.searchFilter(t), this.masterFilter));
-				this.comboRows = _.sortBy(this.comboRows, [this.sortMember]);
+                let filter = this.helpForm.mergeFilters(metaModel.searchFilter(t), this.masterFilter);
+                this.comboRows = t.select(filter);
+                 this.comboRows = _.sortBy(this.comboRows, [this.sortMember]);
                 this.fillComboBoxOptions(); //ripristina le voci di search
                 return;
             }
@@ -499,17 +515,14 @@
          * @public
          * @description ASYNC
          * Execute a prefill of the combobox
-         * @param {Html node} el
+         * @param {node} el
          * @param {Object} param {tableWantedName:tableWantedName, filter:filter, selList:selList}
          * @returns {Deferred}
          */
         preFill: function(el, param) {
             var def = Deferred("preFill");
-
             if(this.dataSourceName && param.tableWantedName && param.tableWantedName !== this.dataSourceName ) return def.resolve().promise();
-
             this.initVarsForMaster();
-
             return def.from(this.filteredPreFillCombo(param.filter, param.selList)).promise();
         },
 
@@ -539,16 +552,20 @@
          * is marked as temp_row.  More, the table have not to be a CHILD table itself ASYNC
          * @param {jsDataQuery} filter. It is the filter to apply
          * @param {SelectBuilder[]} selList
+         * @param {sqlFun} filterMaster
          * @returns {Deferred}
          */
         filteredPreFillCombo: function (filter, selList, filterMaster) {
             var def = Deferred("filteredPreFillCombo");
             var t = this.dataTable;
-            if (metaModel.temporaryTable(t)) return def.resolve(t);
+
+            if (metaModel.temporaryTable(t)) {
+                return def.resolve(t);
+            }
 
             //Checks that the table is a child of another table and the filter is empty
             if ((filter === null || filter === undefined || !filterMaster) && this.comboMaster) {
-                //The list will be built depending of the selected row of the other table
+                //The list will be built depending on the selected row of the other table
                 //Don't read anything for now. table will be read when a filter is given
                 return def.resolve(false);
             }
@@ -570,6 +587,7 @@
                         };
                         return Deferred('filteredPreFillCombo - delayed').resolve(true);
                     }
+
                     //Table has been read
                     that.comboRows = t.select();
 					that.comboRows = _.sortBy(that.comboRows, [that.sortMember]);

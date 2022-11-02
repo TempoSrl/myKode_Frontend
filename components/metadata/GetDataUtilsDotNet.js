@@ -1,5 +1,5 @@
 /**
- * @module getDataUtils
+ * @module getDataUtilsDotNet
  * @description
  * Collection of utility functions for GetData
  */

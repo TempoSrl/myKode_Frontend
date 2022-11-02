@@ -1,0 +1,63 @@
+﻿<!doctype html>
+
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <base href="/">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- build:css(client) app/vendor.css -->
+      <!-- bower:css -->
+      <!-- endbower -->
+    <!-- endbuild -->
+    <!-- build:css({.tmp,client}) app/app.css -->
+
+      <!-- injector:css -->
+      <!-- endinjector -->
+    <!-- endbuild -->
+  </head>
+  <body>
+    <!--[if lt IE 7]>
+      <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+    <![endif]-->
+
+    <!-- Add your site or application content here -->
+    <div>
+      <div id="metaRoot">
+
+      </div>
+
+    </div>
+
+    <!-- build:js({client,node_modules}) app/vendor.js -->
+      <!-- bower:js -->
+      <script src="bower_components/jquery/dist/jquery.js"></script>
+      <script src="bower_components/lodash/lodash.js"></script>
+      <script src="bower_components/observe-js/src/observe.js"></script>
+      <script src="bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+      <script src="bower_components/jsDataSet/src/jsDataSet.js"></script>
+      <script src="bower_components/jquery-ui/jquery-ui.js"></script>
+      <!-- endbower -->
+    <!-- endbuild -->
+
+
+        <!-- build:js({.tmp,client}) app/app.js -->
+
+          <!-- injector:js -->
+          <script src="components/metadata/MetaApp.js"></script>
+          <script src="components/metadata/EventManager.js"></script>
+          <script src="components/metadata/GetDataUtils.js"></script>
+          <script src="components/metadata/GetData.js"></script>
+          <script src="components/metadata/MetaModel.js"></script>
+          <script src="components/metadata/MetaData.js"></script>
+          <script src="components/metadata/MetaPage.js"></script>
+          <script src="components/metadata/MetaPageState.js"></script>
+          <script src="test/app/registry/registry_default.js"></script>
+          <!-- endinjector -->
+
+        <!-- endbuild -->
+  <h1>Simple App</h1>
+</body>
+</html>

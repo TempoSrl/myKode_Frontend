@@ -49,8 +49,9 @@
             if (callConfigObj.auth){
                 var token = this.getAuthToken();
                 options["headers"] = {
-                    'Authorization':  "Bearer " + token
-                }
+                    'Authorization':  "Bearer " + token,
+                    "language": appMeta.localResource.currLng
+                };
             }
 
             // associa ad una tripla. Serve principalmente per recuperare "multipleResult" alla risposta

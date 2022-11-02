@@ -24,7 +24,6 @@
         this.rootElement = rootElement || document.body;
         this.messages = messages;
         this.templateFileHtmlPath  = appMeta.basePath + appMeta.config.path_procedureMessagesTemplate;
-        console.log(this.templateFileHtmlPath);
         this.columnNames = ["id", "description"];
         this.columnCaptions = [locale.prodMess_id, locale.prodMess_lonMsg];
 

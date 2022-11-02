@@ -1,0 +1,156 @@
+/******** init  textbox *****************/
+.alignNumericTextBox {
+    text-align : right;
+}
+
+.alignStringTextBox {
+    text-align : right;
+}
+/****** end text box **********************/
+
+.mainButton {
+    height: 50px;
+}
+
+/******* Init Grid and list manager *******/
+
+/* odd rows in the grid*/
+/*.odd {
+    background-color  : lightgrey;
+}*/
+table tr:nth-child(odd) {
+    background-color: lightgrey;
+}
+
+/* applied to td in table */
+.alignNumericColumn {
+    text-align : right !important;
+}
+.alignStringColumn {
+    text-align : left !important;
+}
+
+/* Style of ListManager grid control */
+
+.listManagerNotModalContainer{
+    height:30%;
+    resize:vertical;
+    overflow: auto;
+    border: 1px solid black;
+}
+
+.listManagerFooter{
+    /* to center it */
+    margin: 5px auto;
+}
+
+/* set the border of the control */
+.listManagerContainer{
+    border: solid grey thin;
+}
+
+/* row selected in a grid */
+.table > tr > td, th {
+    line-height:20px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+/* row selected in a grid */
+.table > tr.active {
+    background-color:yellow;
+}
+.table > td {
+    cursor: pointer;
+}
+
+
+/* MuliSelectControl*/
+.selectedRow{
+    background: cyan;
+}
+
+.multiSelect_rowMargin{
+    margin-top:20px;
+}
+/******* End Grid and list manager ******/
+
+/******* init Toolbar css ***************/
+
+/* toolbar button pushed state*/
+.btnPushed{
+    background: #e5e5e5;
+    border-width: 5px;
+    border-style: ridge;
+}
+
+/* toolbar button*/
+.btn-sq-lg {
+    width: 100px !important;
+    height: 100px !important;
+    float: left;
+    position: relative;
+}
+
+/* toolbar button text*/
+.buttonTooBarText{
+    position: relative;
+    bottom: 5%;
+    width: 100%;
+    left: 0%;
+}
+/******* end Toolbar css ***************/
+
+/*Autochoose*/
+
+.autoChoose{
+    background: lightblue;
+}
+
+/*****************************************/
+
+/* Important part */
+.modal-dialog{
+    overflow-y: initial !important
+}
+.modal-body{
+    height: 70%;
+    overflow-y: auto;
+}
+
+/*******************CUSTOM CSS*************************/
+
+/* classe sui bottoni della griglia */
+.mdlw_tdclickable {
+    user-select: none;
+    cursor: pointer;
+}
+
+
+/** permette alle label del jsTree di andare  capo se non entrano nella lunghezza **/
+.jstree-anchor {
+    /*enable wrapping*/
+    white-space : normal !important;
+    /*ensure lower nodes move down*/
+    height : auto !important;
+    /*offset icon width*/
+    padding-right : 24px;
+}
+
+/* applicato alle pagine di dettaglio per avere un effetto popup */
+.detailPage {
+    border: 15px solid lightgrey;
+    padding: 5px;
+}
+
+/* ================= FORMATTAZIONE CELLE ================= */
+.row { margin-bottom: 20px; }
+.col-md-6, .col-md-12 { align-self: flex-end; }
+.col-md-6 div, .col-md-12 div { color:#666; font-style: italic; font-size: 14px; }
+
+@media (min-width: 576px) { .col-md-6 div, .col-md-12 div { font-size: 16px; } }
+.col-form-label { padding-top:2px; padding-left: 0px; font-weight: 500; }
+
+
+/* ================= TABELLA LOOKUP - TESTI RIDOTTI ================= */
+.alignStringColumn { max-width: 250px; overflow: hidden; text-overflow: ellipsis; }

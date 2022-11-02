@@ -338,8 +338,9 @@
                 getMeta: function (tableName) {
                     var meta = this.allMeta[tableName];
                     if (!meta) {
-                        return new this.MetaData(tableName);
+                        meta = new this.MetaData(tableName);
                     }
+                    meta.setLanguage(this.localResource.currLng);
                     return meta;
                 },
 

@@ -4,6 +4,7 @@ describe("MetaModel", function () {
 
         var metaModel;
 
+        let CType = jsDataSet.CType;
         beforeEach(function () {
                 jasmine.getFixtures().fixturesPath = 'base/test/spec/fixtures';
                 metaModel = appMeta.metaModel;
@@ -21,8 +22,8 @@ describe("MetaModel", function () {
                                 var ds1 = new jsDataSet.DataSet("temp1");
                                 var t1ds1 = ds1.newTable("table1");
                                 // setto le prop delle colonne per t1
-                                t1ds1.setDataColumn("key", "String");
-                                t1ds1.setDataColumn("field1", "String");
+                                t1ds1.setDataColumn("key", CType.string);
+                                t1ds1.setDataColumn("field1", CType.string);
                                 var r0 = {key: "key1", field1: "f0"};
                                 var r1 = {key: "key1", field1: "f1"};
                                 var r2 = {key: "key1", field1: "f0"};
@@ -59,16 +60,16 @@ describe("MetaModel", function () {
                                 var t2_rel_ds2 = ds2.newTable("table3");
 
                                 // setto le prop delle colonne per t1
-                                t1ds1.setDataColumn("key", "String");
-                                t1ds1.setDataColumn("field1", "String");
-                                t1_rel_ds2.setDataColumn("key", "String");
-                                t1_rel_ds2.setDataColumn("other_field", "String");
+                            t1ds1.setDataColumn("key", CType.string);
+                            t1ds1.setDataColumn("field1", CType.string);
+                            t1_rel_ds2.setDataColumn("key", CType.string);
+                            t1_rel_ds2.setDataColumn("other_field", CType.string);
                                 ds1.newRelation("r1", "table1", ["key"], "table3", ["key"]); // relazione tra table 1 e 3 su key
 
-                                t2ds2.setDataColumn("key", "String");
-                                t2ds2.setDataColumn("field1", "String");
-                                t2_rel_ds2.setDataColumn("key", "String");
-                                t2_rel_ds2.setDataColumn("other_field", "String");
+                            t2ds2.setDataColumn("key", CType.string);
+                            t2ds2.setDataColumn("field1", CType.string);
+                            t2_rel_ds2.setDataColumn("key", CType.string);
+                            t2_rel_ds2.setDataColumn("other_field", CType.string);
 
                                 var r1 = {key: "key1", field1: "f1"};
                                 var r2 = {key: "key2", field1: "f2"};
@@ -150,16 +151,16 @@ describe("MetaModel", function () {
                                 var t2_rel_ds2 = ds2.newTable("table3");
 
                                 // setto le prop delle colonne per t1
-                                t1ds1.setDataColumn("key", "String");
-                                t1ds1.setDataColumn("field1", "String");
-                                t1_rel_ds2.setDataColumn("key", "String");
-                                t1_rel_ds2.setDataColumn("other_field", "String");
+                            t1ds1.setDataColumn("key", CType.string);
+                            t1ds1.setDataColumn("field1", CType.string);
+                            t1_rel_ds2.setDataColumn("key", CType.string);
+                            t1_rel_ds2.setDataColumn("other_field", CType.string);
                                 ds1.newRelation("r1", "table1", ["key"], "table3", ["key"]); // relazione tra table 1 e 3 su key
 
-                                t2ds2.setDataColumn("key", "String");
-                                t2ds2.setDataColumn("field1", "String");
-                                t2_rel_ds2.setDataColumn("key", "String");
-                                t2_rel_ds2.setDataColumn("other_field", "String");
+                            t2ds2.setDataColumn("key", CType.string);
+                            t2ds2.setDataColumn("field1", CType.string);
+                            t2_rel_ds2.setDataColumn("key", CType.string);
+                            t2_rel_ds2.setDataColumn("other_field", CType.string);
 
                                 var r1 = {key: "key1", field1: "f1"};
                                 var r2 = {key: "key2", field1: "f2"};
@@ -221,11 +222,11 @@ describe("MetaModel", function () {
                                 var table1 = ds.newTable("table1");
                                 var table2 = ds.newTable("table2");
 
-                                table1.setDataColumn("key", "String");
-                                table1.setDataColumn("field1", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
 
-                                table2.setDataColumn("key", "String");
-                                table2.setDataColumn("other_field", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
 
                                 var r1 = {key: "key1", field1: "f1"};
                                 var r2 = {key: "key2", field1: "f2"};
@@ -247,11 +248,11 @@ describe("MetaModel", function () {
                                 table1.key("key");
                                 table2.key("key");
 
-                                var res1 = metaModel.getRelatedRow(r1, table2.name, "other_field");
+                                var res1 = metaModel.getRelatedRowColumn(r1, table2.name, "other_field");
                                 expect(res1).toBe(null); // Non hoe splicitatato relazione ok!
 
                                 ds.newRelation("r1", "table1", ["key"], "table2", ["key"]); // relazione tra table 1 e 2 su key
-                                var res2 = metaModel.getRelatedRow(r1, table2.name, "other_field");
+                                var res2 = metaModel.getRelatedRowColumn(r1, table2.name, "other_field");
                                 expect(res2).toBe("o1"); // ok ritrovo il campo di r4, che corrisponde sulla chiave "key1"
                         });
 
@@ -261,11 +262,11 @@ describe("MetaModel", function () {
                             var table1 = ds.newTable("table1");
                             var table2 = ds.newTable("table2");
     
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
     
-                            table2.setDataColumn("key", "String");
-                            table2.setDataColumn("other_field", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
     
                             var r1 = {key: "key1", field1: "f1"};
                             var r2 = {key: "key2", field1: "f2"};
@@ -287,11 +288,11 @@ describe("MetaModel", function () {
                             table1.key("key");
                             table2.key("key");
 
-                            var res1 = metaModel.getRelatedRow(r1, table2.name, "other_field");
+                            var res1 = metaModel.getRelatedRowColumn(r1, table2.name, "other_field");
                             expect(res1).toBe(null); // Non ho esplicitatato relazione ok!
     
                             ds.newRelation("r1", "table1", ["key"], "table2", ["key"]); // relazione tra table 1 e 2 su key
-                            var res2 = metaModel.getRelatedRow(r5, table1.name, "field1");
+                            var res2 = metaModel.getRelatedRowColumn(r5, table1.name, "field1");
                             expect(res2).toBe("f2"); // ok ritrovo il campo di r2, che corrisponde sulla chiave "key2"
                         });
 
@@ -300,8 +301,8 @@ describe("MetaModel", function () {
                         var ds = new jsDataSet.DataSet("temp2");
                         var table1 = ds.newTable("table1");
 
-                        table1.setDataColumn("key", "String");
-                        table1.setDataColumn("field1", "String");
+                        table1.setDataColumn("key", CType.string);
+                        table1.setDataColumn("field1", CType.string);
                         table1.setDataColumn("age", "Int32");
 
                         var r1 = {key: "key1", field1: "f1", age : 1};
@@ -338,9 +339,9 @@ describe("MetaModel", function () {
                             var ds = new jsDataSet.DataSet("temp2");
                             var table1 = ds.newTable("table1");
                             
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
-                            table1.setDataColumn("age", "Int32");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
+                            table1.setDataColumn("age", CType.int);
 
                             var r1 = {key: "key1", field1: "f1", age : 1};
                             var r2 = {key: "key2", field1: "f2", age : 2};
@@ -372,14 +373,14 @@ describe("MetaModel", function () {
                             var table1 = ds.newTable("table1");
                             var table2 = ds.newTable("table2");
     
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
-                            table1.setDataColumn("age", "Int32");
-                            table1.setDataColumn("lookupValue", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
+                            table1.setDataColumn("age", CType.int);
+                            table1.setDataColumn("lookupValue", CType.string);
 
-                            table2.setDataColumn("key", "String");
-                            table2.setDataColumn("other_field", "String");
-                            table2.setDataColumn("lookupValueString", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
+                            table2.setDataColumn("lookupValueString", CType.string);
 
                             var r1 = {key: "key1", field1: "f1", age : 1, lookupValue : ""};
                             var r2 = {key: "key2", field1: "f2", age : 2, lookupValue : ""};
@@ -435,15 +436,15 @@ describe("MetaModel", function () {
                             var table1 = ds.newTable("table1");
                             var table2 = ds.newTable("table2");
     
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
-                            table1.setDataColumn("age", "Int32");
-                            table1.setDataColumn("lookupValue", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
+                            table1.setDataColumn("age", CType.int);
+                            table1.setDataColumn("lookupValue", CType.string);
     
-                            table2.setDataColumn("key", "String");
-                            table2.setDataColumn("other_field", "String");
-                            table2.setDataColumn("lookupValueString", "String");
-                            table2.setDataColumn("field1", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
+                            table2.setDataColumn("lookupValueString", CType.string);
+                            table2.setDataColumn("field1", CType.string);
                             
                             // imposto la chiave
                             table1.key(["key", "field1"]);
@@ -465,15 +466,15 @@ describe("MetaModel", function () {
                             var table1 = ds.newTable("table1");
                             var table2 = ds.newTable("table2");
     
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
-                            table1.setDataColumn("age", "Int32");
-                            table1.setDataColumn("lookupValue", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
+                            table1.setDataColumn("age", CType.int);
+                            table1.setDataColumn("lookupValue", CType.string);
     
-                            table2.setDataColumn("key", "String");
-                            table2.setDataColumn("other_field", "String");
-                            table2.setDataColumn("lookupValueString", "String");
-                            table2.setDataColumn("field1", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
+                            table2.setDataColumn("lookupValueString", CType.string);
+                            table2.setDataColumn("field1", CType.string);
     
                             // imposto la chiave
                             table1.key(["key", "field1"]);
@@ -495,11 +496,11 @@ describe("MetaModel", function () {
                             var table1 = ds.newTable("table1");
                             var table2 = ds.newTable("table2");
 
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
 
-                            table2.setDataColumn("key", "String");
-                            table2.setDataColumn("other_field", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
 
                             // imposto la chiave
                             table1.key("key");
@@ -517,14 +518,14 @@ describe("MetaModel", function () {
                             var table2 = ds.newTable("table2");
                             var table3 = ds.newTable("table3");
 
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
 
-                            table2.setDataColumn("key", "String");
-                            table2.setDataColumn("other_field", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
 
-                            table3.setDataColumn("other_field", "String");
-                            table3.setDataColumn("other_field_table3", "String");
+                            table3.setDataColumn("other_field", CType.string);
+                            table3.setDataColumn("other_field_table3", CType.string);
 
                             var r1 = {key: "key1", field1: "f1"};
                             var r2 = {key: "key2", field1: "f2"};
@@ -582,14 +583,14 @@ describe("MetaModel", function () {
                             var table2 = ds.newTable("table2");
                             var table3 = ds.newTable("table3");
 
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
 
-                            table2.setDataColumn("key", "String");
-                            table2.setDataColumn("other_field", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
 
-                            table3.setDataColumn("other_field", "String");
-                            table3.setDataColumn("other_field_table3", "String");
+                            table3.setDataColumn("other_field", CType.string);
+                            table3.setDataColumn("other_field_table3", CType.string);
 
                             var r1 = {key: "key1", field1: "f1"};
                             var r2 = {key: "key2", field1: "f2"};
@@ -649,17 +650,17 @@ describe("MetaModel", function () {
                         var table2 = dsDest.newTable("table2");
                         var table2Rel = dsDest.newTable("table1Rel");
 
-                        table1.setDataColumn("key", "String");
-                        table1.setDataColumn("field1", "String");
+                        table1.setDataColumn("key", CType.string);
+                        table1.setDataColumn("field1", CType.string);
 
-                        table1Rel.setDataColumn("key", "String");
-                        table1Rel.setDataColumn("field1_table1Rel", "String");
+                        table1Rel.setDataColumn("key", CType.string);
+                        table1Rel.setDataColumn("field1_table1Rel", CType.string);
 
-                        table2Rel.setDataColumn("key", "String");
-                        table2Rel.setDataColumn("field1_table1Rel", "String");
+                        table2Rel.setDataColumn("key", CType.string);
+                        table2Rel.setDataColumn("field1_table1Rel", CType.string);
 
-                        table2.setDataColumn("key", "String");
-                        table2.setDataColumn("other_field", "String");
+                        table2.setDataColumn("key", CType.string);
+                        table2.setDataColumn("other_field", CType.string);
 
                         var r1 = {key: "key1", field1: "f1"};
                         var r2 = {key: "key2", field1: "f2"};
@@ -722,17 +723,17 @@ describe("MetaModel", function () {
                         var table2 = dsSource.newTable("table1");
                         var table2Rel = dsSource.newTable("table1Rel");
 
-                        table1.setDataColumn("key", "String");
-                        table1.setDataColumn("field1", "String");
+                        table1.setDataColumn("key", CType.string);
+                        table1.setDataColumn("field1", CType.string);
 
-                        table1Rel.setDataColumn("key", "String");
-                        table1Rel.setDataColumn("field1_table1Rel", "String");
+                        table1Rel.setDataColumn("key", CType.string);
+                        table1Rel.setDataColumn("field1_table1Rel", CType.string);
 
-                        table2.setDataColumn("key", "String");
-                        table2.setDataColumn("other_field", "String");
+                        table2.setDataColumn("key", CType.string);
+                        table2.setDataColumn("other_field", CType.string);
 
-                        table2Rel.setDataColumn("key", "String");
-                        table2Rel.setDataColumn("field1_table1Rel", "String");
+                        table2Rel.setDataColumn("key", CType.string);
+                        table2Rel.setDataColumn("field1_table1Rel", CType.string);
 
 
                         var r1 = {key: "key1", field1: "f1"};
@@ -802,14 +803,14 @@ describe("MetaModel", function () {
                         var table2 = ds.newTable("table2");
                         var table3 = ds.newTable("table3");
 
-                        table1.setDataColumn("key", "String");
-                        table1.setDataColumn("field1", "String");
+                        table1.setDataColumn("key", CType.string);
+                        table1.setDataColumn("field1", CType.string);
 
-                        table2.setDataColumn("key", "String");
-                        table2.setDataColumn("other_field", "String");
+                        table2.setDataColumn("key", CType.string);
+                        table2.setDataColumn("other_field", CType.string);
 
-                        table3.setDataColumn("other_field", "String");
-                        table3.setDataColumn("other_field_table3", "String");
+                        table3.setDataColumn("other_field", CType.string);
+                        table3.setDataColumn("other_field_table3", CType.string);
 
                         var r1 = {key: "key1", field1: "f1"};
                         var r2 = {key: "key2", field1: "f2"};
@@ -867,20 +868,20 @@ describe("MetaModel", function () {
                             var table2Rel = dsDest.newTable("table1Rel");
                             var table1_2 = dsDest.newTable("table1");
 
-                            table1.setDataColumn("key", "String");
-                            table1.setDataColumn("field1", "String");
+                            table1.setDataColumn("key", CType.string);
+                            table1.setDataColumn("field1", CType.string);
 
-                            table1_2.setDataColumn("key", "String");
-                            table1_2.setDataColumn("field1", "String");
+                            table1_2.setDataColumn("key", CType.string);
+                            table1_2.setDataColumn("field1", CType.string);
 
-                            table1Rel.setDataColumn("key", "String");
-                            table1Rel.setDataColumn("field1_table1Rel", "String");
+                            table1Rel.setDataColumn("key", CType.string);
+                            table1Rel.setDataColumn("field1_table1Rel", CType.string);
 
-                            table2Rel.setDataColumn("key", "String");
-                            table2Rel.setDataColumn("field1_table1Rel", "String");
+                            table2Rel.setDataColumn("key", CType.string);
+                            table2Rel.setDataColumn("field1_table1Rel", CType.string);
 
-                            table2.setDataColumn("key", "String");
-                            table2.setDataColumn("other_field", "String");
+                            table2.setDataColumn("key", CType.string);
+                            table2.setDataColumn("other_field", CType.string);
 
                             var r1 = {key: "key1", field1: "f1"};
                             var r2 = {key: "key2", field1: "f2"};
@@ -936,9 +937,9 @@ describe("MetaModel", function () {
                         var dsRif = new jsDataSet.DataSet("dsRif");
                         var table1 = dsRif.newTable("table1");
                              
-                        table1.setDataColumn("key", "String");
-                        table1.setDataColumn("field1", "String");
-                        table1.setDataColumn("field2", "String");
+                        table1.setDataColumn("key", CType.string);
+                        table1.setDataColumn("field1", CType.string);
+                        table1.setDataColumn("field2", CType.string);
                              
                        // var r1 = {key: "key1", field1: "f1", field2: "f11"};
                        // var r2 = {key: "key2", field1: "f1", field2: "f22"};
@@ -987,11 +988,11 @@ describe("MetaModel", function () {
                             var parent = dsRif.newTable("parent");
                             var child = dsRif.newTable("child");
     
-                            parent.setDataColumn("key", "String");
-                            parent.setDataColumn("field1", "String");
+                            parent.setDataColumn("key", CType.string);
+                            parent.setDataColumn("field1", CType.string);
     
-                            child.setDataColumn("key", "String");
-                            child.setDataColumn("field1_table1Rel", "String");
+                            child.setDataColumn("key", CType.string);
+                            child.setDataColumn("field1_table1Rel", CType.string);
     
                             // imposto la chiave
                             parent.key("key");
@@ -1012,11 +1013,11 @@ describe("MetaModel", function () {
                             var parent = dsRif.newTable("parent");
                             var child = dsRif.newTable("child");
 
-                            parent.setDataColumn("key", "String");
-                            parent.setDataColumn("field1", "String");
+                            parent.setDataColumn("key", CType.string);
+                            parent.setDataColumn("field1", CType.string);
 
-                            child.setDataColumn("key", "String");
-                            child.setDataColumn("field1_table1Rel", "String");
+                            child.setDataColumn("key", CType.string);
+                            child.setDataColumn("field1_table1Rel", CType.string);
 
                             // imposto la chiave
                             parent.key(["key", "field1"]);
@@ -1037,11 +1038,11 @@ describe("MetaModel", function () {
                             var parent = dsRif.newTable("parent");
                             var child = dsRif.newTable("child");
 
-                            parent.setDataColumn("key", "String");
-                            parent.setDataColumn("field1", "String");
+                            parent.setDataColumn("key", CType.string);
+                            parent.setDataColumn("field1", CType.string);
 
-                            child.setDataColumn("key", "String");
-                            child.setDataColumn("field1_table1Rel", "String");
+                            child.setDataColumn("key", CType.string);
+                            child.setDataColumn("field1_table1Rel", CType.string);
 
                             // imposto la chiave
                             parent.key(["key"]);
@@ -1062,11 +1063,11 @@ describe("MetaModel", function () {
                         var parent = dsRif.newTable("parent");
                         var child = dsRif.newTable("child");
 
-                        parent.setDataColumn("key", "String");
-                        parent.setDataColumn("field1", "String");
+                        parent.setDataColumn("key", CType.string);
+                        parent.setDataColumn("field1", CType.string);
 
-                        child.setDataColumn("key", "String");
-                        child.setDataColumn("field1_table1Rel", "String");
+                        child.setDataColumn("key", CType.string);
+                        child.setDataColumn("field1_table1Rel", CType.string);
 
                         // imposto la chiave
                         parent.key(["key"]);
@@ -1087,11 +1088,11 @@ describe("MetaModel", function () {
                         var parent = dsRif.newTable("parent");
                         var child = dsRif.newTable("child");
 
-                        parent.setDataColumn("key", "String");
-                        parent.setDataColumn("field1", "String");
+                        parent.setDataColumn("key", CType.string);
+                        parent.setDataColumn("field1", CType.string);
 
-                        child.setDataColumn("key", "String");
-                        child.setDataColumn("field1", "String");
+                        child.setDataColumn("key", CType.string);
+                        child.setDataColumn("field1", CType.string);
 
                         var r1Rel = {key: "key1", field1_table1Rel: "f1"};
 
@@ -1115,11 +1116,11 @@ describe("MetaModel", function () {
                             var parent = dsRif.newTable("parent");
                             var child = dsRif.newTable("child");
 
-                            parent.setDataColumn("key", "String");
-                            parent.setDataColumn("field1", "String");
+                            parent.setDataColumn("key", CType.string);
+                            parent.setDataColumn("field1", CType.string);
 
-                            child.setDataColumn("key", "String");
-                            child.setDataColumn("field1_table1Rel", "String");
+                            child.setDataColumn("key", CType.string);
+                            child.setDataColumn("field1_table1Rel", CType.string);
 
                             var r1Rel = {key: "key1", field1_table1Rel: "f1"};
 
@@ -1143,11 +1144,11 @@ describe("MetaModel", function () {
                             var parent = dsRif.newTable("parent");
                             var child = dsRif.newTable("child");
 
-                            parent.setDataColumn("key", "String");
-                            parent.setDataColumn("field1", "String");
+                            parent.setDataColumn("key", CType.string);
+                            parent.setDataColumn("field1", CType.string);
 
-                            child.setDataColumn("key", "String");
-                            child.setDataColumn("field1_table1Rel", "String");
+                            child.setDataColumn("key", CType.string);
+                            child.setDataColumn("field1_table1Rel", CType.string);
 
                             var r1Rel = {key: "key1", field1_table1Rel: "f1"};
 
@@ -1170,12 +1171,12 @@ describe("MetaModel", function () {
                             var parent = dsRif.newTable("parent");
                             var child = dsRif.newTable("child");
                             
-                            parent.setDataColumn("key", "String");
-                            parent.setDataColumn("field1", "String");
-                            parent.setDataColumn("field2", "String");
+                            parent.setDataColumn("key", CType.string);
+                            parent.setDataColumn("field1", CType.string);
+                            parent.setDataColumn("field2", CType.string);
                             
-                            child.setDataColumn("key", "String");
-                            child.setDataColumn("field2", "String");
+                            child.setDataColumn("key", CType.string);
+                            child.setDataColumn("field2", CType.string);
                                  
                              //autoincrement
                              parent.autoIncrement('key', {middleConst: '14', idLen: 6, selector:['field1', 'field2'], selectorMask:[123, 456]});
@@ -1200,9 +1201,9 @@ describe("MetaModel", function () {
 
                             var parent = dsRif.newTable("parent");
 
-                            parent.setDataColumn("key", "String");
-                            parent.setDataColumn("field1", "String");
-                            parent.setDataColumn("field2", "String");
+                            parent.setDataColumn("key", CType.string);
+                            parent.setDataColumn("field1", CType.string);
+                            parent.setDataColumn("field2", CType.string);
 
                             metaModel.lockRead(parent);
                             var isCached = metaModel.cachedTable(parent);
@@ -1219,13 +1220,13 @@ describe("MetaModel", function () {
                             var ds = new jsDataSet.DataSet("temp");
                             var tSource = ds.newTable("source");
                             var tDest = ds.newTable("dest");
-                            tSource.setDataColumn("key1", "String");
-                            tSource.setDataColumn("key2", "String");
+                            tSource.setDataColumn("key1", CType.string);
+                            tSource.setDataColumn("key2", CType.string);
                             tSource.setDataColumn("f1", "Double");
                             tSource.setDataColumn("f2", "Double");
     
-                            tDest.setDataColumn("key1", "String");
-                            tDest.setDataColumn("key2", "String");
+                            tDest.setDataColumn("key1", CType.string);
+                            tDest.setDataColumn("key2", CType.string);
                             tDest.setDataColumn("f3", "Double");
                             tDest.setDataColumn("f4", "Double");
     
@@ -1242,9 +1243,9 @@ describe("MetaModel", function () {
                         function () {
                             var ds = new jsDataSet.DataSet("temp2");
                             var table1 = ds.newTable("table1");
-                            table1.setDataColumn("k1", "String");
+                            table1.setDataColumn("k1", CType.string);
                             table1.setDataColumn("k2", "Decimal");
-                            table1.setDataColumn("f1", "String");
+                            table1.setDataColumn("f1", CType.string);
                             table1.setDataColumn("f2", "Decimal");
                             metaModel.allowDbNull(table1.columns.k1, false);
                             metaModel.allowDbNull(table1.columns.k2, false);

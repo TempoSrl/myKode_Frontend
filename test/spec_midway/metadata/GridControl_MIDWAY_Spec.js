@@ -8,6 +8,7 @@ describe("GridControl",
         var stabilize = appMeta.stabilize;
         var common = appMeta.common;
         var localResource = appMeta.localResource;
+        localResource.setLanguage("it");
         var state;
         var helpForm;
         var ds;

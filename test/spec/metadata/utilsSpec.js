@@ -12,6 +12,7 @@ describe('utils',
                     // inizializzo per ogni test l'oggetto appMeta        
                     appMeta = window.appMeta;
                     appMeta.init();
+
                     appMeta.basePath = 'base/test/spec/';
                     //console.log('beforeEach:');
                     $("html").html('<head></head><body></body>');

@@ -21,11 +21,11 @@ describe("helpForm",
         
         beforeEach(function() {
             Stabilizer.nesting = 0;
-            jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            //jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
 
             appMeta.basePath = "base/";
 
-            // mock funzione asyn describeColumns()
+            // mock funzione async describeColumns()
             appMeta.MetaData.prototype.describeColumns = function() {
                 return new $.Deferred().resolve();
             };
@@ -50,14 +50,14 @@ describe("helpForm",
             appMeta.dbClickTimeout = 1;
 
             jasmine.getFixtures().fixturesPath = "base/test/spec/fixtures";
-            // costrusico ogetto stato e ds
+            // costruisco oggetto stato e ds
             state = new appMeta.MetaPageState();
         
             state.DS = ds;
             // inizializzo la form
             helpForm = new HelpForm(state, "table1", "#rootelement");
 
-            // seleziono anche la lastSelected. Per default nei test è la 1. la posso cambiare all'interno dei singoli test se voglio
+            // Seleziono anche la lastSelected. Per default nei test è la 1. la posso cambiare all'interno dei singoli test se voglio
             helpForm.lastSelected(t1, objrow1);
 
         });
@@ -261,7 +261,7 @@ describe("helpForm",
                             });
 
                         it("existsDataAttribute() returns true if data-attribute is present, false otherwise",
-                            function() {
+                            function(done) {
                               
                                 var mainwin ='<input type="text" id="t1" data-tag="table1.c_name" data-onlytag data-zerotag="0" data-falsetag="false" value="notag">';
                                 $("html").html(mainwin);
@@ -272,6 +272,7 @@ describe("helpForm",
                                 expect(helpForm.existsDataAttribute($("#t1"), "falsetag")).toBeTruthy();
 
                                 expect(helpForm.existsDataAttribute($("#t1"), "notag")).toBeFalsy();
+                                done();
                             });
                     });
 
@@ -375,14 +376,15 @@ describe("helpForm",
                                     "</select>" +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                helpForm.getControls();
-                                // cambia il valore della riga primaria. Deve mettere quello dell'opzione selezionata.
-                                // la c_name è di tipo String
-                                expect(helpForm.DS.tables["table1"].rows[0].c_name).toBe("value2");
-                                stabilize(true).then(done);
-
-                            });
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            helpForm.getControls();
+                                            // cambia il valore della riga primaria. Deve mettere quello dell'opzione selezionata.
+                                            // la c_name è di tipo String
+                                            expect(helpForm.DS.tables["table1"].rows[0].c_name).toBe("value2");
+                                            stabilize(true).then(done);
+                                    });
+                             });
 
                         it("SELECT combo DECIMAL column - should update correct fields on Primary table",
                             function(done) {
@@ -394,13 +396,15 @@ describe("helpForm",
                                     "</select>" +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                // per sicurezza verifico quello di partenza sia quello della last selected cioè 11
-                                expect(helpForm.DS.tables["table1"].rows[0].c_dec).toBe(11);
-                                helpForm.getControls();
-                                expect(helpForm.DS.tables["table1"].rows[0].c_dec)
-                                    .toBe(3); // è il value dell'opzione selected=true     
-                                stabilize(true).then(done);
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            // per sicurezza verifico quello di partenza sia quello della last selected cioè 11
+                                            expect(helpForm.DS.tables["table1"].rows[0].c_dec).toBe(11);
+                                            helpForm.getControls();
+                                            expect(helpForm.DS.tables["table1"].rows[0].c_dec)
+                                            .toBe(3); // è il value dell'opzione selected=true     
+                                            stabilize(true).then(done);
+                                    });
                             });
 
                         it("INPUT CHECKBOX case 1 - should update correct fields on Primary table",
@@ -452,24 +456,26 @@ describe("helpForm",
                                 // inizializzo la form
                                 helpForm = new HelpForm(state, "t", "#rootelement");
                                 helpForm.lastSelected(t, objrow);
-                                helpForm.preScanControls();
-                                helpForm.getControls();
-                                // cambia il valore della riga primaria. Deve mettere quello dell'opzione selezionata
-                                expect(helpForm.DS.tables["t"].rows[0].c_bit)
-                                    .toBe(26); // è il caso checked quindi prende il valore valueYes
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            helpForm.getControls();
+                                            // cambia il valore della riga primaria. Deve mettere quello dell'opzione selezionata
+                                            expect(helpForm.DS.tables["t"].rows[0].c_bit)
+                                            .toBe(26); // è il caso checked quindi prende il valore valueYes
 
 
-                                // FACCIO UNCHECK - riassegno il nuovo html cambiato. data-tag rimane lo stesso ovviamente
-                                mainDiv = '<div id="rootelement">' +
-                                    '<input type="checkbox" id="mycheck1" data-tag="t.c_bit:3">' +
-                                    "</div>";
-                                $("html").html(mainDiv);
-                                //riprovo la getcontrols()
-                                helpForm.getControls();
-                                // da 26 torna 18
-                                expect(helpForm.DS.tables["t"].rows[0].c_bit)
-                                    .toBe(18); // è il caso checked quindi prende il valore valueYes
-                                stabilize(true).then(done);
+                                            // FACCIO UNCHECK - riassegno il nuovo html cambiato. data-tag rimane lo stesso ovviamente
+                                            mainDiv = '<div id="rootelement">' +
+                                                '<input type="checkbox" id="mycheck1" data-tag="t.c_bit:3">' +
+                                                "</div>";
+                                            $("html").html(mainDiv);
+                                            //riprovo la getcontrols()
+                                            helpForm.getControls();
+                                            // da 26 torna 18
+                                            expect(helpForm.DS.tables["t"].rows[0].c_bit)
+                                            .toBe(18); // è il caso checked quindi prende il valore valueYes
+                                            stabilize(true).then(done);
+                                    });
                             });
 
                         it("INPUT CHECKBOX case 3 - should update correct fields on Primary table",
@@ -646,24 +652,25 @@ describe("helpForm",
                                     '<label  id="label1" for="mycontrolid" data-tag="table1.c_name">mylabel</label>' +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                // Per sicurezza valuto i valori di default che ho sui controlli html, prima della fill
-                                expect($("#label1").html()).toBe("mylabel"); // test valore di partenza, dovrà cambiare
-                                helpForm.fillControls();
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            // Per sicurezza valuto i valori di default che ho sui controlli html, prima della fill
+                                            expect($("#label1").html()).toBe("mylabel"); // test valore di partenza, dovrà cambiare
+                                            helpForm.fillControls();
 
-                                //jasmine.clock().tick(1);
-                                stabilize(false)
-                                    .then(function() {
-                                        expect($("#label1").html())
-                                            .toBe(
-                                                "nome1"); // sulla text mi aspetto il valore che avevo sul datarow inserito sul datatable
-                                        done();
+                                            //jasmine.clock().tick(1);
+                                            stabilize(false)
+                                            .then(function() {
+                                                    expect($("#label1").html())
+                                                    .toBe(
+                                                        "nome1"); // sulla text mi aspetto il valore che avevo sul datarow inserito sul datatable
+                                                    done();
 
+                                            });
                                     });
+                           });
 
-                            });
-
-                        it("INPUT TEXT - should fill correct html controls reading value from Primary table",
+                        it("INPUT TEXT - should fill correct html controls reading value from Primary table 1",
                             function(done) {
                                 // sovrascrivo il mio doc con un html di test, con i tag che mi servono.
                                 var mainwin = '<div id="firstroot">' +
@@ -674,25 +681,25 @@ describe("helpForm",
                                     'Nome: <input type="text" id="txtBox1"  data-tag="table1.c_name" value="ric"><br>' +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                /*$("#txtBox1").bind('change', function(event) {
-                                 console.log('onchange rised');
-                                 });*/
-                                // Per sicurezza valuto i valori di default che ho sui controlli html, prima della fill
-                                expect($("#txtBox1").val()).toBe("ric");
-                                helpForm.fillControls()
-                                    .then(function() {
-                                        // N.B vedi la configurazione del DS sul beforeEach()
-                                        expect($("#txtBox1").val())
-                                            .toBe(
-                                                "nome1"); // sulla text mi aspetto il valore che avevo sul datarow inserito sul datatable
-                                        done();
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            /*$("#txtBox1").bind('change', function(event) {
+                                      console.log('onchange rised');
+                                      });*/
+                                            // Per sicurezza valuto i valori di default che ho sui controlli html, prima della fill
+                                            expect($("#txtBox1").val()).toBe("ric");
+                                            helpForm.fillControls()
+                                            .then(function() {
+                                                    // N.B vedi la configurazione del DS sul beforeEach()
+                                                    expect($("#txtBox1").val())
+                                                    .toBe(
+                                                        "nome1"); // sulla text mi aspetto il valore che avevo sul datarow inserito sul datatable
+                                                    done();
+                                            });
                                     });
+                        });
 
-
-                            });
-
-                        it("INPUT TEXT - should fill correct html controls reading value from Primary table",
+                        it("INPUT TEXT - should fill correct html controls reading value from Primary table 2",
                             function(done) {
                                 // sovrascrivo il mio doc con un html di test, con i tag che mi servono.
                                 var mainwin = '<div id="rootelement">' +
@@ -705,14 +712,17 @@ describe("helpForm",
                                  });*/
                                 // Per sicurezza valuto i valori di default che ho sui controlli html, prima della fill
                                 expect($("#txtBox1").val()).toBe("12");
-                                helpForm.preScanControls();
-                                helpForm.fillControls()
-                                    .then(function() {
-                                        // N.B vedi la configurazione del DS sul beforeEach()
-                                        expect($("#txtBox1").val())
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            return helpForm.fillControls();
+                                    })
+
+                                    .then(function(){
+                                            // N.B vedi la configurazione del DS sul beforeEach()
+                                            expect($("#txtBox1").val())
                                             .toBe(currencySymbol + " 11" + currencyDecimalSeparator + "00");
-                                        // sulla text mi aspetto il valore che avevo sul datarow inserito sul datatable
-                                        done();
+                                            // sulla text mi aspetto il valore che avevo sul datarow inserito sul datatable
+                                            done();
                                     });
 
                                 //jasmine.clock().tick(1);
@@ -720,25 +730,25 @@ describe("helpForm",
                             });
 
                         it("INPUT DATE - should fill correct html controls reading value from Primary table",
-                            function(done) {
-                                // sovrascrivo il mio doc con un html di test, con i tag che mi servono.
-                                var mainwin = '<div id="rootelement">' +
-                                    'Date: <input type="date" placeholder="dd/mm/yyyy" id="txtBox1"  data-tag="table3.c_date.dd"><br>' +
-                                    "</div>";
-                                $("html").html(mainwin);
+                            function(done){
+                                    // sovrascrivo il mio doc con un html di test, con i tag che mi servono.
+                                    var mainwin = '<div id="rootelement">' +
+                                        'Date: <input type="date" placeholder="dd/mm/yyyy" id="txtBox1"  data-tag="table3.c_date.dd"><br>' +
+                                        "</div>";
+                                    $("html").html(mainwin);
 
-                                helpForm = new HelpForm(state, "table3", "#rootelement");
-                                helpForm.lastSelected(t3, objrow5);
-                                helpForm.preScanControls();
-                                // Per sicurezza valuto i valori di default che ho sui controlli html, prima della fill
-                                expect($("#txtBox1").val()).toBe("");
-                                helpForm.fillControls()
-                                    .then(function() {
-                                        expect($("#txtBox1").val()).toBe("1980-10-02");
-                                        done();
+                                    helpForm = new HelpForm(state, "table3", "#rootelement");
+                                    helpForm.lastSelected(t3, objrow5);
+                                    helpForm.preScanControls()
+                                    .then(() => {
+                                            // Per sicurezza valuto i valori di default che ho sui controlli html, prima della fill
+                                            expect($("#txtBox1").val()).toBe("");
+                                            helpForm.fillControls()
+                                            .then(function (){
+                                                    expect($("#txtBox1").val()).toBe("1980-10-02");
+                                                    stabilize(true).then(done);
+                                            });
                                     });
-
-
                             });
 
                         it("INPUT CHECKBOX checked- should checkbox reading value from Primary table",
@@ -1134,9 +1144,11 @@ describe("helpForm",
                         it("should fill html control valueMember DECIMAL column - SEARCH STATE + SEARCH FILTER",
                             function(done) {
                                 datasource.searchFilter = q.eq("c_codice", 3);
-                                helpForm.preScanControls();
-
-                                helpForm.fillControls().then(function() {
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            return helpForm.fillControls();
+                                    })
+                                .then(function() {
                                         expect($("#combo1").children("option").length).toBe(2); // c'è il filtro
                                         expect($("#combo1 option:selected").val()).toBeUndefined();
                                         expect($("#combo1 option:selected").html())
@@ -1171,9 +1183,10 @@ describe("helpForm",
                                     "</div>";
                                 $("html").html(mainwin);
                                 datasource.searchFilter = q.eq("c_codice", 3);
-                                helpForm.preScanControls();
-
-                                helpForm.fillControls()
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            return helpForm.fillControls();
+                                    })
                                     .then(function() {
                                         expect($("#combo1").children("option").length)
                                             .toBe(1); // c'è il filtro e noblank
@@ -1200,50 +1213,50 @@ describe("helpForm",
 
                         it("should fill html control valueMember DECIMAL column - SEARCH STATE WITHOUT SEARCH FILTER",
                             function(done) {
-                                helpForm.preScanControls();
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            helpForm.fillControls()
+                                            .then(function() {
+                                                    expect($("#combo1").children("option").length).toBe(5);
+                                                    expect($("#combo1 option:selected").val()).toBe("2");
+                                                    expect($("#combo1 option:selected").html())
+                                                    .toBe(
+                                                        "due"); // la riga selezionata è la objrow6 che ha cCodice cioè valuemember 2, quindi la selezionata ha val cName "due" cioè objrow2
 
-                                helpForm.fillControls()
-                                    .then(function() {
-                                        expect($("#combo1").children("option").length).toBe(5);
-                                        expect($("#combo1 option:selected").val()).toBe("2");
-                                        expect($("#combo1 option:selected").html())
-                                            .toBe(
-                                                "due"); // la riga selezionata è la objrow6 che ha cCodice cioè valuemember 2, quindi la selezionata ha val cName "due" cioè objrow2
+                                                    helpForm.lastSelected(t, objrow7); // cambio riga per sicurezza
+                                                    helpForm.getControls();
+                                                    expect($("#combo1").children("option").length).toBe(5);
+                                                    expect(objrow7.c_codice)
+                                                    .toBe(
+                                                        2); // colonna numerica, quindi mi aspetto un numero per quel campo sulla riga selezionata
+                                                    expect(objrow7.ckey)
+                                                    .toBe(
+                                                        "key3"); // cambiato il codice, cioè il valueMemeber, ma l'altro campo rimane quello di partenza
 
-                                        helpForm.lastSelected(t, objrow7); // cambio riga per sicurezza
-                                        helpForm.getControls();
-                                        expect($("#combo1").children("option").length).toBe(5);
-                                        expect(objrow7.c_codice)
-                                            .toBe(
-                                                2); // colonna numerica, quindi mi aspetto un numero per quel campo sulla riga selezionata
-                                        expect(objrow7.ckey)
-                                            .toBe(
-                                                "key3"); // cambiato il codice, cioè il valueMemeber, ma l'altro campo rimane quello di partenza
+                                                    helpForm.lastSelected(t, objrow5);
+                                                    helpForm.fillControls();
+                                                    return stabilize(true);
+                                            })
+                                            .then(function() {
+                                                    expect($("#combo1").children("option").length)
+                                                    .toBe(5); // sempre 4 items devono essere
+                                                    expect($("#combo1 option:selected").val())
+                                                    .toBe(
+                                                        "1"); // la lastSelected è objrow5 che ha codice 1, quindi ritrovo quel valore selezionato
+                                                    expect($("#combo1 option:selected").html()).toBe("uno");
 
-                                        helpForm.lastSelected(t, objrow5);
-                                        helpForm.fillControls();
-                                        return stabilize(true);
-                                    })
-                                    .then(function() {
-                                        expect($("#combo1").children("option").length)
-                                            .toBe(5); // sempre 4 items devono essere
-                                        expect($("#combo1 option:selected").val())
-                                            .toBe(
-                                                "1"); // la lastSelected è objrow5 che ha codice 1, quindi ritrovo quel valore selezionato
-                                        expect($("#combo1 option:selected").html()).toBe("uno");
-
-                                        done();
+                                                    done();
+                                            });
                                     });
-
-                            });
+                           });
 
                         it("should fill html control - valueMember STRING column - INSERT STATE",
                             function(done) {
-                                var cCodice = "c_codice";
-                                var cName = "c_name";
+                                let cCodice = "c_codice";
+                                let cName = "c_name";
 
                                 // costruisco ogetto stato e ds
-                                var state = new appMeta.MetaPageState();
+                                    let state = new appMeta.MetaPageState();
                                 state.setInsertState(); //  lo faccio passare nel ramo isInsertState()
                                 var ds = new jsDataSet.DataSet("temp");
                                 var datasource = ds.newTable("datasource");
@@ -1268,9 +1281,9 @@ describe("helpForm",
                                 datasource.add(objrow3);
                                 datasource.add(objrow4);
 
-                                var objrow5 = { ckey: "key1", c_codice: "1" };
-                                var objrow6 = { ckey: "key2", c_codice: "2" };
-                                var objrow7 = { ckey: "key3", c_codice: "3" };
+                                let objrow5 = { ckey: "key1", c_codice: "1" };
+                                let objrow6 = { ckey: "key2", c_codice: "2" };
+                                let objrow7 = { ckey: "key3", c_codice: "3" };
                                 t.add(objrow5);
                                 t.add(objrow6);
                                 t.add(objrow7);
@@ -1278,23 +1291,25 @@ describe("helpForm",
 
                                 helpForm = new HelpForm(state, "t", "#rootelement");
                                 helpForm.lastSelected(t, objrow7);
-                                helpForm.preScanControls();
-                                helpForm.fillControls()
-                                    .then(function() {
-                                        expect($("#combo1").children("option").length)
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                          return helpForm.fillControls();
+                                    })
+                                    .then(function(){
+                                            expect($("#combo1").children("option").length)
                                             .toBe(2); // filtro con insertFilter()
-                                        expect($("#combo1 option:selected").val()).toBe("3");
-                                        expect($("#combo1 option:selected").html()).toBe("tre");
+                                            expect($("#combo1 option:selected").val()).toBe("3");
+                                            expect($("#combo1 option:selected").html()).toBe("tre");
 
-                                        helpForm.lastSelected(t, objrow6);
-                                        helpForm.getControls();
-                                        expect(objrow6.c_codice).toBe("3"); // mette il codice che era selzionato 
-                                        expect(objrow6.ckey).toBe("key2");
+                                            helpForm.lastSelected(t, objrow6);
+                                            helpForm.getControls();
+                                            expect(objrow6.c_codice).toBe("3"); // mette il codice che era selzionato
+                                            expect(objrow6.ckey).toBe("key2");
 
-                                        helpForm.lastSelected(t, objrow5);
-                                        // la objrow5 ha codice 1, ma siccome è filtrata, non lo trova
-                                        helpForm.fillControls();
-                                        return stabilize(true);
+                                            helpForm.lastSelected(t, objrow5);
+                                            // la objrow5 ha codice 1, ma siccome è filtrata, non lo trova
+                                            helpForm.fillControls();
+                                            return stabilize(true);
                                     })
                                     .then(function() {
                                         expect($("#combo1").children("option").length).toBe(2);
@@ -1354,17 +1369,17 @@ describe("helpForm",
 
                                 helpForm = new HelpForm(state, "t", "#rootelement");
                                 helpForm.lastSelected(t, objrow7);
-                                helpForm.preScanControls();
-                                helpForm.fillControls()
-                                    .then(function() {
-                                        expect($("#combo1").children("option").length)
-                                            .toBe(2); // filtro con insertFilter()
-                                        expect($("#combo1 option:selected").val()).toBe("3");
-                                        expect($("#combo1 option:selected").html()).toBe("tre");
-
-                                        done();
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            helpForm.fillControls()
+                                            .then(function() {
+                                                    expect($("#combo1").children("option").length)
+                                                    .toBe(2); // filtro con insertFilter()
+                                                    expect($("#combo1 option:selected").val()).toBe("3");
+                                                    expect($("#combo1 option:selected").html()).toBe("tre");
+                                                    done();
+                                            });
                                     });
-
                             });
 
                     });
@@ -1378,25 +1393,25 @@ describe("helpForm",
                                     '<input type="text" id="txtBox1"  data-tag="table1.c_name" value="initvalue"><br>' +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                // 1. HTML -> DS popolo il dt dal valore della test;
-                                helpForm.getControls();
-                                expect(helpForm.DS.tables["table1"].rows[0].c_name).toBe("initvalue");
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            // 1. HTML -> DS popolo il dt dal valore della test;
+                                            helpForm.getControls();
+                                            expect(helpForm.DS.tables["table1"].rows[0].c_name).toBe("initvalue");
 
-                                // 2. DS -> HTML fill nuova text con il valore memorizzato nella get
-                                var mainwin = '<div id="rootelement">' +
-                                    '<input type="text" id="txtBox2"  data-tag="table1.c_name"><br>' +
-                                    "</div>";
-                                $("html").html(mainwin);
+                                            // 2. DS -> HTML fill nuova text con il valore memorizzato nella get
+                                            var mainwin = '<div id="rootelement">' +
+                                                '<input type="text" id="txtBox2"  data-tag="table1.c_name"><br>' +
+                                                "</div>";
+                                            $("html").html(mainwin);
 
-                                helpForm.fillControls()
-                                    .then(function() {
-                                        expect($("#txtBox2").val()).toBe("initvalue");
-                                        done();
+                                            helpForm.fillControls()
+                                            .then(function() {
+                                                    expect($("#txtBox2").val()).toBe("initvalue");
+                                                    done();
+                                            });
                                     });
-
-
-                            });
+                             });
 
                         it("INPUT TEXT DECIMAL - should fill/get correct html controls reading value from Primary table",
                             function(done) {
@@ -1406,8 +1421,10 @@ describe("helpForm",
                                     "</div>";
                                 $("html").html(mainwin);
                                 // 1. HTML -> DS popolo il dt dal valore della test;
-                                helpForm.preScanControls();
-                                helpForm.fillControls()
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            return helpForm.fillControls();
+                                    })
                                     .then(function() {
                                         expect($("#txtBox1").val())
                                             .toBe(currencySymbol + " 11" + currencyDecimalSeparator + "00");
@@ -1737,7 +1754,7 @@ describe("helpForm",
                 describe("Clear/Enable/Disable  Control",
                     function() {
                         it("INPUT TEXT - ClearControl()",
-                            function() {
+                            function(done) {
                                 // sovrascrivo il mio doc con un html di test, co i tag che mi servono.
                                 // Ho inserito 2 div, di cui 1 con l'id del rooteleemtn che mi aspetto
                                 // Ho inoltre inserito 2 tag data-tag con la formatazione attesa
@@ -1763,29 +1780,33 @@ describe("helpForm",
                                     '</div>';
 
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                var rowCount1 = $('#table1 tr').length;
-                                expect(rowCount1).toBe(3);
-                                var rowCount2 = $('#table2 tr').length;
-                                expect(rowCount2).toBe(4);
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            var rowCount1 = $('#table1 tr').length;
+                                            expect(rowCount1).toBe(3);
+                                            var rowCount2 = $('#table2 tr').length;
+                                            expect(rowCount2).toBe(4);
 
-                                expect($("#txtBox1").val()).toBe("ric");
+                                            expect($("#txtBox1").val()).toBe("ric");
 
-                                // effettuo clear
-                                helpForm.clearControls();
-                                expect($("#txtBox1").val()).toBe("");
-                                expect($("#txtBox2").val()).toBe("");
-                                expect($("#mycheck1").is(":indeterminate")).toBe(true);
-                                expect($("#mycheck1").is(":checked")).toBe(false);
-                                expect($("#radio1").is(":checked")).toBe(false); // era checked , mi aspetto false
-                                expect($("#radio2").is(":checked")).toBe(false);
-                                expect($("#combo1 option:selected").val()).toBeUndefined();
-                                expect($("#combo1 option:selected").html()).toBeUndefined();
+                                            // effettuo clear
+                                            helpForm.clearControls();
+                                            expect($("#txtBox1").val()).toBe("");
+                                            expect($("#txtBox2").val()).toBe("");
+                                            expect($("#mycheck1").is(":indeterminate")).toBe(true);
+                                            expect($("#mycheck1").is(":checked")).toBe(false);
+                                            expect($("#radio1").is(":checked")).toBe(false); // era checked , mi aspetto false
+                                            expect($("#radio2").is(":checked")).toBe(false);
+                                            expect($("#combo1 option:selected").val()).toBeUndefined();
+                                            expect($("#combo1 option:selected").html()).toBeUndefined();
 
-                                rowCount1 = $('#table1 tr').length;
-                                expect(rowCount1).toBe(1); // rimane solo l'header
-                                rowCount2 = $('#table2 tr').length;
-                                expect(rowCount2).toBe(1); // rimane solo l'header
+                                            rowCount1 = $('#table1 tr').length;
+                                            expect(rowCount1).toBe(1); // rimane solo l'header
+                                            rowCount2 = $('#table2 tr').length;
+                                            expect(rowCount2).toBe(1); // rimane solo l'header
+                                            done()
+                                    })
+
                             });
 
                         it("INPUT TEXT EditState - should fill correct html control on ExraEntity - 1 primary row, 1 child row",
@@ -1850,7 +1871,7 @@ describe("helpForm",
                             });
 
                         it("disableControl() + reEnable() should disable/enable correct html control",
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<input type="text" id="txtBox1"  data-tag="table1.c_name" value="25"><br>' +
                                     '<input type="password" id="mypass" data-tag="table1.c_name" name="psw" value="1234">' +
@@ -1865,44 +1886,48 @@ describe("helpForm",
                                     "</select>" +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                // helpForm.disableControl($("html").find("input:password")[0], false);
 
-                                helpForm.disableControl($("#txtBox1")[0], false);
-                                expect($("#txtBox1").prop("readonly")).toBe(true);
-                                helpForm.reEnable($("#txtBox1")[0]);
-                                expect($("#txtBox1").prop("readonly")).toBe(false);
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            // helpForm.disableControl($("html").find("input:password")[0], false);
 
-                                helpForm.disableControl($("#mypass")[0], false);
-                                expect($("#mypass").prop("readonly")).toBe(true);
-                                helpForm.reEnable($("#mypass")[0]);
-                                expect($("#mypass").prop("readonly")).toBe(false);
+                                            helpForm.disableControl($("#txtBox1")[0], false);
+                                            expect($("#txtBox1").prop("readonly")).toBe(true);
+                                            helpForm.reEnable($("#txtBox1")[0]);
+                                            expect($("#txtBox1").prop("readonly")).toBe(false);
 
-                                helpForm.disableControl($("#combo1")[0], false);
-                                expect($("#combo1").prop("disabled")).toBe(true);
-                                helpForm.reEnable($("#combo1")[0]);
-                                expect($("#combo1").prop("disabled")).toBe(false);
+                                            helpForm.disableControl($("#mypass")[0], false);
+                                            expect($("#mypass").prop("readonly")).toBe(true);
+                                            helpForm.reEnable($("#mypass")[0]);
+                                            expect($("#mypass").prop("readonly")).toBe(false);
 
-                                helpForm.disableControl($("#radio1")[0], false);
-                                expect($("#radio1").prop("disabled")).toBe(true);
-                                helpForm.reEnable($("#radio1")[0]);
-                                expect($("#radio1").prop("disabled")).toBe(false);
+                                            helpForm.disableControl($("#combo1")[0], false);
+                                            expect($("#combo1").prop("disabled")).toBe(true);
+                                            helpForm.reEnable($("#combo1")[0]);
+                                            expect($("#combo1").prop("disabled")).toBe(false);
 
-                                helpForm.disableControl($("#div1")[0], false);
-                                expect($("#div1").prop("disabled")).toBe(true);
-                                expect($("#radio2").prop("disabled")).toBe(true);
-                                expect($("#radio3").prop("disabled")).toBe(true);
-                                expect($("#txtBox2").prop("disabled")).toBe(true);
-                                expect($("#txtBox3").prop("disabled")).toBe(true);
-                                helpForm.reEnable($("#div1")[0]);
-                                expect($("#div1").prop("disabled")).toBe(false);
-                                expect($("#radio2").prop("disabled")).toBe(false);
-                                expect($("#radio3").prop("disabled"))
-                                    .toBe(true); // era disabled all'inizio, deve continuare a rimanere disabled
-                                expect($("#txtBox2").prop("disabled"))
-                                    .toBe(true); // era disabled all'inizio, deve continuare a rimanere disabled
-                                expect($("#txtBox3").prop("disabled"))
-                                    .toBe(false); // non era disabled all'inizio, deve tornare abilitato
+                                            helpForm.disableControl($("#radio1")[0], false);
+                                            expect($("#radio1").prop("disabled")).toBe(true);
+                                            helpForm.reEnable($("#radio1")[0]);
+                                            expect($("#radio1").prop("disabled")).toBe(false);
+
+                                            helpForm.disableControl($("#div1")[0], false);
+                                            expect($("#div1").prop("disabled")).toBe(true);
+                                            expect($("#radio2").prop("disabled")).toBe(true);
+                                            expect($("#radio3").prop("disabled")).toBe(true);
+                                            expect($("#txtBox2").prop("disabled")).toBe(true);
+                                            expect($("#txtBox3").prop("disabled")).toBe(true);
+                                            helpForm.reEnable($("#div1")[0]);
+                                            expect($("#div1").prop("disabled")).toBe(false);
+                                            expect($("#radio2").prop("disabled")).toBe(false);
+                                            expect($("#radio3").prop("disabled")).toBe(true); // era disabled all'inizio, deve continuare a rimanere disabled
+                                            expect($("#txtBox2").prop("disabled"))
+                                            .toBe(true); // era disabled all'inizio, deve continuare a rimanere disabled
+                                            expect($("#txtBox3").prop("disabled"))
+                                            .toBe(false); // non era disabled all'inizio, deve tornare abilitato
+                                            done();
+                                    })
+
 
                             });
 
@@ -1912,7 +1937,7 @@ describe("helpForm",
                     function() {
 
                         it("getSuitableColumnForSearchTag return the correct DataColumn object",
-                            function() {
+                            function(done) {
                                 var col = helpForm.getSuitableColumnForSearchTag("table1.c_name", "String");
                                 expect(col.constructor.name).toBe("DataColumn");
                                 expect(col.ctype).toBe("String");
@@ -1922,115 +1947,134 @@ describe("helpForm",
                                 expect(col.constructor.name).toBe("DataColumn");
                                 expect(col.ctype).toBe("Decimal");
                                 expect(col.name).toBe("c_dec");
+                                done();
                             });
 
                         it("iterateGetSearchCondition  on TEXTBOX works, String Column + other empty element",
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<input type="text" id="txtBox1" data-tag="table1.c_name" value="mystring"><br>' +
                                     '<input type="text" id="txtBox2" data-tag="table1.c_dec" value=1><br>' +
                                     '<input type="checkbox" id="mycheck1" data-tag="table3.c_sex:maschio:femmina">' +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                var cond = helpForm.iterateGetSearchCondition();
-                                expect(cond).toEqual(jasmine.any(Function));
-                                expect(cond.myArguments[0]).toEqual(jasmine.any(Array));
-                                var andArgs = cond.myArguments[0];
-                                expect(andArgs[0]).toEqual(jasmine.any(Function));
-                                var fun = andArgs[0];
-                                var fun2 = andArgs[1];
-                                expect(fun.myArguments[0]).toBe("c_name");
-                                expect(fun.myArguments[1]).toBe("mystring");
-                                expect(fun2.myArguments[0]).toBe("c_dec");
-                                expect(fun2.myArguments[1]).toBe(1);
-                                expect(fun.myName).toBe("eq");
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            var cond = helpForm.iterateGetSearchCondition();
+                                            expect(cond).toEqual(jasmine.any(Function));
+                                            expect(cond.myArguments[0]).toEqual(jasmine.any(Array));
+                                            var andArgs = cond.myArguments[0];
+                                            expect(andArgs[0]).toEqual(jasmine.any(Function));
+                                            var fun = andArgs[0];
+                                            var fun2 = andArgs[1];
+                                            expect(fun.myArguments[0]).toBe("c_name");
+                                            expect(fun.myArguments[1]).toBe("mystring");
+                                            expect(fun2.myArguments[0]).toBe("c_dec");
+                                            expect(fun2.myArguments[1]).toBe(1);
+                                            expect(fun.myName).toBe("eq");
+                                            done();
+                                    })
+
                             });
 
                         it("iterateGetSearchCondition on TEXTBOX works, String Column + Search Tag + Like case",
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<input type="text" id="txtBox1" data-tag="table1.c_name?table2.c_citta" value="roma"><br>' +
                                     '<input type="text" id="txtBox2" data-tag="table1.c_name" value="capo%"><br>' +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                var cond = helpForm.iterateGetSearchCondition();
-                                expect(cond).toEqual(jasmine.any(Function));
-                                expect(cond.myArguments[0]).toEqual(jasmine.any(Array));
-                                var andArgs = cond.myArguments[0];
-                                expect(andArgs[0]).toEqual(jasmine.any(Function));
-                                var fun = andArgs[0];
-                                expect(fun.myArguments[0]).toBe("c_citta");
-                                expect(fun.myArguments[1]).toBe("roma");
-                                expect(fun.myName).toBe("eq");
-                                var fun2 = andArgs[1];
-                                expect(fun2.myArguments[0]).toBe("c_name");
-                                expect(fun2.myArguments[1]).toBe("capo%");
-                                expect(fun2.myName).toBe("like");
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            var cond = helpForm.iterateGetSearchCondition();
+                                            expect(cond).toEqual(jasmine.any(Function));
+                                            expect(cond.myArguments[0]).toEqual(jasmine.any(Array));
+                                            var andArgs = cond.myArguments[0];
+                                            expect(andArgs[0]).toEqual(jasmine.any(Function));
+                                            var fun = andArgs[0];
+                                            expect(fun.myArguments[0]).toBe("c_citta");
+                                            expect(fun.myArguments[1]).toBe("roma");
+                                            expect(fun.myName).toBe("eq");
+                                            var fun2 = andArgs[1];
+                                            expect(fun2.myArguments[0]).toBe("c_name");
+                                            expect(fun2.myArguments[1]).toBe("capo%");
+                                            expect(fun2.myName).toBe("like");
+                                            done();
+                                    })
+
                             });
 
                         it("iterateGetSearchCondition on TEXTBOX works, Decimal column",
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<input type="text" id="txtBox2" data-tag="table1.c_dec" value="123"><br>' +
                                     "</div>";
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-                                var cond = helpForm.iterateGetSearchCondition();
-                                expect(cond).toEqual(jasmine.any(Function));
-                                expect(cond.myName).toBe("eq");
-                                expect(cond.myArguments[0]).toBe("c_dec");
-                                expect(cond.myArguments[1]).toBe(123);
-                              
-                            });
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            var cond = helpForm.iterateGetSearchCondition();
+                                            expect(cond).toEqual(jasmine.any(Function));
+                                            expect(cond.myName).toBe("eq");
+                                            expect(cond.myArguments[0]).toBe("c_dec");
+                                            expect(cond.myArguments[1]).toBe(123);
+                                            done();
+                                    })
+                             });
 
                         it("iterateGetSearchCondition on TEXTBOX works, DateTime Column",
-                            function() {
+                            function(done) {
                                 // sovrascrivo il mio doc con un html di test, con i tag che mi servono.
                                 var mainwin = '<div id="rootelement">' +
                                     '<input type="text" id="txtBox1"  data-tag="table3.c_date" value ="02/10/1980"><br>' +
                                     "</div>";
                                 $("html").html(mainwin);
                                 helpForm = new HelpForm(state, "table3", "#rootelement");
-                                helpForm.preScanControls();
-                                var cond = helpForm.iterateGetSearchCondition();
-                                expect(cond).toEqual(jasmine.any(Function));
-                                expect(cond.myName).toBe("eq");
-                                expect(cond.myArguments[0]).toBe("c_date");
-                                expect(cond.myArguments[1].constructor.name).toBe("Date");
-                                expect(cond.myArguments[1].getDate()).toBe(2);
-                                expect(cond.myArguments[1].getMonth() + 1).toBe(10);
-                                expect(cond.myArguments[1].getFullYear()).toBe(1980);
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            var cond = helpForm.iterateGetSearchCondition();
+                                            expect(cond).toEqual(jasmine.any(Function));
+                                            expect(cond.myName).toBe("eq");
+                                            expect(cond.myArguments[0]).toBe("c_date");
+                                            expect(cond.myArguments[1].constructor.name).toBe("Date");
+                                            expect(cond.myArguments[1].getDate()).toBe(2);
+                                            expect(cond.myArguments[1].getMonth() + 1).toBe(10);
+                                            expect(cond.myArguments[1].getFullYear()).toBe(1980);
+                                            done();
+                                    });
+
                                
                             });
 
                         it("iterateGetSearchCondition on CHECKBOX works, String Column",
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<input type="checkbox" id="mycheck1" data-tag="table3.c_sex:maschio:femmina">' +
                                     "</div>";
                                 $("html").html(mainwin);
                                 helpForm = new HelpForm(state, "table3", "#rootelement");
-                                helpForm.preScanControls();
-                                var cond = helpForm.iterateGetSearchCondition();
-                                expect(cond).toEqual(jasmine.any(Function));
-                                expect(cond.myName).toBe("eq");
-                                expect(cond.myArguments[0]).toBe("c_sex");
-                                expect(cond.myArguments[1]).toBe("femmina"); // è un unchecked quindi cerca il valore No
-                                
-                                mainwin = '<div id="rootelement">' +
-                                    '<input type="checkbox" id="mycheck1" checked data-tag="table3.c_sex:maschio:femmina">' +
-                                    "</div>";
-                                $("html").html(mainwin);
-                                cond = helpForm.iterateGetSearchCondition();
-                                expect(cond.myArguments[0]).toBe("c_sex");
-                                expect(cond.myArguments[1]).toBe("maschio"); // è checked quindi cerca il valore Yes
-                                expect(cond.myName).toBe("eq");
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            var cond = helpForm.iterateGetSearchCondition();
+                                            expect(cond).toEqual(jasmine.any(Function));
+                                            expect(cond.myName).toBe("eq");
+                                            expect(cond.myArguments[0]).toBe("c_sex");
+                                            expect(cond.myArguments[1]).toBe("femmina"); // è un unchecked quindi cerca il valore No
+
+                                            mainwin = '<div id="rootelement">' +
+                                                '<input type="checkbox" id="mycheck1" checked data-tag="table3.c_sex:maschio:femmina">' +
+                                                "</div>";
+                                            $("html").html(mainwin);
+                                            cond = helpForm.iterateGetSearchCondition();
+                                            expect(cond.myArguments[0]).toBe("c_sex");
+                                            expect(cond.myArguments[1]).toBe("maschio"); // è checked quindi cerca il valore Yes
+                                            expect(cond.myName).toBe("eq");
+                                            done();
+                                    });
+
                             });
 
                         it("iterateGetSearchCondition on CHECKBOX works, Bit Case",
-                            function() {
+                            function(done) {
                                 // Caso cehck/uncheck con numero di bit qualsiasi che funge da maschera
                                 // maschera: 1 shift di 3 posti. 18 ->26, uncheck 26 ->18
                                 var mainDiv = '<div id="rootelement">' +
@@ -2040,7 +2084,7 @@ describe("helpForm",
                                 $("html").html(mainDiv);
 
                                 var cBit = "c_bit";
-                                // costrusico ogetto stato e ds
+                                // costruisco ogetto stato e ds
                                 var state = new appMeta.MetaPageState();
                                 var ds = new jsDataSet.DataSet("temp");
                                 var t = ds.newTable("t");
@@ -2050,20 +2094,24 @@ describe("helpForm",
                                 state.DS = ds;
                                 // inizializzo la form
                                 helpForm = new HelpForm(state, "t", "#rootelement");
-                                helpForm.preScanControls();
-                                var cond = helpForm.iterateGetSearchCondition();
-                                // cambia il valore della riga primaria. Deve mettere quello dell'opzione selezionata
-                                var andArgs = cond.myArguments[0];
-                                expect(andArgs.length).toBe(2);
-                                var fun = andArgs[0];
-                                expect(fun.myArguments[0]).toBe("c_bit");
-                                expect(fun.myArguments[1]).toBe(0);
-                                expect(fun.myName).toBe("bitClear");
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            var cond = helpForm.iterateGetSearchCondition();
+                                            // cambia il valore della riga primaria. Deve mettere quello dell'opzione selezionata
+                                            var andArgs = cond.myArguments[0];
+                                            expect(andArgs.length).toBe(2);
+                                            var fun = andArgs[0];
+                                            expect(fun.myArguments[0]).toBe("c_bit");
+                                            expect(fun.myArguments[1]).toBe(0);
+                                            expect(fun.myName).toBe("bitClear");
 
-                                var fun2 = andArgs[1];
-                                expect(fun2.myArguments[0]).toBe("c_bit");
-                                expect(fun2.myArguments[1]).toBe(1);
-                                expect(fun2.myName).toBe("bitSet");
+                                            var fun2 = andArgs[1];
+                                            expect(fun2.myArguments[0]).toBe("c_bit");
+                                            expect(fun2.myArguments[1]).toBe(1);
+                                            expect(fun2.myName).toBe("bitSet");
+                                            done();
+                                    })
+
                             });
 
                         it("iterateGetSearchCondition with COMBO and Decimal column",
@@ -2085,10 +2133,10 @@ describe("helpForm",
                                 table2.setDataColumn("c_field1", "String");
                                 table2.columns["c_codice"].caption = "CODICE";
                                 table2.columns["c_field1"].caption = "FIELD1";
-                                var objrow1 = { c_codice: 1, c_field1: "uno" };
-                                var objrow2 = { c_codice: 2, c_field1: "due" };
-                                var objrow3 = { c_codice: 3, c_field1: "tre" };
-                                var objrow4 = { c_codice: 4, c_field1: "quattro" };
+                                    let objrow1 = { c_codice: 1, c_field1: "uno" };
+                                    let objrow2 = {c_codice: 2, c_field1: "due"};
+                                    let objrow3 = {c_codice: 3, c_field1: "tre"};
+                                    let objrow4 = { c_codice: 4, c_field1: "quattro" };
                                 table2.add(objrow1);
                                 table2.add(objrow2);
                                 table2.add(objrow3);
@@ -2114,11 +2162,13 @@ describe("helpForm",
                                 helpForm.lastSelected(table2, objrow1);
                                 metapage.helpForm = helpForm;
                                 metapage.state = state;
-                                helpForm.preScanControls();
-                                helpForm.fillControls()
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            return  helpForm.fillControls();
+                                    })
                                     .then(function() {
                                         $("#combo1").val("3"); // metto una selected
-                                        var cond = helpForm.iterateGetSearchCondition();
+                                        let cond = helpForm.iterateGetSearchCondition();
                                         expect(cond.myName).toBe("eq");
                                         expect(cond.myArguments[0]).toBe("c_codice");
                                         expect(cond.myArguments[1]).toBe(3);
@@ -2127,7 +2177,7 @@ describe("helpForm",
                             });
 
                         it('iterateGetSearchCondition with RADIO BUTTONS and String column',
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<input type="radio" name="season" value="winter" checked data-tag="t.c_season:winter"> winter<br>' +
                                     '<input type="radio" name="season" value="spring" data-tag="t.c_season:spring"> spring<br>' +
@@ -2153,10 +2203,11 @@ describe("helpForm",
                                 expect(cond.myName).toBe("eq");
                                 expect(cond.myArguments[0]).toBe("c_season");
                                 expect(cond.myArguments[1]).toBe("winter");
+                                done();
                             });
 
                         it('iterateGetSearchCondition with Value signed control',
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<div data-tag="t.ctemp" data-value-signed>' +
                                     'amount: <input type="text" id="txtBox1"  data-tag="t.ctemp" value="10" ><br>' +
@@ -2181,11 +2232,12 @@ describe("helpForm",
                                 expect(cond.myName).toBe("eq");
                                 expect(cond.myArguments[0]).toBe("ctemp");
                                 expect(cond.myArguments[1]).toBe(10);
+                                done();
                           
                             });
 
                         it('iterateGetSearchCondition with Value signed control with minus sign',
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<div data-tag="t.ctemp" data-value-signed>' +
                                     'amount: <input type="text" id="txtBox1"  data-tag="t.ctemp" value="10" ><br>' +
@@ -2210,18 +2262,15 @@ describe("helpForm",
                                 expect(cond.myName).toBe("eq");
                                 expect(cond.myArguments[0]).toBe("ctemp");
                                 expect(cond.myArguments[1]).toBe(-10);
-
+                                done();
                             });
-
-                       
-
                     });
                 
                 describe("Add custom Events on standard button",
                     function() {
                         
                         it('getLinkedGrid returns the grid in the same container of the button insert',
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<div><div id="grid0" data-tag="table2.c_codice" data-custom-control="gridx"></div></div>' +
                                     '<button id="btn1" type="button" data-tag="insert">Add</button>' +
@@ -2229,15 +2278,15 @@ describe("helpForm",
                                     '</div>';
 
                                 $("html").html(mainwin);
-                                helpForm.preScanControls();
-
-                                var el = $("#btn1")[0];
-                                var g = helpForm.getLinkedGrid(el);
-
-                                expect(g).toBeDefined();
-                                expect($(g.el).attr("id")).toBe("grid1");
-
-                            });
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            let el = $("#btn1")[0];
+                                            let g = helpForm.getLinkedGrid(el);
+                                            expect(g).toBeDefined();
+                                            expect($(g.el).attr("id")).toBe("grid1");
+                                            done();
+                                    })
+                           });
 
                         it('FillControl with standard button + linked grid Enable/Disable insert button',
                             function(done) {
@@ -2248,8 +2297,11 @@ describe("helpForm",
                                     '</div>';
 
                                 $("html").html(mainwin);
-                                helpForm.preScanControls(); // serve per leggere il GridControllor
-                                helpForm.fillControls()
+                                helpForm.preScanControls()
+                                    .then(()=>{
+                                            return helpForm.fillControls()
+                                    })
+                                    // serve per leggere il GridControllor
                                     .then(
                                         function() {
                                             expect($('#btn1').prop("disabled")).toBe(false);
@@ -2260,7 +2312,7 @@ describe("helpForm",
                             });
 
                         it('setMainButtons works',
-                            function() {
+                            function(done) {
                                 var mainwin = '<div id="rootelement">' +
                                     '<div><div id="grid0" data-tag="table2.c_codice" data-custom-control="grid"></div></div>' +
                                     '<button id="btn1" type="button" data-tag="manage.table2">Add</button>' +
@@ -2286,6 +2338,7 @@ describe("helpForm",
                                 helpForm.setMainButtons($("#btn2")[0],
                                     "manage.tableNotExist"); // serve per leggere il GridControllor
                                 expect($('#btn2').prop("disabled")).toBe(true);
+                                done();
                             });
                         
                     });

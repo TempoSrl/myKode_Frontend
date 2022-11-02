@@ -324,7 +324,7 @@
                 that.tdChildEditing.oldValue = that.getTextEditingChildCell(caption, value);
 
                 // creo input editabile
-                var id = appMeta.utils.getUnivoqueId();
+                var id = appMeta.utils.getUniqueId();
 
                 var inputObj = $("<input type='text' id=" + id + "/>");
 

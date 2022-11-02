@@ -11,7 +11,7 @@ describe("ComboManager",
         var objrow1, objrow2, objrow3, objrow4, objrow5, objrow6, objrow7;
         var stabilize = appMeta.stabilize;
         var origDoGet; // mock funz doGet
-        beforeEach(function () {
+        beforeEach(function (done) {
             
             appMeta.basePath = "base/";
             
@@ -73,13 +73,20 @@ describe("ComboManager",
             helpForm = new HelpForm(state, "datasource", "#rootelement");
             helpForm.lastSelected(t, objrow6);
             metapage.helpForm = helpForm;
-            helpForm.preScanControls();
-            combo = $("#combo1").data("customController");
+            helpForm.preScanControls()
+            .then(()=>{
+                helpForm.addEvents(metapage);
+                combo = $("#combo1").data("customController");
+                origDoGet =  appMeta.getData.doGet;
+                appMeta.getData.doGet = function () {
+                    return new $.Deferred().resolve(true).promise();
+                };
+               return metapage.freshForm(false,true);
+            })
+            .then(()=>{
+                done();
+            })
 
-            origDoGet =  appMeta.getData.doGet;
-            appMeta.getData.doGet = function () {
-                return new $.Deferred().resolve().promise();
-            }
             
         });
 
@@ -89,85 +96,90 @@ describe("ComboManager",
         });
 
         describe("methods work",
-            function () {
-              
-                it("exists",function () {
+            function (){
+
+                it("exists", function (){
                     expect(combo).toBeDefined();
                 });
 
-                it("setRow", function (done) {
-                    combo.addEvents(null, metapage);
+                it("setRow", function (done){
+                    //combo.addEvents(null, metapage);
 
                     spyOn(metapage, "freshForm").and.callThrough();
 
                     combo.setRow(objrow1, true)
-                        .then(function (x) {
-                            expect(x).toBeDefined();
-                            expect(combo.currentRow).toEqual(objrow1);
-                            expect(metapage.freshForm).toHaveBeenCalled();
-                           
-                            done();
-                        });
+                    .then(function (x){
+                        expect(x).toBeDefined();
+                        expect(combo.currentRow).toEqual(objrow1);
+                        expect(metapage.freshForm).toHaveBeenCalled();
+                        done();
+                    });
                 });
 
-                it("setIndex with several values of index",function (done) {
+                it("setIndex with several values of index", function (done){
 
                     // inizializzo la grid con gli oggetti necessari
-                    combo.addEvents(null, metapage);
-
-                    combo.comboRows = [objrow1, objrow2, objrow3, objrow4];
+                    //combo.addEvents(null, metapage);
+                    //combo.comboRows = [objrow1, objrow2, objrow3, objrow4];
                     spyOn(metapage, "freshForm").and.callThrough();
-                    combo.setIndex(3)
-                        .then(function () {
-                            //expect(x).toBeDefined();
-                            expect(combo.currentRow).toEqual(objrow3);
-                            expect($('#combo1').get(0).selectedIndex).toBe(3); // è l'indice del elemento dom, parte da zero
-                            expect($('#combo1').val()).toBe("3");
-                            expect(metapage.freshForm).toHaveBeenCalled(); // chiama la rowSelct, quindi osservo se chiama a sua volta "freshForm"
-                            // 10 è più grande del num di righe, quindi setta all'ultima riga disponibile, cioè la objrow4 che ha indice 4
-                            return combo.setIndex(10);
-                        })
-                     .then(function (x) {
-                         // indice maggiore del cosnentito, quindi selziona ultima riga, che in quest caso che "uno" poichè ricrodiamo rows viene ordinato
-                            expect(x).toBeDefined();
-                            expect(combo.currentRow).toEqual(objrow1);
-                            expect($('#combo1').get(0).selectedIndex).toBe(4);
-                            expect($('#combo1').val()).toBe('1');
-                            expect(metapage.freshForm).toHaveBeenCalled(); // chiama la rowSelect, quindi osservo se chiama a sua volta "freshForm"
-                            done();
-                        });
-                  
+                     combo.setIndex(3)
+                    .then(function (){
+                        //expect(x).toBeDefined();
+
+                        expect(metapage.freshForm).toHaveBeenCalled();
+                        expect(combo.currentRow).toEqual(objrow3);
+                        expect($('#combo1').get(0).selectedIndex).toBe(3); // è l'indice del elemento dom, parte da zero
+                        expect($('#combo1').val()).toBe("3");
+
+                        // chiama la rowSelect, quindi osservo se chiama a sua volta "freshForm"
+                        // 10 è più grande del num di righe, quindi setta l'ultima riga disponibile,
+                        // cioè la objrow4 che ha indice 4
+                        return combo.setIndex(10);
+                    })
+                    .then(function (x){
+                        // indice maggiore del consentito, quindi seleziona ultima riga, che in quest caso che "uno"
+                        //   poiché ricordiamo rows viene ordinato
+                        expect(x).toBeDefined();
+                        expect(combo.currentRow).toEqual(objrow1);
+                        expect($('#combo1').get(0).selectedIndex).toBe(4);
+                        expect($('#combo1').val()).toBe('1');
+
+                        // chiama la rowSelect, quindi osservo se chiama a sua volta "freshForm"
+                        expect(metapage.freshForm).toHaveBeenCalled();
+                        done();
+                    });
+
                 });
 
-                it("setValue with blank row",function (done) {
+                it("setValue with blank row", function (done){
 
                     // without row
                     combo.setValue("3")
-                        .then(function(x) {
-                            expect(x).toBeDefined();
-                            expect(combo.currentRow).toEqual(null);
-                            expect($('#combo1').get(0).selectedIndex).toBe(-1);
-                        })
-                        .then(function() {
-                            combo.comboRows = [objrow1, objrow2, objrow3, objrow4];
-                            // without row
-                            return combo.setValue(3);
-                        })
-                        .then(function(x) {
-                            expect(x).toBeDefined();
-                            expect(combo.currentRow).toEqual(objrow3);
-                            expect($('#combo1').get(0).selectedIndex).toBe(3); // la zero è la riga bianca
-                            expect($('#combo1').val()).toBe('3');
-                            var v = combo.getValue();
-                            expect(v).toBe(3);
-                            done();
-                        });
+                    .then(function (x){
+                        expect(x).toBeDefined();
+                        expect(combo.currentRow).toEqual(null);
+                        expect($('#combo1').get(0).selectedIndex).toBe(-1);
+                    })
+                    .then(function (){
+                        combo.comboRows = [objrow1, objrow2, objrow3, objrow4];
+                        // without row
+                        return combo.setValue(3);
+                    })
+                    .then(function (x){
+                        expect(x).toBeDefined();
+                        expect(combo.currentRow).toEqual(objrow3);
+                        expect($('#combo1').get(0).selectedIndex).toBe(3); // la zero è la riga bianca
+                        expect($('#combo1').val()).toBe('3');
+                        var v = combo.getValue();
+                        expect(v).toBe(3);
+                        done();
+                    });
 
                 });
 
-                it("setValue without blank row",function (done) {
+                it("setValue without blank row", function (done){
 
-                    // sovrascrivo il mio doc con un html di test, co i tag che mi servono.
+                    // sovrascrivo il mio doc con un html di test, con i tag che mi servono.
                     var mainwin = '<div id="rootelement">' +
                         '<select id="combo1" data-tag="datasource.c_codice" data-noblank="true"' +
                         '  data-source-name="datasource"' +
@@ -180,33 +192,32 @@ describe("ComboManager",
                         "</select>" +
                         "</div>";
                     $("html").html(mainwin);
-                    helpForm.preScanControls();
-                    combo = $("#combo1").data("customController");
+                    helpForm.preScanControls()
+                    .then(() => {
+                        combo = $("#combo1").data("customController");
 
-                    // without row                    
-                    combo.setValue("3")
-                        .then(function() {
+                        // without row
+                        combo.setValue("3")
+                        .then(function (){
                             expect(combo.currentRow).toEqual(null);
                             expect($('#combo1').get(0).selectedIndex).toBe(-1);
                         })
-                        .then(function() {
+                        .then(function (){
                             combo.comboRows = [objrow1, objrow2, objrow3, objrow4];
                             // without row
                             return combo.setValue(3);
                         })
-                        .then(function(x) {
+                        .then(function (x){
                             expect(combo.currentRow).toEqual(objrow3);
                             expect($('#combo1').get(0).selectedIndex)
-                                .toBe(2); // non c'è la riga bianca quindi la 3 ha selectedIndex  2, poichè parte da zero
+                            .toBe(2); // non c'è la riga bianca quindi la 3 ha selectedIndex  2, poichè parte da zero
                             expect($('#combo1').val()).toBe('3');
                             var v = combo.getValue();
                             expect(v).toBe(3);
                             done();
                         });
-
-
+                    });
                 });
-                
             });
         
     });

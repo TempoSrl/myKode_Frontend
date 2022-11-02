@@ -148,7 +148,7 @@
 
             _.forEach(this.orderedCols, function (c) {
                if (_.includes(self.calcAggegateColumnsInput, c.name)) {
-                  self.confAgg[utils.getUnivoqueId() + c.name + "sum"] = { fname: "sum", value: true, column: c };
+                  self.confAgg[utils.getUniqueId() + c.name + "sum"] = { fname: "sum", value: true, column: c };
                }
             });
          }
@@ -1098,9 +1098,9 @@
        * @param {DataColumn} column
        */
       putDroppingRectColumn: function (column) {
-         var $div = $('<span draggable="true" id="' + utils.getUnivoqueId() + '" class="gx-column-drop-cell">');
+         var $div = $('<span draggable="true" id="' + utils.getUniqueId() + '" class="gx-column-drop-cell">');
          $div.on("dragstart", _.partial(this.dragColumnDropped, this, column));
-         var $span = $('<span id="' + utils.getUnivoqueId() + '" style="cursor: pointer; padding-left: 5px">');
+         var $span = $('<span id="' + utils.getUniqueId() + '" style="cursor: pointer; padding-left: 5px">');
          $div.text(column.caption);
          this.$groupingArea.append($div);
          $div.append($span);
@@ -1404,7 +1404,7 @@
       openConfigAggr: function (that) {
 
          if (!that.dialogConfAggrId) {
-            that.dialogConfAggrId = "dialog" + utils.getUnivoqueId();
+            that.dialogConfAggrId = "dialog" + utils.getUniqueId();
             var divConfAggr = that.buildHtmlConfigAggr(that.dialogConfAggrId);
 
             // lo appendo al mio rootElement esterno
@@ -1853,7 +1853,7 @@
             var tdGroupValue = "&nbsp;&nbsp;" + keyString + totGroup + "<span style='color:darkblue'>" + aggregationRes + "</span>";
 
             // costrusico oggetto tr con le info per effettare poi il recursiveCollapse/recursiveExpand
-            var trid = utils.getUnivoqueId();
+            var trid = utils.getUniqueId();
             var dataParent = "";
             if (tridParent) { dataParent = "data-parenttr=" + tridParent; }
             // aggiungo mdlgrouped per indicare che è una riga di grouping, servirà per non far scattare l'evento di selezione su quelle righe
@@ -2064,7 +2064,7 @@
 
          _.forEach(cols,
             function (c, index) {
-               var thid = appMeta.utils.getUnivoqueId();
+               var thid = appMeta.utils.getUniqueId();
                var $th;
 
                // se si tratta dellaprima colonna nel grouping allora non la faccio draggable nè mettò l'ordinamento
@@ -2413,7 +2413,7 @@
          var preText = $(this.tdEditing).html();
          $(this.tdEditing).data("mdlpretext", preText);
          // creo input editabile
-         var id = appMeta.utils.getUnivoqueId();
+         var id = appMeta.utils.getUniqueId();
 
          // osservo se devo visualizzare select
          if (self.conditionallookupArray[colname]) {

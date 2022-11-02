@@ -24,7 +24,7 @@
 		this.cachedDescribedColumnTable = {};
 		this.cachedDescribedTree = {};
 		this.cachedSyncGetResults = {};
-	}
+	};
 
 	GetData.prototype = {
 		constructor: GetData,

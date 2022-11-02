@@ -1068,7 +1068,7 @@
 								if (vcur == input.value) {
 									return defSelect.resolve();
 								}
-								$("select[data-tag='" + input.tag + "']").val(input.value).trigger('select2:select');
+								$("select[data-tag='" + input.tag + "']").val(input.value).trigger('change');
 							} else {
 								return defSelect.resolve();
 							}
@@ -1511,7 +1511,7 @@
 		getRandomStringTest: function (length) {
 			if (!length) length = 14;
 			if (length > 1024) {
-				this.log("Hai inserito una lunghezza grande ho normalizzato a 1024 era " + length.toString(), EnumLogType.warn);
+				//this.log("Hai inserito una lunghezza grande ho normalizzato a 1024 era " + length.toString(), EnumLogType.warn);
 				length = 1024;
 			}
 			var result = '';

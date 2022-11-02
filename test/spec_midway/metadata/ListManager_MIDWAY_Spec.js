@@ -388,9 +388,10 @@ describe('ListManager', function () {
                 });
             });
 
-            xit("show MODAL:true resolve click row + click nav button + dblclick", function (done) {
+            it("show MODAL:true resolve click row + click nav button + dblclick", function (done) {
                 $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
                 $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
+
 
                 var lm =  new ListManager("table1", "listType", null, true, $("#lm1"), metapage);
                 lm.init();

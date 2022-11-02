@@ -59,7 +59,7 @@
          * Builds the upload control and appends to the parent
          */
         buildTemplateHtml:function () {
-            var uniqueid = appMeta.utils.getUnivoqueId();
+            var uniqueid = appMeta.utils.getUniqueId();
             this.idLbValue = "range_lbl" + uniqueid;
             this.idRange = "range_" + uniqueid;
             var htmlCodeTemplate = '';

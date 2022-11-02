@@ -38,7 +38,7 @@
              */
             positionRelative:function() {
                 this.defModal = Deferred("ListManagerScrollable-relative");
-                this.dialogNotmodalId =  "dialog" + utils.getUnivoqueId();
+                this.dialogNotmodalId =  "dialog" + utils.getUniqueId();
                 this.currentRootElement = $('<div class="mdlautochoose" id="' + this.dialogNotmodalId + '">'); // in alternativa aggiungi pure classe container di bootstrap, centra il tutto container
                 // lo appendo al parent, cioè di solto la col. Poi in base al css su mdlautochoose verrà poszionato contestuale al controllo
                 $(this.rootElement).parent().append(this.currentRootElement);

@@ -164,7 +164,7 @@
        * Builds the upload control and appends to the parent
        */
       buildTemplateHtml: function () {
-         var uniqueid = appMeta.utils.getUnivoqueId();
+         var uniqueid = appMeta.utils.getUniqueId();
          this.idBtnAdd = "btn_add_node" + uniqueid;
          this.idBtnEdit = "btn_edit_node" + uniqueid;
          this.idBtnDel = "btn_del_node" + uniqueid;

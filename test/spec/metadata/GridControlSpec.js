@@ -17,7 +17,7 @@ describe("GridControlX",
         var currencyDecimalSeparator = appMeta.currencyDecimalSeparator;
         var currencySymbol = appMeta.currencySymbol;
         var origDoGet; // mock funz doGet
-        beforeEach(function () {
+        beforeEach(function (done) {
             appMeta.basePath = "base/";
             jasmine.getFixtures().fixturesPath = "base/test/spec/fixtures";
             // nomi colonne
@@ -93,15 +93,18 @@ describe("GridControlX",
                 'grid2:<br><div id="grid2" data-tag="table2.listtype.edittype" data-custom-control="gridx"></div>' +
                 '</div>';
             $("html").html(mainwin);
-            helpForm.preScanControls();
-            grid = $("#grid1").data("customController");
-            grid2 = $("#grid2").data("customController");
-            gridt1 = $("#gridt1").data("customController");
+            helpForm.preScanControls()
+            .then(()=>{
+                grid = $("#grid1").data("customController");
+                grid2 = $("#grid2").data("customController");
+                gridt1 = $("#gridt1").data("customController");
 
-            origDoGet =  appMeta.getData.doGet;
-            appMeta.getData.doGet = function () {
-                return new $.Deferred().resolve().promise();
-            }       
+                origDoGet =  appMeta.getData.doGet;
+                appMeta.getData.doGet = function () {
+                    return new $.Deferred().resolve().promise();
+                };
+                done();
+            });
         });
         
         afterEach(function () {

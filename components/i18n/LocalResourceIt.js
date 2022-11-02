@@ -1,19 +1,17 @@
+/*globals ObjectRow,DataRelation,define,self,jsDataSet,jsDataQuery,metaModel */
 /**
  * @module localResourceIt
- * @description
- * Collection of the localized strings ITALIAN
+ * @description  Collection of the localized strings ITALIAN
  */
 (function () {
 
     /**
-     * @constructor localResourceIt
+     * @constructor LocalResourceIt
      * @description
+     * Resources for italian language
      */
-    function localResourceIt() {
-    }
 
-    localResourceIt.prototype = {
-        constructor: localResourceIt,
+    const LocalResourceIt = {
         yes : "Si",
         no : "No",
         error : "Errore",
@@ -35,8 +33,8 @@
         column : 'colonna',
         from: "da",
         to : "a",
-		date: 'Data',
-		start: 'Inizio',
+        date: 'Data',
+        start: 'Inizio',
         end: 'Fine',
         infoevent: 'Info evento',
         loading: 'Caricamento...',
@@ -59,7 +57,7 @@
         noElementFound:"Nessun elemento trovato",
 
         sameValuesForTheKey: "E' stata inserita una riga con la stessa chiave primaria di un altra esistente. " +
-        " E' necessario modificare i dati immessi per salvarli.",
+            " E' necessario modificare i dati immessi per salvarli.",
 
         noPrimaryDataSelected: "Nessuna riga principale selezionata",
         selectRowInAGrid: "Seleziona una riga da modificare",
@@ -105,7 +103,7 @@
         multiSelect_toolbarButtonsTitle:  "E' possibile selzionare_ TODO",
         multiSelect_lbl_toAdd: "Da aggiungere",
         multiSelect_lbl_added: "Aggiunti",
-        multiSelect_lbl_descrtiption: "Ctrl/Shift + Click &egrave; possibile selezionare o deselezionare una o pi&ugrave; righe di un elenco. \<BR\> Con il tasto destro &egrave; possibile selezionare o deselezionare tutte le righe di un elenco",
+        multiSelect_lbl_description: "Ctrl/Shift + Click &egrave; possibile selezionare o deselezionare una o pi&ugrave; righe di un elenco. \<BR\> Con il tasto destro &egrave; possibile selezionare o deselezionare tutte le righe di un elenco",
         multiSelect_lbl_wait: "Attendi caricamento delle tabelle",
 
         procedureMessage_btn_nosave : "Non salvare",
@@ -153,7 +151,7 @@
         details: "Dettagli",
 
         dragHereColumns: "Trascina qui le colonne che vuoi raggruppare",
-        configAggrTitle: "Seleziona le opzioni sulle colonne. Premi Conferma per accettare",
+        configAggrTitle: "Seleziona le funzioni di aggregazione",
 
         // Attachment
         download_attach: "Scarica allegato",
@@ -216,7 +214,7 @@
         passwordMismatched: "La conferma della password non corrisponde",
 
         // errori server
-        serverErrorDataNotPermitted  : "Accesso non consentito in tale data in base alla gestione della sicurezza. L'utente deve esistere sull'organigramma per l'anno scelto. Contatta un amministratore per controllare la datacontabile sulla configurazione del sito.",
+        serverErrorDataNotPermitted  : "Accesso non consentito in tale data in base alla gestione della sicurezza.",
         serverErrorNoCredential  : "Inserisci le credenziali",
         serverErrorExpiredCredential  : "Credenziali scadute, rieffettuare l'accesso",
         serverErrorExpiredSession  : "Sessione scaduta, rieffettuare l'accesso",
@@ -241,8 +239,15 @@
         confirmSelection: "Conferma selezione",
         selectedRows: "righe selezionate"
     };
-    
-    appMeta.localResourceIt = localResourceIt;
+    let resource = LocalResourceIt;
+
+
+    if (typeof appMeta !== "undefined"){
+        appMeta.LocalResource.prototype.registerDictionary("it", resource);
+    }
+    else {
+        module.exports = resource;
+    }
 }());
 
 

@@ -205,8 +205,8 @@
                 }, "");
 
                 // creo oggetti univoci, così siamo sicuri di vedere ogni volta dati freschi
-                var jsondsid = "jsondsid" + utils.getUnivoqueId();
-                var dialogid = "dialogid" + utils.getUnivoqueId();
+                var jsondsid = "jsondsid" + utils.getUniqueId();
+                var dialogid = "dialogid" + utils.getUniqueId();
                 var htmlInfo = '<strong>MDLW version: </strong>' + appMeta.config.MDLW_VERSION;
                 htmlInfo += "<BR><strong>Env: </strong>" + getEnv();
                 htmlInfo += "<BR><strong>MetaPage: </strong>" + mp.primaryTableName + " - " + mp.editType;
@@ -273,7 +273,7 @@
          * @description SYNC
          * Adds to the page, the events necessary to enable framework enhancements.
          * For example it manages the format of the data in the input text, when it receives the focus or loses the focus
-         * @param {html node} el
+         * @param {node} el
          */
         addEvent: function(el) {
             var controller = $(el).data("customController");
@@ -354,7 +354,7 @@
 
         isCustomControl:function (el) {
             var ctrlName = $(el).data("customControl");
-            return !!ctrlName
+            return !!ctrlName;
         },
 
         /**
@@ -363,7 +363,7 @@
          * @description SYNC
          * Manages the logic to add to control for automode. For example during the text leave event framework should launch a manage() or choose() method on metapage.
          * "el" has tag: AutoChoose.TextBoxName.ListType.StartFilter or AutoManage.TextBoxName.EditType.StartFilter
-         * @param {Html element} el.  Div or Span containing the autochoose or automanage text
+         * @param {element} el.  Div or Span containing the autochoose or automanage text
          * @param {string} tag
          */
         setAutoMode:function (el, tag) {
@@ -515,7 +515,9 @@
          * @returns {string}
          */
         lastValidText: function(txt) {
-            if (txt === undefined) return this.pageState.lastTextNoFound;
+            if (txt === undefined) {
+                return this.pageState.lastTextNoFound;
+            }
             if (typeof txt === "string") {
                 this.pageState.lastTextNoFound = txt;
                 return txt;
@@ -529,7 +531,7 @@
          * @private
          * @description SYNC
          * Returns a concatenation <id of textbox>#<value of textbox>
-         * @param {html input} textBox
+         * @param {element} textBox
          * @returns {string}
          */
         evaluateLastValidText: function (textBox) {
@@ -545,14 +547,14 @@
          * @returns {Deferred}
          */
         textBoxGotFocus: function (that) {
-            console.log("txt got focus");
-            if ($(this).prop("readonly")) return;
+             if ($(this).prop("readonly")) return;
             if ($(this).prop("disabled")) return;
             if (that.insideTextBoxLeave) return; // does nothing where another textbox is still leaving focus
             that.lastValidText(this); // set lastTextNoFound
 
-            //lancio evento SOLO PER TESTARE!
-            //that.metaPage.eventManager.trigger(appMeta.EventEnum.textBoxGotFocus, that, "textBoxGotFocus");
+            
+            that.metaPage.eventManager.trigger(appMeta.EventEnum.textBoxGotFocus, that, "textBoxGotFocus");
+
             return  Deferred('textBoxGotFocus').resolve();
         },
 
@@ -564,8 +566,7 @@
          * @param {HelpForm} that
          * @returns {Deferred}
          */
-        textBoxLostFocus: function(that, ev) {
-            console.log("textBoxLostFocus received");
+        textBoxLostFocus: function(that, ev){
             var def = Deferred('textBoxLostFocus' + $(this).attr("id"));
             if (that.insideTextBoxLeave) return def.resolve(false);
             var textBox = this;
@@ -594,15 +595,15 @@
 
             //// salvo in var campo su cui ho fatto autochoose, la metterò sul listmanger
             that.metaPage.titleAutochoose = $("label[for='" + $(textBox).attr('id') + "']").length > 0
-                ? $("label[for='" + $(textBox).attr('id') + "']").text() : 
-                ai.startfield; 
+                ? $("label[for='" + $(textBox).attr('id') + "']").text() :
+                ai.startfield;
 
-            if (ai.kind === "AutoManage") {
+            if (ai.kind === "AutoManage"){
                 $(textBox).data("tag", null); // removes temporarily the tag from the textbox
                 filter = that.iterateGetSpecificSearchCondition(ai.G, ai.table);
                 $(textBox).data("tag", oldTag); //restores the tag
-            } 
-            else {
+            }
+            else{
                 var oldVal = $(textBox).val();
                 var txtBoxTag = that.getStandardTag(oldTag);
                 $(textBox).data("tag", txtBoxTag);
@@ -618,66 +619,65 @@
             var selected = false;
 
             var res = utils._if(startValue === "")
-                ._then(function () {
-                    return that.metaPage.choose("choose." + ai.table + ".unknown.clear", null, ai.G).then(function () {
-                        selected = true;
+            ._then(function (){
+                return that.metaPage.choose("choose." + ai.table + ".unknown.clear", null, ai.G).then(function (){
+                    selected = true;
+                    return true;
+                });
+            })
+            .then(function (){
+
+                var newStr = that.evaluateLastValidText(textBox);
+                if (newStr === that.lastValidText()){
+                    ai.busy = false;
+                    that.pageState.closeDisabled = saved;
+                    return def.resolve(true);
+                }
+                that.lastValidText(textBox);
+                that.insideTexBoxLeave = true;
+
+                filter = that.mergeFilters(filter, ai.startFilter);
+
+                //do a choose.table.listtype.filter
+
+                return utils._if((!selected) && (ai.kind === "AutoChoose"))
+                ._then(function (){
+                    return that.metaPage.choose("choose." + ai.table + "." + ai.type, filter, null)
+                    .then(function (result){
+                        selected = result;
                         return true;
                     });
-                })
-                .then(function () {
-
-                    var newStr = that.evaluateLastValidText(textBox);
-                    if (newStr === that.lastValidText()) {
+                }).then(function (){
+                    return utils._if((!selected) && (ai.kind === "AutoManage"))
+                    ._then(function (){
+                        return that.metaPage.manage("manage." + ai.table + "." + ai.type,
+                            ai.startfield,
+                            startValue,
+                            filter,
+                            ai.G)
+                        .then(function (result){
+                            selected = result;
+                            return true;
+                        });
+                    })
+                    .then(function (){
+                        if (selected){
+                            that.lastValidText(textBox);
+                        }
+                        else{
+                            that.lastValidText(savedLastTextNoFound);
+                            return that.applyFocus(textBox);
+                        }
+                    })
+                    .then(() => {
+                        that.insideTexBoxLeave = false;
                         ai.busy = false;
                         that.pageState.closeDisabled = saved;
                         return def.resolve(true);
-                    }
-                    that.lastValidText(textBox);
-                    that.insideTexBoxLeave = true;
-
-                    filter  = that.mergeFilters(filter, ai.startFilter);
-
-                    //do a choose.table.listtype.filter
-
-                    return utils._if((!selected) && (ai.kind === "AutoChoose"))
-                        ._then(function () {
-                            return that.metaPage.choose("choose." + ai.table + "." + ai.type, filter, null)
-                                .then(function(result) {
-                                    selected = result;
-                                    return true;
-                                });
-                        }).then(function () {
-                            return utils._if((!selected) && (ai.kind === "AutoManage"))
-                                ._then(function () {
-                                    return that.metaPage.manage("manage." + ai.table + "." + ai.type,
-                                        ai.startfield,
-                                        startValue,
-                                        filter,
-                                        ai.G)
-                                        .then(function(result) {
-                                            selected = result;
-                                            return true;
-                                        });
-                                })
-                                .then(function () {
-                                    if (selected) {
-                                        that.lastValidText(textBox);
-
-                                    } else {
-                                        that.lastValidText(savedLastTextNoFound);
-                                        that.applyFocus(textBox);
-                                    }
-                                    that.insideTexBoxLeave = false;
-                                    ai.busy = false;
-                                    that.pageState.closeDisabled = saved;
-                                    return def.resolve(true);
-                                });
-                        });
+                    });
                 });
-
-
+            });
             return def.from(res).promise();
-
         },
 
         /**
@@ -685,11 +685,13 @@
          * @private
          * @description SYNC
          * Adds the events to the control button. Each button could have a tag. Depending on this tag it adds different handler to the click event
-         * @param {html button} el
+         * @param {button} el
          * @param {string} tag
          */
         setButtonHandler:function (el, tag) {
-            if (!tag) tag = "";
+            if (!tag) {
+                tag = "";
+            }
             tag = tag.toLowerCase();
 
             if (tag.startsWith("edit")){
@@ -730,7 +732,7 @@
          * @private
          * @description SYNC
          * Returns the data-attribute "filter" of the control "el"
-         * @param {html element} el , should be a button or textbox
+         * @param {element} el , should be a button or textbox
          * @returns {jsDataQuery}
          */
         getFilterFormDataAttribute:function (el) {
@@ -742,7 +744,7 @@
          * @private
          * @description SYNC
          * Gets the grid contained in the same parent container of "el", undefined if the grid doesn't exist
-         * @param {Html node} el usually a button
+         * @param {node} el usually a button
          * @returns {GridControl}
          */
         getLinkedGrid:function (el) {
@@ -788,7 +790,9 @@
          * @returns {ObjectRow|null}
          */
         findExternalRow: function(t, r) {
-            if (!r) return r;
+            if (!r) {
+                return r;
+            }
             var found = t.select(t.keyFilter(r));
             if (found.length === 0) return null;
             return found[0];
@@ -799,8 +803,8 @@
          * @private
          * @description SYNC
          * Fills parent's child controls related to a specified DataTable "changedTable"
-         * @param {Html node} parent
-         * @param {Html node} changedControl
+         * @param {node} parent
+         * @param {node} changedControl
          * @param {DataTable} changedTable
          * @param {ObjectRow} changedRow
          */
@@ -825,7 +829,7 @@
          * @description SYNC
          * Fills a collection of controls in order to display a specified row.
          * Only controls linked to the right table are affected. All others are left unchanged.
-         * @param {Html node} parent
+         * @param {node} parent
          * @param {DataTable} changedTable
          * @param {ObjectRow} changedRow Row to display
          */
@@ -848,7 +852,7 @@
          * @private
          * @description SYNC
          * Fills parent's child controls related to a specified changedTable
-         * @param {Html node} el
+         * @param {node} el
          * @param {DataTable} changedTable
          * @param {ObjectRow} changedRow
          */
@@ -885,7 +889,7 @@
          * @private
          * @description SYNC
          * Sets the value of a control "el" based on its tag and on dataset content, only if there is a db relation with the input row "changedRow"
-         * @param {Html element} el
+         * @param {element} el
          * @param {DataTable} changedTable
          * @param {ObjectRow} changedRow
          **/
@@ -966,7 +970,7 @@
          * @private
          * @description SYNC
          * Returns true if "el" is a "valueSigned" control.
-         * @param {Html element} el
+         * @param {element} el
          * @returns {boolean}
          */
         isManagedCollection: function (el) {
@@ -1139,8 +1143,8 @@
                 var currChilds = currParent ? currParent.getRow().getChildRows(childRel.name) : null;
                 return  currChilds ? (currChilds.length === 1 ? currChilds[0] : null) : null
             }
-            var childs = parentRow.getRow().getChildRows(rFound.name);
-            return childs.length == 1 ? childs[0] : null;
+            let childs = parentRow.getRow().getChildRows(rFound.name);
+            return childs.length === 1 ? childs[0] : null;
         },
 
         /**
@@ -1160,7 +1164,7 @@
          * @private
          * @description SYNC
          * Clears a control "el". Clear the value of the control.
-         * @param {html node} el
+         * @param {node} el
          */
         clearControl: function (el) {
             var ctrl = $(el).data("customController");
@@ -1238,7 +1242,7 @@
          * @private
          * @description SYNC
          * Disables a control "el" and marks it as "toEnable" so it will be re-enabled by reEnable() method
-         * @param {html node} el
+         * @param {node} el
          * @param {boolean} hideContent
          */
         disableControl: function(el, hideContent) {
@@ -1333,7 +1337,7 @@
         /**
          * @method fillControls
          * @public
-         * @description SYNC
+         * @description ASYNC
          * Executes the fill of all html controls with the data-tag configured, contained in the root tag.
          *  Also enables/disables controls and sets their appearance accordingly to the form state
          * @returns {Deferred}
@@ -1348,7 +1352,7 @@
          * @public
          * @description SYNC
          * Enables or disables a control accordingly to form state and to the linked field
-         * @param {html node} c
+         * @param {node} c
          * @param {DataTable} table
          * @param {Object} column
          */
@@ -1562,7 +1566,7 @@
          * @private
          * @description ASYNC
          * Fills "currRootElement" children controls related to all fields of a dataRow
-         * @param {Html node} currRootElement
+         * @param {node} currRootElement
          * @param {DataTable} table
          * @param {DataRow} dataRow Row from which values have to be taken
          * @returns {Deferred}
@@ -1719,9 +1723,10 @@
             var ctrl = $(el).data("customController");
             if (ctrl){
                 var self = this;
-                this.fillControl(el, fieldValue).then(function () {
-                    self.enableDisable(el, table, dataColumn);
-                })
+                return def.from(this.fillControl(el, fieldValue)
+                    .then(function () {
+                        self.enableDisable(el, table, dataColumn);
+                    }));
             } 
             else {
                 this.setControl(el, table, fieldValue, dataColumn);
@@ -1901,7 +1906,7 @@
          * @private
          * @description SYNC
          * Fills the label of control "el" with value "value"
-         * @param {HTML element} el
+         * @param {element} el
          * @param {object} value
          * @param {string} colType
          */
@@ -2104,7 +2109,7 @@
          * @private
          * @description SYNC
          * Fixes control "el" properties to make it work with the framework
-         * @param {html Control} c
+         * @param {element} el
          */
         preScanControl: function(el) { //ex adjustTableForDisplay
             var tag = this.getStandardTag($(el).data("tag"));
@@ -2164,10 +2169,9 @@
                             this.setStandardTag(el, tag);
                             $(el).attr("maxlength", metaModel.getMaxLen(col));
 
-                            var ctype = this.getCtypeTagFromElTag(tag);
-                            var fieldStyle = cssDefault.getColumnsAlignmentCssClass(ctype);
+                            let ctype = this.getCtypeTagFromElTag(tag);
+                            let fieldStyle = cssDefault.getColumnsAlignmentCssClass(ctype);
                             $(el).addClass(fieldStyle);
-
 
                             // sui controlli data tolgo possibilità di ricevere focus, con tab, per evitare
                             // che si apra il calendarietto in automatico
@@ -2200,14 +2204,12 @@
                     this.setStandardTag(el, tag);
                     $(el).attr("maxlength", metaModel.getMaxLen(col));
 
-                    var ctype = this.getCtypeTagFromElTag(tag);
-
+                    let ctype = this.getCtypeTagFromElTag(tag);
                     // sui controlli data tolgo possibilità di ricevere focus, con tab, per evitare
                     // che si apra il calendarietto in automatico
                     if (ctype === "DateTime") $(el).attr('tabindex', '-1');
                     break;
             }
-
 
             //N.B: ---> Questo dovrebbe esser fatto nella prefillCustomControl che quindi chiama la prefill Del treeViewManager
             // A sua volta lì dentro viene fatta la describeTree deferred
@@ -2225,7 +2227,7 @@
          * @private
          * @description SYNC
          * Creates an instance of customController attaching it to an html element "el", if this is indicated by customControl data tag
-         * @param {html node} el
+         * @param {node} el
          */
         preScanCustomControl: function(el) {
             var ctrlName = $(el).data("customControl");
@@ -2247,7 +2249,7 @@
          * @private
          * @description SYNC
          * Instantiates a customContainer Controller for control "el" if it has data-attribute "customContainer"
-         * @param {html node} el
+         * @param {node} el
          */
         preScanCustomContainer: function(el) {
             var ctrlName = $(el).data("customContainer");
@@ -2275,7 +2277,7 @@
         /**
          * @method preScanControls
          * @public
-         * @description SYNC
+         * @description ASYNC
          * Instantiates all customController for any html elements that requires it
          * @returns {Deferred}
          */
@@ -2283,10 +2285,8 @@
             return this.iterateOverTag("tag", "preScanControl")
                 .then(()=>this.iterateOverTag("custom-control", "preScanCustomControl"))
                 .then(()=>this.iterateOverTag("custom-container", "preScanCustomContainer"))
-            //.then(()=>console.log("preScanControls done"));
-
-
-        },
+                //.then(()=>console.log("preScanControls done"));
+       },
 
         /**
          * @method iterateOverTag
@@ -2319,7 +2319,7 @@
          * @method fillControlsGroup
          * @public
          * @description ASYNC
-         * @param {string} parentel. the id of the parent html element . Ex "#myid"
+         * @param {string} [parentel] the id of the parent html element . Ex "#myid"
          * @returns {Deferred}
          */
 
@@ -2334,15 +2334,16 @@
                     //"this" is the html element
                     if ($(this).parents("[data-custom-control]").length > 0) return true;
                     if ($(this).parents("[data-value-signed]").length > 0) return true;
-                    if (self.controlsmaster && this.tagName.toUpperCase() === 'SELECT') {
+                    if (self.controlsmaster && (this.tagName.toUpperCase() === 'SELECT' || $(this).data("customController") )) {
                         var that = this;
                         chain = chain.then(function () {
                             return self.fillControl(that);
                         });
                     } else {
-                        allCtrlPromise.push(self.fillControl(this)); 
+                        allCtrlPromise.push(self.fillControl(this));
                     }
                 });
+
 
             allCtrlPromise.push(chain);
             return Deferred("fillControlsGroup").from($.when.apply($, allCtrlPromise))
@@ -2374,7 +2375,7 @@
          * @private
          * @description SYNC
          * Given an html element "el" reads its value and puts it into the main dataset
-         * @param {html node} el
+         * @param {node} el
          */
         getControl: function(el) {
             var ctrl = $(el).data("customController");
@@ -2502,7 +2503,7 @@
          * @public
          * @description SYNC
          * Reads value from a TextBox and puts it in a row field
-         * @param {html node} el
+         * @param {node} el
          * @param {string} fieldname
          * @param {ObjectRow} datarow
          * @param {string} eltag
@@ -2518,7 +2519,7 @@
          * @public
          * @description SYNC
          * Reads value from a TextBox and puts it in a row field
-         * @param {html node} el
+         * @param {node} el
          * @param {string} fieldname
          * @param {ObjectRow} datarow
          * @param {string} eltag
@@ -2534,7 +2535,7 @@
          * @private
          * @description SYNC
          * Gets value from a CheckBox and puts it in a row field
-         * @param {html node} el
+         * @param {node} el
          * @param {string} fieldname
          * @param {ObjectRow} datarow
          * @param {string} eltag
@@ -2587,8 +2588,7 @@
 
                 // aggiorno solamente se è differente
                 if (newvalue !== rowvalue) {
-                    var selectedValueJsObj = jsObjFromString(dRow.table.columns[fieldname].ctype, newvalue);
-                    datarow[fieldname] = selectedValueJsObj;
+                    datarow[fieldname] = jsObjFromString(dRow.table.columns[fieldname].ctype, newvalue);
                 }
             }
         },
@@ -2598,7 +2598,7 @@
          * @private
          * @description SYNC
          * Gets value selected from a html radiobutton and puts it in a row field
-         * @param {html element}el
+         * @param {element}el
          * @param {string} fieldName
          * @param {ObjectRow} objectRow
          * @param {string} eltag
@@ -2648,7 +2648,7 @@
          * @private
          * @description SYNC
          * Gets a value in a ValueSigned groupbox and puts it in a row field
-         * @param {html element} el
+         * @param {element} el
          * @param {string} fieldname
          * @param {ObjectRow} objectRow
          */
@@ -2847,8 +2847,7 @@
             if (column === null) return null;
             if (!this.DS.tables[table].columns[column]) return null;
 
-            var ctype = this.DS.tables[table].columns[column].ctype;
-            return ctype;
+            return this.DS.tables[table].columns[column].ctype;
         },
 
         /**
@@ -2891,7 +2890,7 @@
          * @public
          * @description SYNC
          * Sets standard tag of control "el" from a tag object
-         * @param {html node} el
+         * @param {node} el
          * @param  {string} tag
          */
         setStandardTag: function(el, tag) {
@@ -2957,7 +2956,7 @@
          * @description SYNC
          * Gets/Sets last selected row "row" in table "datatable", if it exists
          * @param {DataTable} datatable
-         * @param [{ObjectRow}] row
+         * @param {ObjectRow} [row]
          * @returns {ObjectRow}
          */
         lastSelected: function(datatable, row) {
@@ -3038,7 +3037,7 @@
          * @public
          * @description SYNC
          * Loops on "container" control children, managed by the framework, and builds the search clause for a specific "tableName"
-         * @param {html node} container
+         * @param {node} container
          * @param {string} tableName
          * @returns {jsDataQuery}
          */
@@ -3537,26 +3536,37 @@
          * If the control is in a tab nested control, it selects also the correct tabs
          * @param {string} errField
          * @param {string} tableName
+         * @return Deferred
          */
         focusField:function (errField, tableName) {
-            var inputTag = errField;
+            let def = appMeta.Deferred();
+            let inputTag = errField;
             if (errField.indexOf('.') < 0) inputTag = tableName + "." + errField;
-            var self = this;
+            let self = this;
+            let someThingFound=false;
             $(this.rootElement)
                 .find("[data-tag]")
                 .each(function() {
                     // "this" è il controllo
-                    var currTag = $(this).data("tag");
-                    var standardTag = self.getStandardTag(currTag);
+                    let currTag = $(this).data("tag");
+                    let standardTag = self.getStandardTag(currTag);
                     if (standardTag){
-                        var t = self.getField(currTag, 0);
-                        var f = self.getField(currTag, 1);
+                        let t = self.getTableName(standardTag);
+                        let f = self.getColumnName(standardTag);
                         if ( t && f) {
                             currTag = t + "." + f;
-                            if (currTag === inputTag) self.applyFocus(this);
+                            if (currTag === inputTag) {
+                                def.from(self.applyFocus(this));
+                                someThingFound=true;
+                                return false;
+                            }
                         }
                     }
                 });
+            if (!someThingFound){
+                def.resolve(false);
+            }
+            return def.promise();
         },
 
         /**
@@ -3564,36 +3574,46 @@
          * @private
          * @description SYNC
          * Applies the focus on the "ctrl" control and also focus its parent containers recursively
-         * @param {Html node} ctrl
+         * @param {node} ctrl
+         * returns {Deferred}
          */
         applyFocus:function(ctrl){
             // costruisco un array di parents, arrivando fino al root elements.Lo ordino da quello più esterno
             var arrayParentContainers = [];
             $(ctrl)
                 .parentsUntil(this.rootElement)
-                .addBack() // capire performance, se è conventiente fare la reverse con lodash
+                .addBack() // capire performance, se è conveniente fare la reverse con lodash
                 .each(function () {
-                    // se è un parent customContainer aggiungo all'array ausiliario
+                     // se è un parent customContainer aggiungo all'array ausiliario
                     // il this dentro il ciclo diventa il controllo corrente
                     if ($(this).data("customContainer") !== undefined) {
                         arrayParentContainers.push(this);
                     }
                 });
 
-            // ciclo sui parents , da quello più esterno e metto focus man mano sui figli che trovo. Se non esistono altri container,
-            // metto focus sul controllo iniziale
+            /* Deferred */
+            let currChain = Deferred().resolve(true);
+            // Ciclo sui parents, da quello più esterno e metto focus man mano sui figli che trovo.
+            // Se non esistono altri container, metto focus sul controllo iniziale
             _.forEach(arrayParentContainers,
                 function(currContainer, index) {
-                    // se arrivo all'ultimo elemento, signifca che è parents diretto del controllo in questione
-                    var elementToFocus = (index === arrayParentContainers.length - 1)
+                    // se arrivo all'ultimo elemento, significa che è parent diretto del controllo in questione
+                    let elementToFocus = (index === arrayParentContainers.length - 1)
                         ? $(ctrl)
                         : _.nth(arrayParentContainers, index + 1);
-                    var cc = $(currContainer).data("containerController");
-                    cc.focusContainer(elementToFocus);
+                    let cc = $(currContainer).data("containerController");
+                    currChain = currChain.then(()=>{
+                        return cc.focusContainer(elementToFocus);
+                    });
                 });
 
             // metto focus su controllo
-            $(ctrl).focus();
+
+            currChain = currChain.then(()=>{
+                $(ctrl).focus()
+            });
+
+            return currChain.promise();
         },
 
         /**
@@ -3601,7 +3621,7 @@
          * @public
          * @description SYNC
          * Gets/Sets a jsDataQuery "filter" for a control in filter data-attribute, (jquery style)
-         * @param {Html node} control
+         * @param {node} control
          * @param {jsDataQuery} filter
          * @retuns {jsDataQuery} filter
          */

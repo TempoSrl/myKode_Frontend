@@ -103,7 +103,7 @@
             this.parent = parent || document.body;
             this.hide();
             var self = this;
-            this.idunivoque = utils.getUnivoqueId();
+            this.idunivoque = utils.getUniqueId();
             this.currModal = $(this.getModalHtml());
 
             $(this.parent).append(this.currModal); //lo devo prima aggiungere , altrimenti la show non funziona. La show mette lo sfondo

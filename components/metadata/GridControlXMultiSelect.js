@@ -76,7 +76,7 @@
                 }
 
                 _.forEach(cols, function (c, index) {
-                        var thid = appMeta.utils.getUnivoqueId();
+                        var thid = appMeta.utils.getUniqueId();
                         var $th;
 
                         // se si tratta dellaprima colonna nel grouping allora non la faccio draggable nè mettò l'ordinamento

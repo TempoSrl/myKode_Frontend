@@ -61,7 +61,7 @@
          *
          */
         positionInPage:function() {
-            this.dialogNotmodalId = "dialog" + utils.getUnivoqueId();
+            this.dialogNotmodalId = "dialog" + utils.getUniqueId();
             // l'elenco occuperà metà dell'altezza
             this.currentRootElement = $('<div class="searchzoneList" id="' + this.dialogNotmodalId + '">'); // in alternativa aggiungi pure classe container di bootstrap, centra il tutto container
             // aggiungo label per il titolo, dove mostro il num di righe totali + paginazione
@@ -84,7 +84,7 @@
          *
          */
         positionModal:function() {
-            this.myModalUnivoqueId = "#mymodal" + utils.getUnivoqueId();
+            this.myModalUnivoqueId = "#mymodal" + utils.getUniqueId();
             this.defModal = Deferred("ListManager-modal");
             this.currentRootElement = $('<div class="listManagerContainer">'); // in alternativa aggiungi pure classe "container" di bootstrap, centra il tutto container
 

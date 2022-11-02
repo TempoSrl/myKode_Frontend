@@ -4,6 +4,9 @@ describe('MetaPage with Clock', function () {
     var MetaPage = appMeta.MetaPage;
     var localResource = appMeta.localResource;
 
+   
+    localResource.setLanguage("it");
+
     var metapage;
     var metapage2, state1, state2, r1,r2, r3, r4, r5, r6;
     var q = window.jsDataQuery;
@@ -129,6 +132,7 @@ describe('MetaPage with Clock', function () {
 
                         var s = new appMeta.MetaPageState();
                         var meta = new appMeta.MetaData();
+                        meta.setLanguage("it");
                         s.meta = meta;
                         s.DS = ds;
                         var helpForm = new appMeta.HelpForm(s, "t", "#rootelement");
@@ -385,24 +389,6 @@ describe('MetaPage with Clock', function () {
 
                     });
 
-                    // TODO. DEPRECATO spostare eventualmente nei e2e. il save va sul backend
-                   xit( 'cmdMainSave is async', function (done) {
-
-                        var mainwin = '<div id="rootelement">' +
-                            '<input type="text" name="myname" id="txtBox1" data-tag="table2.key" value="k1"><br>' +
-                            '<div id="currRootElement">' +
-                            '<input type="text" name="yourname" id="txtBox2" data-tag="table2.key" value="k2"><br>' +
-                            '</div>' +
-                            '</div>';
-                        $("html").html(mainwin);
-                       
-                        metapage2.cmdMainSave().then(
-                            function () {
-                                done();
-                            }
-                        );
-                       
-                    });
 
                    it( 'propagateChangesToMaster return boolean', function () {
 

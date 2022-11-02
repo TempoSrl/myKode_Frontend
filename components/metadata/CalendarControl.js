@@ -494,7 +494,7 @@
 				return true;
 			}
 
-			return this.metaPage.showMessageOkCancel(localResource.getDoYuoWantModifyEventResize(event.title, end.format("DD/MM/YYYY HH:mm")))
+			return this.metaPage.showMessageOkCancel(localResource.getDoYouWantModifyEventResize(event.title, end.format("DD/MM/YYYY HH:mm")))
 				.then(function (res) {
 					if (res) {
 						// bind valore sulla riga
@@ -531,7 +531,7 @@
 			// se end non esiste , metto default 1 ora dallo start
 			var end = event.end ? event.end : event.start.add(moment.duration(1, 'hours'));
 
-			return this.metaPage.showMessageOkCancel(localResource.getDoYuoWantModifyEvent(event.title, start.format("DD/MM/YYYY HH:mm"), end.format("DD/MM/YYYY HH:mm")))
+			return this.metaPage.showMessageOkCancel(localResource.getDoYouWantModifyEvent(event.title, start.format("DD/MM/YYYY HH:mm"), end.format("DD/MM/YYYY HH:mm")))
 				.then(function (res) {
 					if (res) {
 						// bind valore sulla riga
@@ -764,7 +764,7 @@
 
 			// aggiungo bottoni di editing se esistono
 			htmlInfo += '<br>';
-			var currid = utils.getUnivoqueId();
+			var currid = utils.getUniqueId();
 			if (event.mine) {
 				if (this.isDeleteBtnVisible) htmlInfo += '<span id="' + currid + 'deleteon" ><i class="fa fa-trash" style="cursor:pointer"></i></span>';
 				if (this.isEditBtnVisible) htmlInfo += '<span id="' + currid + 'editon">&nbsp;&nbsp;<i class="fa fa-edit" style="cursor:pointer"></i></span>';

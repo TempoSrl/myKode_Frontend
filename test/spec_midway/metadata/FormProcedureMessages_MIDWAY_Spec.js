@@ -9,7 +9,7 @@ describe("FormProcedureMessage",
         var formProcedureMessages;
         
         beforeEach(function () {
-            
+        
             jasmine.getFixtures().fixturesPath = "base/test/spec_midway/fixtures";
             appMeta.basePath = "base/";
 
@@ -21,8 +21,7 @@ describe("FormProcedureMessage",
             $("body").append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
             $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
 
-
-
+        
             // abilitare solo per vederne la grafica
            // $("head").append('<script defer src="/base/test/app/styles/fontawesome/fontawesome-all.js"></script>');
            // $("head").append('<script defer src="/base/bower_components/jquery/dist/jquery.js"></script>');

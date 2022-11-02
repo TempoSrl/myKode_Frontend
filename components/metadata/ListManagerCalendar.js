@@ -53,13 +53,13 @@
         // creo rootElement in maniera dinamica. imposto la classe css custom listManagerContainer
 
         if (isModal){
-            this.myModalUnivoqueId = "#mymodal" + utils.getUnivoqueId();
+            this.myModalUnivoqueId = "#mymodal" + utils.getUniqueId();
             this.defModal = Deferred("ListManager");
             this.currentRootElement = $('<div class="listManagerContainer">'); // in alternativa aggiungi pure classe "container" di bootstrap, centra il tutto container
             $(this.rootElement).append(this.currentRootElement);
         }
         else {
-            this.dialogNotmodalId =  "dialog" + utils.getUnivoqueId();
+            this.dialogNotmodalId =  "dialog" + utils.getUniqueId();
             this.currentRootElement = $('<div id="' + this.dialogNotmodalId + '">'); // in alternativa aggiungi pure classe container di bootstrap, centra il tutto container
             // lo appendo al mio rootElement esterno
             $(this.rootElement).append(this.currentRootElement);

@@ -78,7 +78,7 @@
             this.parent = this.parent || document.body;
             this.evManager = page ? page.eventManager : null;
             this.hide();
-            this.idunivoque = utils.getUnivoqueId(); //Math.random().toString().replace(".","");
+            this.idunivoque = utils.getUniqueId(); //Math.random().toString().replace(".","");
             this.currModal = $(this.getModalHtml());
 
             $(this.parent).append(this.currModal); // lo devo prima aggiungere , altrimenti la show non funziona. La show mette lo sfondo

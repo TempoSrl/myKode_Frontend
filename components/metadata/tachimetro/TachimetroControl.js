@@ -64,7 +64,7 @@
          * Builds the upload control and appends to the parent
          */
         buildTemplateHtml:function () {
-            var uniqueid = appMeta.utils.getUnivoqueId();
+            var uniqueid = appMeta.utils.getUniqueId();
             this.idLbValue = "tach_lbl" + uniqueid;
             this.idTachimetro = "tach_" + uniqueid;
             var htmlCodeTemplate = '';

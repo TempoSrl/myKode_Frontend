@@ -253,7 +253,6 @@
          * @returns {Deferred}
          */
         freshForm: function(refreshPeripherals, doPreFill, tableName, container) {
-
             // default dei booleani. su mdl freshForm() viene passata con freshForm(true, false);
             refreshPeripherals = refreshPeripherals === undefined ? true : refreshPeripherals;
             doPreFill = doPreFill === undefined ? false : doPreFill;
@@ -267,8 +266,8 @@
             if (lastSelectedRow && lastSelectedRow.getRow){
                 dtRow = lastSelectedRow.getRow();
             }
-            var def = Deferred("freshForm");
-            var res = utils._if(refreshPeripherals)
+            let def = Deferred("freshForm");
+             var res = utils._if(refreshPeripherals)
                 ._then(function () {
                     return getData.doGet(self.state.DS, dtRow, self.primaryTableName, refreshPeripherals);
                 })
@@ -306,7 +305,6 @@
 
             var self = this;
             var waitingHandler;
-
             var result = this.beforeRowSelect(t, r)
                 .then(function() {
                     self.helpForm.lastSelected(t, r);
@@ -322,14 +320,12 @@
                     // discard delle modifiche, quindi eseguo questo check
                     var dtRow = r ? (r.getRow ? r.getRow() : null) : null;
 
-
                     return getData.doGet(self.state.DS, dtRow, self.primaryTableName, false) // fresh peripherals table, not entity tables
                         .then(function() {
                             if (self.isTree && dtRow) {
                                 self.state.setEditState();
                             }
                             return self.freshForm(false, false);
-
                         });
                 })
                 .then(function() {
@@ -710,10 +706,10 @@
             let mainTable = this.getPrimaryDataTable();
             if (!mainTable) return;
             let relations = mainTable.childRelations();
-            _.forEach(relations, function (rel) {
+            _.forEach(relations,  (rel) => {
                 let childTableName = rel.childTable;
-                let childTable = this.getDataTable(this.childTableName);
-                if (!metaModel.isSubEntity(childTable, destRow.getRow().table)) {
+                let childTable = this.getDataTable(childTableName);
+                if (!metaModel.isSubEntity(childTable, mainTable)) {
                     return true; // continua nel ciclo
                 }
 
@@ -721,7 +717,7 @@
                 metaChild.setDefaults(childTable);
             });
 
-            _.forEach(self.state.extraEntities, function (tableName) {
+            _.forEach(this.state.extraEntities, (tableName) => {
                 let extra = this.getDataTable(tableName);              
 
                 let metaExtra = appMeta.getMeta(tableName);
@@ -1718,7 +1714,6 @@
             var lastSelectedRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
             var res;
             var def = Deferred("refillControls");
-
             if (lastSelectedRow) {
                 res = this.callMethod(toOverrideEvent.beforeFill)
                     .then( function () {
@@ -1872,7 +1867,6 @@
                                             appMeta.localResource.cancel,
                                             msgNoRowFound).show(self)
                                             .then(function() {
-                                                console.log("show was ok");
                                                 self.hideWaitingIndicator();
                                                 return def.resolve(null);
                                             });
@@ -3097,7 +3091,7 @@
                             }
 
                             // EFFETTUA IL DEEP-COPY
-                            return meta.getNewRowCopyChilds(primaryRowCopy.getRow(), rowToInsert, dsCopy, self.state.DS, self.primaryTableName, self.editType)
+                            return meta.recusiveNewCopyChilds(primaryRowCopy.getRow(), rowToInsert, dsCopy, self.state.DS, self.primaryTableName, self.editType)
                                 .then(function () {
                                     // rowToInsert now is the row from which start the filling of the form
                                     return getData.doGet(self.state.DS, rowToInsert, self.primaryTableName, true)
@@ -4111,8 +4105,7 @@
         fnMethod: function (method) {
             var self = this;
             return function () {
-                //console.log("called ", method);
-                return self.callMethod(method);
+               return self.callMethod(method);
             };
         },
 
@@ -4129,8 +4122,11 @@
             if (typeof (method) === "string") {
                 method = this[method];
             }
-            if (typeof method !== "function") return res.resolve(true).promise();
-            return res.from(utils.callOptAsync(utils.optBind(method, this)));//preserves  this[method] numer of arguments
+            if (typeof method !== "function") {
+                return res.resolve(true).promise();
+            }
+            //preserves  this[method] number of arguments
+            return res.from(utils.callOptAsync(utils.optBind(method, this)));
         },
 
         /**

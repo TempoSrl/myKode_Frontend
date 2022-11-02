@@ -50,7 +50,7 @@
          * Builds the graph control with empty values
          */
         buildTemplateHtml:function () {
-            var uniqueid = appMeta.utils.getUnivoqueId();
+            var uniqueid = appMeta.utils.getUniqueId();
             this.idGraph = "graph_" + uniqueid;
             var htmlCodeTemplate = '';
             htmlCodeTemplate = '<div></div><canvas id="' + this.idGraph + '"></canvas></div>' ;

@@ -1,5 +1,5 @@
 "use strict";
-/* global beforeEach, afterEach,describe,jasmine,it,expect,inject */
+/* global _,jsDataSet,appMeta,beforeEach, afterEach,describe,jasmine,it,expect,inject */
 
 describe("helpForm midway",
     function(){
@@ -8,6 +8,10 @@ describe("helpForm midway",
         var stabilize = appMeta.stabilize;
         var Stabilizer = appMeta.Stabilizer;
         var common = appMeta.common;
+
+        var localResource = appMeta.localResource;
+        localResource.setLanguage("it");
+
         var state;
         var helpForm;
         var ds;
@@ -31,7 +35,7 @@ describe("helpForm midway",
          *
          */
         function ConnMockServer(){
-            "use strict";
+
         }
 
         ConnMockServer.prototype = {
@@ -40,12 +44,14 @@ describe("helpForm midway",
              * Override of call method
              * @method callGet
              * @public
-             * @param {string} method
-             * @param {Object} prm
+             * @param {string} objConn.method
+             * @param {Object} objConn.prm
              * @returns {Promise}
              */
             call: function (objConn){
-                if (this[objConn.method]) return this[objConn.method](objConn.prm);
+                if (this[objConn.method]) {
+                    return this[objConn.method](objConn.prm);
+                }
                 throw  "method " + objConn.method + " not defined on ConnMockServer";
             },
 
@@ -56,11 +62,11 @@ describe("helpForm midway",
              * @returns {Promise}
              */
             select: function (prm){
-                var ds = new jsDataSet.DataSet("temp");
-                var datasource = ds.newTable("datasource");
-                var cCodice = "c_codice";
-                var cField1 = "c_field1";
-                var cField2 = "c_field2";
+                let ds = new jsDataSet.DataSet("temp");
+                let datasource = ds.newTable("datasource");
+                let cCodice = "c_codice";
+                let cField1 = "c_field1";
+                let cField2 = "c_field2";
                 // colonne per il datasource
                 datasource.setDataColumn(cCodice, "Decimal");
                 datasource.setDataColumn(cField1, "String");
@@ -126,6 +132,7 @@ describe("helpForm midway",
 
         afterEach(function (done){
             appMeta.getData.doGet = origDoGet;
+            //done();
             stabilize(true).then(done);
         });
 
@@ -142,10 +149,12 @@ describe("helpForm midway",
                                 $("html").html(mainDiv);
                                 // reinizializzo l'oggetto helpForm. la tab principale in queasto test è table3
                                 helpForm = new HelpForm(state, "table3", "#rootelement");
-                                helpForm.preScanControls();
-                                helpForm.lastSelected(t3,
-                                    objrow7); // prendo quella con il valore nullo, quindi deve settare INDETERMINATE=true
-                                helpForm.fillControls()
+                                helpForm.preScanControls()
+                                .then(()=>{
+                                    helpForm.lastSelected(t3,
+                                        objrow7); // prendo quella con il valore nullo, quindi deve settare INDETERMINATE=true
+                                    return helpForm.fillControls()
+                                })
                                 .then(function (){
                                     expect($("#mycheck1").is(":indeterminate")).toBe(true);
 
@@ -189,7 +198,7 @@ describe("helpForm midway",
                     function (){
                         it("INPUT TEXT - Enter/Leave events - DECIMAL and DOUBLE",
                             function (done){
-                                var mainwin = '<div id="rootelement">' +
+                                let mainwin = '<div id="rootelement">' +
                                     '<input type="text" id="txtBox1" data-tag="table1.c_name"><br>' +
                                     '<input type="text" id="txtBox2" data-tag="table1.c_dec"><br>' +
                                     '<input type="text" id="txtBox3" data-tag="table1.c_double"><br>' +
@@ -250,7 +259,7 @@ describe("helpForm midway",
 
                         it("INPUT TEXT - Enter/Leave events - DATETIME",
                             function (done){
-                                var mainwin = '<div id="rootelement">' +
+                                let mainwin = '<div id="rootelement">' +
                                     '<input type="text" id="txtBox1" data-tag="table3.c_date"><br>' +
                                     '<input type="text" id="txtBox2" data-tag="table3.c_int16.year"><br>' +
                                     "</div>";
@@ -866,10 +875,16 @@ describe("helpForm midway",
                                     return s;
                                 })
                                 .then(function (){
-                                    expect($("#combo3").val()).toBe(null); // ho premuto ok sulla msgBox che diceva c'erano cambiamenti, mentre sulla griglia sul valore 1, che none esiste più sulla combo
-                                    expect(datasource.rows.length).toBe(1); // ho fatto la discard dei dati, quindi mi aspetto che su datasource rimanga 1 sola riga
+                                    // ho premuto ok sulla msgBox che diceva c'erano cambiamenti,
+                                    //      mentre sulla griglia sul valore 1, che none esiste più sulla combo
+                                    expect($("#combo3").val()).toBe(null);
+
+                                    // ho fatto la discard dei dati, quindi mi aspetto che su datasource rimanga una sola riga
+                                    expect(datasource.rows.length).toBe(1);
+
                                     expect($("#combo3 > option").length).toBe(2);
-                                    // gli unici valori che rimangono sono , la riga vuota e l'ipzione 3
+
+                                    // gli unici valori che rimangono sono la riga vuota e l'opzione 3
                                     expect($("#combo3 > option")[0].text).toBe("");
                                     expect($("#combo3 > option")[1].text).toBe("tre");
 
@@ -882,7 +897,7 @@ describe("helpForm midway",
                                 expect($("#combo3").val()).toBe("1"); // ho premuto annulla sulla msgBox , rimane valore 3
                                 */
                             },
-                            3000);
+                            );
 
                         it('GRID must be master/detail',
                             function (done){
@@ -1125,10 +1140,10 @@ describe("helpForm midway",
             function (){
 
                 it('focus field should work',
-                    function (){
+                    function (done){
                         var mainwin = '<div id="firstroot">' +
                             '<input type="text" id="txtBox0" data-my="v"><br>' +
-                            "</div>" +
+                            '</div>' +
                             '<div id="rootelement">' +
                             'NoTag: <input type="text" id="txtBox00" data-notag="table1.c_name" value="notag"><br>' +
                             'Nome: <input type="text" id="txtBox1" data-tag="table1.c_name" value="ric"><br>' +
@@ -1151,43 +1166,60 @@ describe("helpForm midway",
                         r2 = t1.add(r2).current;
                         var helpForm = new HelpForm(state, "table2", "#rootelement");
 
-                        helpForm.focusField("c_name", r1.getRow().table.name);
-                        expect($(document.activeElement)).toEqual($("#txtBox1"));
-                        expect($(document.activeElement)).not.toEqual($("#txtBox2"));
-                        helpForm.focusField("c_dec", r1.getRow().table.name);
-                        expect($(document.activeElement)).toEqual($("#txtBox2"));
-                        expect($(document.activeElement)).not.toEqual($("#txtBox1"));
-                        // n.b $(":focus"); qui questo non funziona su jasmine, questo si invevce $(document.activeElement)
+                        helpForm.focusField("c_name", r1.getRow().table.name)
+                        .then(() => {
+                            expect($(document.activeElement)).toEqual($("#txtBox1"));
+                            expect($(document.activeElement)).not.toEqual($("#txtBox2"));
+                            return helpForm.focusField("c_dec", r1.getRow().table.name);
+                        }).then(() => {
+                            expect($(document.activeElement)).toEqual($("#txtBox2"));
+                            expect($(document.activeElement)).not.toEqual($("#txtBox1"));
+                            done();
+                            // n.b $(":focus"); qui questo non funziona su jasmine, questo si invevce $(document.activeElement)
+                        });
                     });
 
-                xit('focus field on tab nested',
-                    function (){
-                        // TODO controllare test!
+                it('focus field on tab nested',
+                    function (done){
                         $("html").html("");
                         jasmine.getFixtures().fixturesPath = 'base/test/spec_midway/fixtures';
                         loadFixtures('tabTest.html');
-                        helpForm.preScanControls();
-                        helpForm.focusField("c_name", objrow1.getRow().table.name);
-                        $('body').append('<link rel="stylesheet" href="/base/test/app/styles/bootstrap/css/bootstrap.css" />');
-                        $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
-                        $("head").append('<script defer src="/base/test/app/styles/bootstrap/js/bootstrap.js"></script>');
-                        expect($(document.activeElement)).toEqual($("#int3"));
-                        // verifico siano attivi i tab che mi aspetto
-                        expect($('.nav-tabs .active > a').attr('href')).toBe('#2');
-                        expect($('.nav-tabs .active > a[href="#2"]').length).toBe(1);
-                        expect($('.nav-tabs .active > a[href="#22"]').length).toBe(1);
-                        // verifico tutti gli altri tab non siano attivi
-                        expect($('.nav-tabs .active > a[href="#1"]').length).toBe(0);
-                        expect($('.nav-tabs .active > a[href="#3"]').length).toBe(0);
-                        expect($('.nav-tabs .active > a[href="#21"]').length).toBe(0);
-                        expect($('.nav-tabs .active > a[href="#23"]').length).toBe(0);
+
+                        helpForm.preScanControls()
+                        .then(()=> {
+                            helpForm.addEvents();
+
+                            //Va aggiunto il più tardi possibile cosi che le fixtures siano state già caricate
+                            ///base/test/app
+
+                            $('body').append('<link rel="stylesheet" href="test/styles/bootstrap/css/bootstrap.css" />');
+                            $("body").append('<link rel="stylesheet" href="/test/styles/app.css" />');
+                            $("head").append('<script src="test/styles/bootstrap/js/bootstrap.js"></script>');
+
+                            return helpForm.focusField("c_name", objrow1.getRow().table.name);
+                        })
+                        .then ( ()=>{
+                             expect($(document.activeElement)).toEqual($("#int3"));
+                            // // verifico siano attivi i tab che mi aspetto
+                            expect($('.nav-link.active').attr('href')).toBe('#A2');
+                            expect($('.nav-link.active[href="#A2"]').length).toBe(1);
+                            expect($('.nav-link.active[href="#A22"]').length).toBe(1);
+                            // verifico tutti gli altri tab non siano attivi
+                            expect($('.nav-link.active[href="#A1"]').length).toBe(0);
+                            expect($('.nav-link.active[href="#A3"]').length).toBe(0);
+                            expect($('.nav-link.active[href="#A21"]').length).toBe(0);
+                            expect($('.nav-link.active[href="#A23"]').length).toBe(0);
+
+                            done();
+                        });
+
                     });
             });
 
         describe("Add custom Events on standard button",
             function (){
 
-                // TODO è giusto fallisca,poichè ho cambiato la gestione dei bottoni in girglia. riprogettare con griglia
+                // TODO è giusto fallisca, poiché ho cambiato la gestione dei bottoni in griglia. riprogettare con griglia
                 xit('Add/Edit/Delete buttons have attached events',
                     function (done){
                         var mainwin = '<div id="rootelement">' +
@@ -1298,12 +1330,12 @@ describe("helpForm midway",
 
                         var insertclickdone = false;
 
-                        // mocked function. per comprire altri rami della funzione
+                        // mocked function. per coprire altri rami della funzione
                         metapage.insertClick = function (){
                             var def = Deferred('insertClick');
                             insertclickdone = true;
                             return def.resolve();
-                        }
+                        };
 
                         helpForm.preScanControls()
                         .then(() => {
@@ -1325,7 +1357,7 @@ describe("helpForm midway",
 
                     });
 
-                fit('AutoChoose attaches events on textbox, with mock of function choose() on MetaPage',
+                it('AutoChoose attaches events on textbox, with mock of function choose() on MetaPage',
                     function (done){
 
                         var mainwin = '<div id="rootelement">' +
@@ -1340,7 +1372,6 @@ describe("helpForm midway",
                         metapage.helpForm = helpForm;
                         helpForm.preScanControls()
                         .then(() => {
-                            console.log("preScanControls called");
                             helpForm.addEvents(metapage);
                             var fChooseOriginal = metapage.choose;
                             // mock funzione choose
@@ -1350,11 +1381,10 @@ describe("helpForm midway",
                             common.eventWaiter(helpForm.metaPage, appMeta.EventEnum.textBoxGotFocus)
                             .then(function (){
                                 expect(helpForm.lastValidText()).toBe("txtBox1#ric");
-                                console.log("textBoxLostFocus to call");
+
                                 // per semplicità simulo il blur direttamente chiamando il metodo per semplicità con i prm giusti
                                 helpForm.textBoxLostFocus.call($("#txtBox1"), helpForm)
                                 .then(function (){
-                                    console.log("textBoxLostFocus called");
                                     // nessun cambio all'interno del text
                                     expect(helpForm.lastValidText()).toBe("txtBox1#ric");
                                     // cambio del testo all'interno della text
@@ -1370,7 +1400,6 @@ describe("helpForm midway",
                                 });
                             });
 
-                            console.log("txtBox1 focused");
                             $("#txtBox1").focus(); // simulo focus
                         });
 

@@ -9,7 +9,7 @@
      * @constructor BootstrapContainerTab
      * @description
      * Initializes a bootstrap tab container
-     * @param {Html node} el
+     * @param {node} el
      * @param {HelpForm} helpForm
      */
     function BootstrapContainerTab(el, helpForm) {
@@ -26,23 +26,30 @@
          * @public
          * @description SYNC
          * Selects the tab in the bootstrap tab container, where the control ctrl is hosted
-         * @param {Html element} ctrl
-         * @returns {null}
+         * @param {element} ctrl
+         * @returns {Deferred}
          */
         focusContainer: function(ctrl) {
-            if (ctrl === null) return null;
-            // recupera il tab prossimo al controllo, quindi dove è ospitato il controllo
-            var currTab = $(ctrl).closest(".tab-pane");
-            if (currTab) {
-                // recupoera l'id è utilizza la "show" di bootstrap
-                var currId = $(currTab).prop('id');
-                $('.nav-tabs a[href="' + currId + '"]').tab('show');
-               // $('#'+currId).tab('show');
+            let res= appMeta.Deferred("focusContainer");
+            if (ctrl === null) {
+                return res.resolve();
             }
-            return null;
+            // recupera il tab prossimo al controllo, quindi dove è ospitato il controllo
+            let currTab = $(ctrl).closest(".tab-pane");
+            if (currTab) {
+                // recupera l'id e utilizza la "show" di bootstrap
+                let currId = $(currTab).prop('id');
+                let selector = '.nav-link[href="#' + currId + '"]';
+                let selTab = document.querySelector(selector);
+                selTab.addEventListener('shown.bs.tab', function (event) {
+                     res.resolve(true);
+                });
+                $(selector).tab('show');
+            }
+            return res.promise();
         }
-
     };
+
 
     window.appMeta.CustomContainer("bootstrapTab", BootstrapContainerTab);
 }());
