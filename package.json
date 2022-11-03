@@ -1,6 +1,6 @@
 {
 	"name": "mykode_frontend",
-	"version": "1.0.2",
+	"version": "1.0.4",
 	"description": "Portale client",
 	"main": "app/main.js",
 	"scripts": {
