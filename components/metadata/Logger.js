@@ -1,10 +1,11 @@
+/*global appMeta*/
 /**
  * Created by Gaetano Lazzo on 07/02/2015.
  * Thanks to lodash, ObjectObserve
  */
 /* jslint nomen: true */
 /* jslint bitwise: true */
-/*globals Environment,jsDataAccess,Function,jsDataQuery,define,_ */
+/*global Environment,jsDataAccess,Function,jsDataQuery,define,_ */
 
 /**
  * @module Logger
@@ -32,7 +33,7 @@
 
 
     /** Detect free variable `exports`. */
-    let freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
+    let freeExports = typeof exports === 'object' && exports && !exports.nodeType && exports;
 
 
     /** Detect free variable `module`. */
@@ -60,7 +61,6 @@
      * Initializes the level of the log (it depends on logTypeEnum values)
      */
     function Logger() {
-        "use strict";
         this.levelLog = logTypeEnum.ERROR;
     }
 
@@ -78,10 +78,11 @@
          * Depending on the "type" it prints on the console some information.
          * There several type of information (see enum logTypeEnum)
          * @param {logTypeEnum} type
+         * @param {object} args
          */
-        log: function (type) {
-            var params = Array.prototype.slice.call(arguments, 1, arguments.length);
-            var time = this.getTime();
+        log: function (type, args) {
+            let params = Array.prototype.slice.call(arguments, 1, arguments.length);
+            let time = this.getTime();
             switch (type) {
                 case logTypeEnum.ERROR:
                     if (this.levelLog >= logTypeEnum.ERROR)
@@ -91,7 +92,7 @@
                         else {
                             // lancia l'evento così eventualmente la metapage può effettuare operazioni.
                             appMeta.globalEventManager.trigger(appMeta.EventEnum.ERROR_SERVER);
-                            var winModal = new appMeta.BootstrapModal(localResource.error, params[0], [appMeta.localResource.ok], appMeta.localResource.cancel, time + ": " + JSON.stringify(params));
+                            let winModal = new appMeta.BootstrapModal(localResource.error, params[0], [appMeta.localResource.ok], appMeta.localResource.cancel, time + ": " + JSON.stringify(params));
                             return winModal.show();
                         }
                     break;

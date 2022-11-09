@@ -1,15 +1,16 @@
+/*global _,$,appMeta */
 /**
  * @module ModalLoaderControl
  * @description
  * Manages the graphics for a waiting modal control
  */
 (function() {
-
+    "use strict";
     /**
      * @constructor ModalLoaderControl
      * @description
-     * Initializes an html waiting modal control
-     * @param {Html node} rootElement
+     * Initializes a html waiting modal control
+     * @param {element} rootElement
      */
     function ModalLoaderControl(rootElement) {
         // gestisco le modali come unica risorsa condivisa. quindi metto in una lista, poi
@@ -27,7 +28,7 @@
          *
          */
        addProgressBar:function() {
-            var p = '<div class="waitProgress" id="waitProgressId"> <div class="waitBar" id="waitBarId"></div> </div>';
+            let p = '<div class="waitProgress" id="waitProgressId"> <div class="waitBar" id="waitBarId"></div> </div>';
             $(appMeta.rootToolbar).after($(p));
         },
 
@@ -72,20 +73,25 @@
                 this.addProgressBar();
             }
 
-            if (isBar) return this.pbarMove();
+            if (isBar){
+                return this.pbarMove();
+            }
             this.setMessage(msg);
             if (this.$el.hasClass('in')) return;
             this.$el.modal("show");
         },
 
+
+
         /**
-         * Show and move the progress bar
+         * @method pbarMove
+         * @description Show and move the progress bar
          */
         pbarMove:function() {
             $("#waitProgressId").css("visibility", "visible");
-            var bar =  $("#waitBarId");
-            var width = 5;
-            var id = setInterval(frame, 10);
+            let bar =  $("#waitBarId");
+            let width = 5;
+            let id = setInterval(frame, 10);
             function frame() {
                 if (width >= 95) return clearInterval(id);
                 width++;
@@ -133,11 +139,12 @@
          * @description SYNC
          * Shows a modal loader indicator. It is not possible to close the modal by user
          * @param {string} msg. the message to show in the box
-         * @returns {number} the ahndler of the modal. It is used on hideWaitIndicator to remove the message form the list
+         * @param {boolean} [isBar]
+         * @returns {number} the handler of the modal. It is used on hideWaitIndicator to remove the message form the list
          */
         show:function (msg, isBar) {
-            var handlerMax = this.waitIndicatorList.length ?  _.maxBy(this.waitIndicatorList, 'handler').handler : 0;
-            var handler = handlerMax + 1;
+            let handlerMax = this.waitIndicatorList.length ?  _.maxBy(this.waitIndicatorList, 'handler').handler : 0;
+            let handler = handlerMax + 1;
             this.waitIndicatorList.push({ handler:handler, msg:msg });
 
             // mostro il controllo con il messaggio attuale
@@ -168,7 +175,7 @@
             // mostro l'ultimo messaggio se esiste
             var waitIndicatorListLength = this.waitIndicatorList.length;
             if (waitIndicatorListLength){
-                var wo = this.waitIndicatorList[waitIndicatorListLength - 1];
+                let wo = this.waitIndicatorList[waitIndicatorListLength - 1];
                 // mostro il controllo con l'ultimo messaggio calcolato
                 this.showControl(wo.msg);
             }

@@ -1,3 +1,4 @@
+/*global appMeta,_,$ */
 /**
  * @module MetaPage
  * @description
@@ -7,34 +8,34 @@
 
 (function() {
 
-    var utils = appMeta.utils;
-    var localResource = appMeta.localResource;
-    var metaModel = appMeta.metaModel;
-    var getData = appMeta.getData;
-    var postData = appMeta.postData;
-    var q = window.jsDataQuery;
-    var dataRowState = jsDataSet.dataRowState;
+    const utils = appMeta.utils;
+    const localResource = appMeta.localResource;
+    const metaModel = appMeta.metaModel;
+    const getData = appMeta.getData;
+    const postData = appMeta.postData;
+    const q = window.jsDataQuery;
+    const dataRowState = jsDataSet.dataRowState;
 
-    var drawStates = {
+    const drawStates = {
         done: 0,
         prefilling: 1,
         filling: 2,
         clearing: 3
     };
-    var currOperation = {
+    const currOperation = {
         none: 0,
         search: 1,
-        setsearch : 2,
+        setsearch: 2,
         save: 3,
         insert: 4,
-        delete : 5,
-        edit:6
+        delete: 5,
+        edit: 6
     };
-    var Deferred = appMeta.Deferred;
-    var ResolvedDeferred = appMeta.ResolvedDeferred;
-    var logger = appMeta.logger;
-    var logType = appMeta.logTypeEnum;
-    var security = appMeta.security;
+    const Deferred = appMeta.Deferred;
+    const ResolvedDeferred = appMeta.ResolvedDeferred;
+    const logger = appMeta.logger;
+    const logType = appMeta.logTypeEnum;
+    const security = appMeta.security;
     appMeta.DrawStates = drawStates;
     appMeta.CurrOperation = currOperation;
 
@@ -42,13 +43,13 @@
      * Method called with claaMethod or fnMethod function
      * @type {string enum}
      */
-    var toOverrideEvent = {
+    const toOverrideEvent = {
         afterFill: 'afterFill',
         beforeFill: 'beforeFill',
         afterClear: 'afterClear',
         beforeClear: 'beforeClear',
         beforePost: 'beforePost',
-        afterPost : 'afterPost',
+        afterPost: 'afterPost',
         onAssurePageState: 'onAssurePageState',
         freshToolBar: 'freshToolBar',
         setPageTitle: 'setPageTitle',
@@ -176,7 +177,7 @@
         this.canShowLast = true;
         this.canCmdClose = true;
 
-        // intercetta l'errore server. serve per gestire eventuali azioni da fare sula maschera. utilizza il gestore global
+        // Intercetta l'errore server. serve per gestire eventuali azioni da fare sula maschera. utilizza il gestore global
         if (!appMeta.globalEventManager) appMeta.globalEventManager = new appMeta.EventManager();
         appMeta.globalEventManager.subscribe(appMeta.EventEnum.ERROR_SERVER, this.serverErrorHandler, this);
 
@@ -220,7 +221,7 @@
          * Event fired before row selecting. To be eventually implemented in derived classes
          * @param {DataTable} t
          * @param {ObjectRow} r
-         * @returns {Deferred}
+         * @returns {Promise}
          */
         beforeRowSelect: function(t, r) {
             return ResolvedDeferred(null, "beforeRowSelect");
@@ -257,33 +258,33 @@
             refreshPeripherals = refreshPeripherals === undefined ? true : refreshPeripherals;
             doPreFill = doPreFill === undefined ? false : doPreFill;
 
-            var self = this;
-            var drawStateSaved = this.drawState;
+            const self = this;
+            const drawStateSaved = this.drawState;
             this.drawState =  appMeta.DrawStates.filling;
-            var lastSelectedRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
-            var dtRow = null;
+            const lastSelectedRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
+            let dtRow = null;
             // potrebbe essere stata detachata, poichè provengo da una cancellazione.
             if (lastSelectedRow && lastSelectedRow.getRow){
                 dtRow = lastSelectedRow.getRow();
             }
             let def = Deferred("freshForm");
-             var res = utils._if(refreshPeripherals)
-                ._then(function () {
-                    return getData.doGet(self.state.DS, dtRow, self.primaryTableName, refreshPeripherals);
+            const res = utils._if(refreshPeripherals)
+            ._then(function (){
+                return getData.doGet(self.state.DS, dtRow, self.primaryTableName, refreshPeripherals);
+            })
+            .then(function (){
+                return utils._if(doPreFill)
+                ._then(function (){
+                    //NOTA BENE Se arrivo qui con dtRow ma senza dtRow.table controllare il parametro
+                    //in querystring & searchon=on e metterlo a off
+                    const filter = dtRow ? dtRow.table.keyFilter(lastSelectedRow) : null;
+                    return self.doPreFill(tableName, filter);
                 })
-                .then(function () {
-                    return utils._if(doPreFill)
-						._then(function () {
-							//NOTE BENE Se arrivo qui con dtRow ma senza dtRow.table controllare il parametro 
-							//in querystring & searchon=on e metterlo a off
-                            var filter = dtRow ? dtRow.table.keyFilter(lastSelectedRow) : null;
-                            return self.doPreFill(tableName, filter);
-                        })
-                        .then(function () {
-                            self.drawState = drawStateSaved;
-                            return self.reFillControls(container);
-                        });
+                .then(function (){
+                    self.drawState = drawStateSaved;
+                    return self.reFillControls(container);
                 });
+            });
 
             return def.from(res).promise();
         },
@@ -296,45 +297,45 @@
          * 2. if the table is not the main table it iterates only on the related controls, else
          *  calls the server, to refresh the peripheral tables
          *  3. Dispatch a row select through trigger ASYNC
-         * @param {Html node} sender object generating the event
+         * @param {element} sender object generating the event
          * @param {DataTable} t the table of the row "r"
          * @param {ObjectRow} r the row selected that generates the event
          * @returns {Deferred}
          */
         rowSelect: function(sender, t, r) {
 
-            var self = this;
-            var waitingHandler;
-            var result = this.beforeRowSelect(t, r)
-                .then(function() {
-                    self.helpForm.lastSelected(t, r);
-                    if (t.name !== self.primaryTableName) {
-                        var parent = $(sender).parent();
-                        self.helpForm.iterateFillRelatedControls(parent, sender, t, r);
-                        return true;
-                    }
-                    // in questo caso mostro indicatore di attesa poiché devo aggiornare i controlli
-                    waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update, true);
-                    self.state.currentRow = r;
-                    // la riga potrebbe essere cancellata, quindi detachata poichè si preme sulla stessa riga aggiunta ma si vuole fare il
-                    // discard delle modifiche, quindi eseguo questo check
-                    var dtRow = r ? (r.getRow ? r.getRow() : null) : null;
+            const self = this;
+            let waitingHandler;
+            const result = this.beforeRowSelect(t, r)
+            .then(function (){
+                self.helpForm.lastSelected(t, r);
+                if (t.name !== self.primaryTableName){
+                    const parent = $(sender).parent();
+                    self.helpForm.iterateFillRelatedControls(parent, sender, t, r);
+                    return true;
+                }
+                // in questo caso mostro indicatore di attesa poiché devo aggiornare i controlli
+                waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update, true);
+                self.state.currentRow = r;
+                // la riga potrebbe essere cancellata, quindi detachata poichè si preme sulla stessa riga aggiunta ma si vuole fare il
+                // discard delle modifiche, quindi eseguo questo check
+                const dtRow = r ? (r.getRow ? r.getRow() : null) : null;
 
-                    return getData.doGet(self.state.DS, dtRow, self.primaryTableName, false) // fresh peripherals table, not entity tables
-                        .then(function() {
-                            if (self.isTree && dtRow) {
-                                self.state.setEditState();
-                            }
-                            return self.freshForm(false, false);
-                        });
-                })
-                .then(function() {
-                    return self.eventManager.trigger(appMeta.EventEnum.ROW_SELECT, sender, t, r)
-                        .then(function () {
-                            if (waitingHandler) self.hideWaitingIndicator(waitingHandler);
-                            return  self.afterRowSelect(t, r);
-                        });
+                return getData.doGet(self.state.DS, dtRow, self.primaryTableName, false) // fresh peripherals table, not entity tables
+                .then(function (){
+                    if (self.isTree && dtRow){
+                        self.state.setEditState();
+                    }
+                    return self.freshForm(false, false);
                 });
+            })
+            .then(function (){
+                return self.eventManager.trigger(appMeta.EventEnum.ROW_SELECT, sender, t, r)
+                .then(function (){
+                    if (waitingHandler) self.hideWaitingIndicator(waitingHandler);
+                    return self.afterRowSelect(t, r);
+                });
+            });
 
             return Deferred("rowSelect").from(result);
         },
@@ -344,11 +345,11 @@
          * @private
          * @description ASYNC
          * Get the data from the controls, and verifies if the dataset has changes
-         * @returns {Deferred(booelan)} true if there are changes on the dataset, false otherwise
+         * @returns Deferred<bool> true if there are changes on the dataset, false otherwise
          */
         hasUnsavedChanges: function() {
-            var that = this;
-            var primaryDataTable = this.getPrimaryDataTable();
+            const that = this;
+            const primaryDataTable = this.getPrimaryDataTable();
             return this.getFormData(true) //gets data without checks
                 .then(function() {
                     return metaModel.hasChanges(that.state.DS,
@@ -369,7 +370,7 @@
          * @result {Deferred(string)} the text of the buttons clicked, (when user will click it)
          */
         showMessage: function(title, text, buttons, closeCommand) {
-            var winModal = new appMeta.BootstrapModal(title, text, buttons, closeCommand);
+            const winModal = new appMeta.BootstrapModal(title, text, buttons, closeCommand);
             return winModal.show(this);
         },
 
@@ -411,17 +412,17 @@
 
         /**
          * @method warnUnsaved
-         * @private
+         * @internal
          * @description ASYNC
          * Displays a message and stop form closing if there are unsaved changes
-         * @returns {boolean}
+         * @returns {Promise}
          */
         warnUnsaved: function() {
-            var currentRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
-            var result = Deferred("warnUnsaved");
+            const currentRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
+            const result = Deferred("warnUnsaved");
             if (this.isList && !currentRow) return result.resolve(true);
             if (this.state.isInsertState() && this.dontWarnOnInsertCancel) return result.resolve(true);
-            var self = this;
+            const self = this;
             result.from(this.hasUnsavedChanges()
                 .then(function(result) {
                     if (!result) return true;
@@ -442,7 +443,7 @@
                 this.state.setSearchState();
                 return;
             }
-            var stateDetached = !this.state.currentRow.getRow;
+            const stateDetached = !this.state.currentRow.getRow;
             if (stateDetached) {
                 this.state.currentRow = null;
                 this.state.setSearchState();
@@ -464,22 +465,28 @@
          * If the user clicks "cancel" it returns false
          * @param {DataTable} t
          * @param {DataRow} r
-         * @returns {Deferred(boolean)}
+         * @returns Promise<boolean>
          */
         canSelect: function(t, r) {
-            var deferred = Deferred("MetaPage.canSelect");
-            if (!t) return deferred.resolve(true);
-            if (t.name !== this.primaryTableName) return deferred.resolve(true);
-            if (r === this.state.currentRow) return deferred.resolve(true);
+            const deferred = Deferred("MetaPage.canSelect");
+            if (!t) {
+                return deferred.resolve(true);
+            }
+            if (t.name !== this.primaryTableName) {
+                return deferred.resolve(true);
+            }
+            if (r === this.state.currentRow) {
+                return deferred.resolve(true);
+            }
 
-            var that = this;
+            const that = this;
             this.warnUnsaved()
                 .then(function(res) {
                     if (res && that.state.DS.hasChanges()) {
                         that.state.DS.rejectChanges();
                         that.updateState();
                     }
-                    deferred.resolve(!!res)
+                    deferred.resolve(!!res).promise();
                 });
 
             return deferred.promise();
@@ -491,7 +498,7 @@
          * @description
          * Sets the given control as listManager for the page and establish that this page is a list
          * @remarks this must be called in a derived page, inside an afterLink method
-         * @param {html node} ctrlManager  deve essere un grid o un "tree"
+         * @param {element} ctrlManager  deve essere un grid o un "tree"
          */
         setList: function(ctrlManager) {
             this.isList = true; //stabilisce che questo è un form lista
@@ -504,16 +511,15 @@
          * @description ASYNC
          * If a Dataset is still not available asks to the server to create a dataset and returns it
          * @method assureDataSet
-         * @returns {Deferred(DataSet)}
+         * @returns Deferred<DataSet>
          */
         assureDataSet: function() {
-            "use strict";
-            var res = Deferred("assureDataSet");
+            const res = Deferred("assureDataSet");
 
             if (!this.state) return res.reject("state shouldn't be empty");
             if (this.state.DS) return res.resolve(this.state.DS);
 
-            var self = this;
+            const self = this;
             getData.getDataSet( this.primaryTableName, this.editType)
                 .then(function (dataSet) {
                     self.setDataSet(dataSet);
@@ -531,7 +537,7 @@
          * @returns {*}
          */
         fill: function() {
-            var self = this;
+            const self = this;
             return self.callMethod(toOverrideEvent.beforeFill)
                 .then(function() {
                     return self.helpForm.fillControls();
@@ -558,30 +564,30 @@
          * @returns {Deferred}
          */
         clear: function() {
-            var self = this;
-            var def = Deferred("clear");
+            const self = this;
+            const def = Deferred("clear");
 
             this.helpForm.lastValidText("");
             this.state.setSearchState();
             this.drawState = appMeta.DrawStates.clearing;
             metaModel.allowAllClear(this.state.DS);
             metaModel.clearEntity(this.state.DS);
-            var primaryDataTable = this.getPrimaryDataTable();
+            const primaryDataTable = this.getPrimaryDataTable();
             this.helpForm.lastSelected(primaryDataTable, null);
             this.state.currentRow = null;
 
-            var res = this.callMethod(toOverrideEvent.beforeClear)
-                .then(utils.optBind(self.helpForm.clearControls, self.helpForm))
-                .then(utils.optionalDeferred(self.isRealClear(),
-                    function() {
-                        return self.callMethod(toOverrideEvent.freshToolBar)
-                            .then(self.fnMethod(toOverrideEvent.setPageTitle));
-                    }))
-                .then(self.fnMethod(toOverrideEvent.afterClear))
-                .then(function() {
-                    self.drawState = appMeta.DrawStates.done;
-                    return true;
-                });
+            const res = this.callMethod(toOverrideEvent.beforeClear)
+            .then(utils.optBind(self.helpForm.clearControls, self.helpForm))
+            .then(utils.optionalDeferred(self.isRealClear(),
+                function (){
+                    return self.callMethod(toOverrideEvent.freshToolBar)
+                    .then(self.fnMethod(toOverrideEvent.setPageTitle));
+                }))
+            .then(self.fnMethod(toOverrideEvent.afterClear))
+            .then(function (){
+                self.drawState = appMeta.DrawStates.done;
+                return true;
+            });
 
             return def.from(res).promise();
         },
@@ -604,7 +610,7 @@
          * Based on the state of the form it sets the page title ("name of Page" + "suffix depending on state")
          */
         setPageTitle: function() {
-            var suffix = localResource.insertTitle;
+            let suffix = localResource.insertTitle;
             if (this.state.isSearchState()) {
                 suffix = localResource.searchTitle;
             }
@@ -642,22 +648,21 @@
          * @description ASYNC
          * Function called the first time the page is showed. It fills the controls.
          * Opens also the deferred, that will be solved, at the exit or during some action in the detail page
-         * @returns {Deferred}
+         * @returns {Promise}
          */
         activate: function() {
-            "use strict";
-            var self = this;
+            const self = this;
             if (self.activated) return self.freshToolBar();
 
             // ogni volta che chiamo una nuova metapage metto indicatore di caricamento.
             // Lo nascondo al termine della funz. activate()
-            var msg = localResource.modalLoader_wait_metapage_loading;
+            let msg = localResource.modalLoader_wait_metapage_loading;
             if (self.detailPage) msg = localResource.modalLoader_wait_metapageDetail_loading;
-            var waitingHandler = self.showWaitingIndicator(msg);
+            const waitingHandler = self.showWaitingIndicator(msg);
 
             this.drawState = drawStates.prefilling;
-            var primaryDataTable = self.getPrimaryDataTable();
-            var meta = self.state.meta;
+            const primaryDataTable = self.getPrimaryDataTable();
+            const meta = self.state.meta;
 
             // Apre il deferred, che verrà risolto su qualche tipo di comando o alla chiusura della maschera
             this.deferredResult = Deferred("DialogResult");
@@ -695,7 +700,7 @@
                     // al termine tolgo indicatore di caricamento
                     self.hideWaitingIndicator(waitingHandler);
                     return true;
-                })
+                });
         },
 
         /***
@@ -722,7 +727,7 @@
 
                 let metaExtra = appMeta.getMeta(tableName);
                 metaExtra.setDefaults(extra);
-            })
+            });
         },
 
         /**
@@ -735,24 +740,24 @@
          * @param {string} editType
          */
         setCaptions:function(editType) {
-            var self = this;
+            const self = this;
             self.state.meta.setCaption(self.getPrimaryDataTable(), editType);
-            var metaForCaptions = _.concat(this.state.extraEntities);
+            const metaForCaptions = _.concat(this.state.extraEntities);
             _.forEach(metaForCaptions, function (tname) {
-                var currMetaData = appMeta.getMeta(tname);
+                const currMetaData = appMeta.getMeta(tname);
                 if (!!currMetaData && !!self.state.DS.tables[tname]) currMetaData.setCaption(self.state.DS.tables[tname], editType);
-            })
+            });
         },
 
         /**
          * Calls the structure table for each extra entities.
          */
         describeEntityColumnsStructure:function () {
-            var self = this;
+            const self = this;
             _.forEach(this.state.extraEntities, function (tname) {
-                var currMetaData = appMeta.getMeta(tname);
+                const currMetaData = appMeta.getMeta(tname);
                 if (!!currMetaData && !!self.state.DS.tables[tname]) currMetaData.describeColumnsStructure(self.state.DS.tables[tname]);
-            })
+            });
         },
 
 
@@ -761,12 +766,12 @@
          * @private
          * @description ASYNC
          * If exists a "firstSearchFilter" filter it performs a maindosearch command, otherwise it resolves the deferred with a null value
-         * @returns {Deferred}
+         * @returns Deferred
          */
         doOptionalMainDoSearch: function() {
-            var def = Deferred("doOptionalMainDoSearch");
+            let def = Deferred("doOptionalMainDoSearch");
             if (this.firstSearchFilter) {
-                var searchFilter = this.firstSearchFilter;
+                const searchFilter = this.firstSearchFilter;
                 this.firstSearchFilter = null;
                 return def.from(this.doMainCommand("maindosearch" + "." + this.defaultListType , searchFilter)).promise();
             }
@@ -779,11 +784,11 @@
          * @private
          * @description ASYNC
          * Does specific activation operations basing on form type
-         * @returns {Deferred}
+         * @returns Deferred
          */
         doActivation: function() {
             // Su MDL lo stato edit veniva settato qui: MetaData.Edit() -> MetaData.doEdit() -> MetaData.linkToForm() -> Formcontroller.doLink() (rr 256)
-            var sRow = this.state.sourceRow();
+            const sRow = this.state.sourceRow();
             if (sRow) {
                 this.state.setEditState();
                 if (sRow.state === dataRowState.added) this.state.setInsertState();
@@ -799,10 +804,10 @@
          * @method doActivation_EmptyList
          * @private
          * @description ASYNC
-         * @returns {Deferred}
+         * @returns Deferred
          */
         doActivation_EmptyList: function() {
-            var self = this;
+            const self = this;
             return self.callMethod(toOverrideEvent.clear)
                 .then(self.fnMethod(toOverrideEvent.setManager));
         },
@@ -812,110 +817,110 @@
          * @method doActivation_NotEmptyList
          * @private
          * @description ASYNC
-         * @returns {Deferred}
+         * @returns Deferred
          */
         doActivation_NotEmptyList: function() {
-            var def = Deferred("doActivation_NotEmptyList");
-            var self = this;
-            var exitImmediately = false;
+            const def = Deferred("doActivation_NotEmptyList");
+            const self = this;
+            let exitImmediately = false;
 
             this.setManager();
 
-            var res =  utils._if(this.isTree)
-                ._then(function () {
+            const res = utils._if(this.isTree)
+            ._then(function (){
 
-                    return utils._if(!self.helpForm.mainTableSelector)
-                        ._then(function () {
-                            return self.showMessageOk(localResource.getFormNoMainTreeView(self.getName()))
-                                .then(function() {
-                                    self.drawState = drawStates.done;
-                                    self.inited = true;
-                                    exitImmediately = true;
-                                    return self.freshToolBar();
-                                });
-                        })
-                        .then(function () {
-                            if (!exitImmediately){
-
-                                var treeManager = self.helpForm.mainTableSelector; // settato durante la preFill del TreeViewManager
-                                var treeFilled = false;
-
-                                return utils._if(self.manageParams && self.manageParams.startFieldWanted)
-                                    ._then(function () {
-                                        return self.helpForm.setTreeByStart(treeManager, 
-													self.manageParams.startFilter, self.manageParams.startValueWanted, self.manageParams.startFieldWanted)
-                                            .then(function (res) {
-                                                treeFilled = res;
-                                                if (!treeFilled){
-                                                    return self.showMessageOk(localResource.requiredRow_not_found)
-                                                }
-                                            });
-                                    }).then(function () {
-                                        // prosegue nel then
-                                        if (!treeFilled) {
-                                            // eseguirà la fillpoichè il secondo prm è false
-                                            return treeManager.filteredPreFillTree(self.startFilter, false);
-                                        }
-                                        return true;
-
-                                    });
-                            }
-                        })
+                return utils._if(!self.helpForm.mainTableSelector)
+                ._then(function (){
+                    return self.showMessageOk(localResource.getFormNoMainTreeView(self.getName()))
+                    .then(function (){
+                        self.drawState = drawStates.done;
+                        self.inited = true;
+                        exitImmediately = true;
+                        return self.freshToolBar();
+                    });
                 })
-                ._else(function () {
-                    return self.getPrimaryTable(self.startFilter)
-                        .then(function () {
-                            security.deleteAllUnselectable(self.getPrimaryDataTable());
+                .then(function (){
+                    if (!exitImmediately){
+
+                        const treeManager = self.helpForm.mainTableSelector; // settato durante la preFill del TreeViewManager
+                        let treeFilled = false;
+
+                        return utils._if(self.manageParams && self.manageParams.startFieldWanted)
+                        ._then(function (){
+                            return self.helpForm.setTreeByStart(treeManager,
+                                self.manageParams.startFilter, self.manageParams.startValueWanted, self.manageParams.startFieldWanted)
+                            .then(function (res){
+                                treeFilled = res;
+                                if (!treeFilled){
+                                    return self.showMessageOk(localResource.requiredRow_not_found);
+                                }
+                            });
+                        }).then(function (){
+                            // prosegue nel then
+                            if (!treeFilled){
+                                // eseguirà la fillpoichè il secondo prm è false
+                                return treeManager.filteredPreFillTree(self.startFilter, false);
+                            }
                             return true;
-                        })
-                })
-                .then(function () {
 
-                    if (exitImmediately) {
-                        return true;
+                        });
                     }
+                });
+            })
+            ._else(function (){
+                return self.getPrimaryTable(self.startFilter)
+                .then(function (){
+                    security.deleteAllUnselectable(self.getPrimaryDataTable());
+                    return true;
+                });
+            })
+            .then(function (){
 
-                    // seleziono la prima. nel caso GRID ci pensa il controllo stesso dopo il load. sul tree lasdiamo come mdl, dovrei vedere le implicazioni e dove mettere la selezione al 1o caricamento neltree
-                    if (self.isTree){
-                        var pt = self.getPrimaryDataTable() ;
-                        if (pt.rows.length > 0){
-                            if (!self.helpForm.lastSelected(pt)) {
-                                self.helpForm.lastSelected(pt, pt.rows[0]);
-                            }
+                if (exitImmediately){
+                    return true;
+                }
+
+                // seleziono la prima. nel caso GRID ci pensa il controllo stesso dopo il load. sul tree lasdiamo come mdl, dovrei vedere le implicazioni e dove mettere la selezione al 1o caricamento neltree
+                if (self.isTree){
+                    const pt = self.getPrimaryDataTable();
+                    if (pt.rows.length > 0){
+                        if (!self.helpForm.lastSelected(pt)){
+                            self.helpForm.lastSelected(pt, pt.rows[0]);
                         }
                     }
+                }
 
 
-                    // In realtè qui andrebbe controllato se, nel caso di form lista non
-                    // tree (ossia grid), è stato effettivamente letto qualcosa.
-                    // In tal caso il form dovrebbe andare in search e non in edit.
-                    var lastSelected = self.helpForm.lastSelected(self.getPrimaryDataTable());
-                    if (lastSelected) {
-                        self.currOperation = currOperation.edit; //assumes something has been displayed
-                        self.state.setEditState();
-                    }
+                // In realtè qui andrebbe controllato se, nel caso di form lista non
+                // tree (ossia grid), è stato effettivamente letto qualcosa.
+                // In tal caso il form dovrebbe andare in search e non in edit.
+                const lastSelected = self.helpForm.lastSelected(self.getPrimaryDataTable());
+                if (lastSelected){
+                    self.currOperation = currOperation.edit; //assumes something has been displayed
+                    self.state.setEditState();
+                }
 
-                    return self.callMethod(toOverrideEvent.afterActivation).then(function () {
+                return self.callMethod(toOverrideEvent.afterActivation).then(function (){
 
-                        self.firstFillForThisRow  = true;
-                        var dtRow  = lastSelected ? lastSelected.getRow() : null;
-                        return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, dtRow, "doActivation_NotEmptyList")
-                            .then(function () {
-                                return self.reFillControls(); // DOES NOT ANYMORE sets form_drawstate to "done"
-                            })
-                            .then(function () {
-                                return self.callMethod(toOverrideEvent.listFilled);
-                            })
-                            .then(function () {
-                                return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, dtRow, "doActivation_NotEmptyList")
-                            })
-                            .then(function () {
-                                self.firstFillForThisRow = false;
-                                return true;
-                            });
+                    self.firstFillForThisRow = true;
+                    const dtRow = lastSelected ? lastSelected.getRow() : null;
+                    return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, dtRow, "doActivation_NotEmptyList")
+                    .then(function (){
+                        return self.reFillControls(); // DOES NOT ANYMORE sets form_drawstate to "done"
+                    })
+                    .then(function (){
+                        return self.callMethod(toOverrideEvent.listFilled);
+                    })
+                    .then(function (){
+                        return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, dtRow, "doActivation_NotEmptyList");
+                    })
+                    .then(function (){
+                        self.firstFillForThisRow = false;
+                        return true;
                     });
-
                 });
+
+            });
 
             return def.from(res).promise();
         },
@@ -928,32 +933,32 @@
          * @returns {Deferred}
          */
         doActivation_EmptyMain: function() {
-            var self = this;
-            var def = Deferred("doActivation_EmptyMain");
-            var res =  this.callMethod(toOverrideEvent.afterActivation).then(
-                function () {
+            const self = this;
+            const def = Deferred("doActivation_EmptyMain");
+            const res = this.callMethod(toOverrideEvent.afterActivation).then(
+                function (){
                     self.inited = true; //se no non funzionano i comandi eventuali nell'afterclear
 
                     return utils._if(self.state.isSearchState())
-                        ._then(function () {
-                            return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "doActivation_EmptyMain")
-                                .then(function () {
-                                    return self.clear();
-                                })
-                                .then(function () {
-                                    return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "doActivation_EmptyMain")
-                                });
+                    ._then(function (){
+                        return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "doActivation_EmptyMain")
+                        .then(function (){
+                            return self.clear();
                         })
-                        .then(function () {
-                            self.drawState = drawStates.done;
-                            if (self.firstSearchFilter) {
-                                return self.doMainCommand("maindosearch" + "." + self.defaultListType , self.firstSearchFilter)
-                                    .then(function () {
-                                        self.firstSearchFilter = null;
-                                        return true;
-                                    })
-                            }
-                        })
+                        .then(function (){
+                            return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "doActivation_EmptyMain");
+                        });
+                    })
+                    .then(function (){
+                        self.drawState = drawStates.done;
+                        if (self.firstSearchFilter){
+                            return self.doMainCommand("maindosearch" + "." + self.defaultListType, self.firstSearchFilter)
+                            .then(function (){
+                                self.firstSearchFilter = null;
+                                return true;
+                            });
+                        }
+                    });
                 });
 
             return def.from(res).promise();
@@ -966,12 +971,12 @@
          * @param {DataRow} start
          */
         startFrom:function (start) {
-            var def = Deferred("startFrom");
-            var self = this;
-            var res =  getData.readCached(this.state.DS).then(function () {
+            const def = Deferred("startFrom");
+            const self = this;
+            const res = getData.readCached(this.state.DS).then(function (){
                 metaModel.xCopyChilds(self.state.DS, start.table.dataset, start);
-                var primaryDataTable = self.getPrimaryDataTable();
-                var rSel = primaryDataTable.rows[0];
+                const primaryDataTable = self.getPrimaryDataTable();
+                const rSel = primaryDataTable.rows[0];
                 self.helpForm.lastSelected(primaryDataTable, rSel);
             });
 
@@ -986,49 +991,49 @@
          * @returns {Deferred}
          */
         doActivation_NotEmptyMain: function() {
-            var def = Deferred("doActivation_NotEmptyMain");
+            const def = Deferred("doActivation_NotEmptyMain");
             this.drawState = drawStates.prefilling;
 
-            var primaryDataTable = this.getPrimaryDataTable();
-            var sRow = this.state.sourceRow();
+            const primaryDataTable = this.getPrimaryDataTable();
+            const sRow = this.state.sourceRow();
 
             metaModel.copyAutoincrementsProperties(sRow.table, primaryDataTable);
 
             // ok passate già nella callPage -> primaryTable.ExtendedProperties[extraParams] = meta.sourceRow.Table.ExtendedProperties[extraParams];
             // --> Decommentare ed utilizzare se serve per fare operazioni sul sourceRow. -> meta.SetEntityDetail(meta.sourceRow);
 
-            var self = this;
-            var res = this.startFrom(sRow)
-                .then(function () {
-                    var start = self.helpForm.lastSelected(primaryDataTable);
+            const self = this;
+            const res = this.startFrom(sRow)
+            .then(function (){
+                const start = self.helpForm.lastSelected(primaryDataTable);
 
-                    self.state.setEditState();
-                    if (sRow.state === dataRowState.added) self.state.setInsertState();
+                self.state.setEditState();
+                if (sRow.state === dataRowState.added) self.state.setInsertState();
 
-                    var dtRow = start.getRow();
+                const dtRow = start.getRow();
 
-                    return getData.doGet(self.state.DS, start.getRow(), primaryDataTable.name, true)
-                        .then(self.fnMethod(toOverrideEvent.afterActivation))
-                        .then(function () {
-                            self.firstFillForThisRow = true;
-                            return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent,
-                                dtRow,
-                                "doActivation_NotEmptyMain");
-                        })
-                        .then(function () {
-                            return self.reFillControls();
-                        })
-                        .then(function () {
-                            return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent,
-                                dtRow,
-                                "doActivation_NotEmptyMain");
-                        })
-                        .then(function () {
-                            self.firstFillForThisRow = false;
-                            self.drawState = drawStates.none;
-                            return true;
-                        });
+                return getData.doGet(self.state.DS, start.getRow(), primaryDataTable.name, true)
+                .then(self.fnMethod(toOverrideEvent.afterActivation))
+                .then(function (){
+                    self.firstFillForThisRow = true;
+                    return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent,
+                        dtRow,
+                        "doActivation_NotEmptyMain");
+                })
+                .then(function (){
+                    return self.reFillControls();
+                })
+                .then(function (){
+                    return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent,
+                        dtRow,
+                        "doActivation_NotEmptyMain");
+                })
+                .then(function (){
+                    self.firstFillForThisRow = false;
+                    self.drawState = drawStates.none;
+                    return true;
                 });
+            });
 
 
             return def.from(res).promise();
@@ -1041,7 +1046,7 @@
          * Sets the event handlers for
          */
         setManager: function() {
-            var manager = this.listManager;// funge da parametro C del resto del codice commentato, messo sul setList
+            const manager = this.listManager;// funge da parametro C del resto del codice commentato, messo sul setList
             if (!manager) return;
         },
 
@@ -1062,10 +1067,10 @@
          * returns {Deferred}
          */
         freshToolBar: function() {
-            var def = Deferred('freshToBar');
+            const def = Deferred('freshToBar');
             if (!this.inited && !this.isList) return def.resolve(false);
 
-            var tb = appMeta.getToolBarManager();
+            const tb = appMeta.getToolBarManager();
             if (!tb) return def.resolve(false).promise();
             // assegno la metaPage corrente
             tb.setMetaPage(this);
@@ -1074,11 +1079,11 @@
 
         /**
          * @method beforeClosing
-         * @private
+         * @public
          * @description ASYNC
          */
         beforeClosing: function() {
-            "use strict";
+
         },
 
         /**
@@ -1103,11 +1108,13 @@
          * @returns {Deferred}
          */
         commandEnabled: function(tag) {
-            var def  = Deferred("commandEnabled");
+            const def = Deferred("commandEnabled");
 
-            if (!this.helpForm) return def.resolve(false);
-            var cmd = this.helpForm.getFieldLower(tag, 0);
-            var currRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
+            if (!this.helpForm) {
+                return def.resolve(false);
+            }
+            const cmd = this.helpForm.getFieldLower(tag, 0);
+            const currRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
 
             switch (cmd) {
                 case "mainclose":
@@ -1217,7 +1224,7 @@
 
         /**
          * @method doMainCommandClick
-         * @private
+         * @internal
          * @description ASYNC
          * Called by helpForm, by buttons with knew tag, binded with _partial
          * "this" here represents the html node button that fired the event.
@@ -1244,9 +1251,9 @@
          * @return {Deferred}
          */
         doMainCommand: function(tag, filter) {
-            var def = Deferred("doMainCommand: " + tag);
-            if (!this.helpForm) return def.resolve(false)
-            var command = this.helpForm.getFieldLower(tag, 0);
+            const def = Deferred("doMainCommand: " + tag);
+            if (!this.helpForm) return def.resolve(false);
+            const command = this.helpForm.getFieldLower(tag, 0);
             if (!command) {
                 logger.log(logType.ERROR, "Your command does not have a valid tag");
                 return def.reject("Your command does not have a valid tag");
@@ -1280,7 +1287,7 @@
 
             if (command === "choose") return def.from(this.choose(tag, filter, null));
 
-            if (command === "mainclose") return def.from(this.cmdClose(command, filter, null));
+            if (command === "mainclose") return def.from(this.cmdClose());
 
             if (command === "mainexportpdf") return def.from(this.exportPdf());
 
@@ -1290,7 +1297,7 @@
         },
 
         exportPdf: function() {
-            return appMeta.PdfExport.exportToPdf(this)
+            return appMeta.PdfExport.exportToPdf(this);
         },
 
         /**
@@ -1309,15 +1316,15 @@
          * @method cmdClose
          * @private
          * @description ASYNC
-         * Close the page. It return to the caller if there is a caller page
-         * @returns {Deferred}
+         * Close the page. It returns to the caller if there is a caller page
+         * @returns Promise
          */
         cmdClose:function () {
-            var def = Deferred("cmdClose");
+            const def = Deferred("cmdClose");
             if (!this.canClose()) return def.resolve();
 
-            var res;
-            var self = this;
+            let res;
+            const self = this;
             if (this.isEmpty()) {
                 res =  appMeta.returnToCaller()
                     .then(function () {
@@ -1336,13 +1343,13 @@
                             .then(function () {
                                 self.deferredResult.resolve(false);
                                 return def.resolve(true);
-                            })
+                            });
                     }
 
                     return def.resolve();
                 });
 
-            return def.from(res).promise()
+            return def.from(res).promise();
         },
 
 
@@ -1364,11 +1371,11 @@
          * @private
          * @description ASYNC
          * Executes a mainSelect
-         * @returns {Deferred}
+         * @returns Promise
          */
         cmdMainSelect:function () {
-            var def = Deferred("cmdMainSelect");
-            var self = this;
+            const def = Deferred("cmdMainSelect");
+            const self = this;
             return this.warnUnsaved()
                 .then(function(res) {
                     if (res) {
@@ -1389,11 +1396,11 @@
          * @returns {Deferred} deferred
          */
         mainSelect:function () {
-            var def =  Deferred("mainSelect");
-            var self = this;
+            const def = Deferred("mainSelect");
+            const self = this;
 
             if (this.state.callerState) this.state.callerState.calledPageSelectedRow = null;
-            var sel = null;
+            let sel = null;
             if (this.primaryTableName) sel = this.helpForm.lastSelected(this.getPrimaryDataTable());
 
             if (!sel) return def.resolve(false);
@@ -1406,15 +1413,15 @@
             // in modo tale che al ritorno la pag chiamante abbia la riga, ad esempio nel manage
             if (this.state.callerState) this.state.callerState.calledPageSelectedRow = sel;
 
-            var ctrl = this.helpForm.mainTableSelector;
-            var isTreeControl = ctrl ? ctrl.superClass ? (ctrl.superClass.constructor.name === 'TreeViewManager') : (ctrl.constructor.name === "TreeViewManager") : false;
+            const ctrl = this.helpForm.mainTableSelector;
+            const isTreeControl = ctrl ? ctrl.superClass ? (ctrl.superClass.constructor.name === 'TreeViewManager') : (ctrl.constructor.name === "TreeViewManager") : false;
             return this.canSelect(this.getPrimaryDataTable(), sel.getRow())
                 .then(function(res) {
                     if (!res) return def.resolve(false);
 
                     if (self.helpForm.mainTableSelector && isTreeControl) {
 
-                        var tn = ctrl.selectedNode(); // la funz torna un jsTreeNode non un TreeNode della lib. quindi lo recupero con original
+                        const tn = ctrl.selectedNode(); // la funz torna un jsTreeNode non un TreeNode della lib. quindi lo recupero con original
                         if (!tn) return def.resolve(false);
                         if (!tn.original) return def.resolve(false);
                         if (tn.original.toExplore) return def.resolve(false);
@@ -1424,7 +1431,7 @@
                                     return self.showMessageOk(localResource.selectedRowIsNotOperative)
                                         .then(function () {
                                             return def.resolve(false);
-                                        })
+                                        });
                                 }
 
                                 self.helpForm.lastSelected(self.getPrimaryDataTable(), sel);
@@ -1444,46 +1451,46 @@
          * @method cmdMainSetSearch
          * @private
          * @description ASYNC
-         * @returns {Deferred}
+         * @returns {Promise}
          */
         cmdMainSetSearch:function () {
-            var def = Deferred("cmdMainSetSearch");
-            var self = this;
-            var res = this.warnUnsaved()
-                .then(function(res) {
-                    if (res){
-                        self.currOperation = currOperation.setsearch;
-                        self.state.setSearchState();
-                        self.helpForm.lastValidText("");
-                        self.state.DS.rejectChanges();
-                        if (self.isTree) {
-                            self.closeListManagerResultsSearch();
-                            return self.treeSetSearch()
-                                .then(function () {
-                                    self.currOperation = currOperation.none;
-                                    return def.resolve(true);
-                                })
-                        }
-
-                        return self.eventManager
-                            .trigger(appMeta.EventEnum.startClearMainRowEvent, self, "cmdMainSetSearch")
-                            .then(function () {
-                                self.closeListManagerResultsSearch();
-                                return self.clear();
-                            })
-                            .then(function () {
-                                return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent,
-                                    self,
-                                    "cmdMainSetSearch").then(
-                                    function() {
-                                        self.currOperation = currOperation.none;
-                                        return def.resolve(true);
-                                    }
-                                );
-                            });
+            const def = Deferred("cmdMainSetSearch");
+            const self = this;
+            const res = this.warnUnsaved()
+            .then(function (res){
+                if (res){
+                    self.currOperation = currOperation.setsearch;
+                    self.state.setSearchState();
+                    self.helpForm.lastValidText("");
+                    self.state.DS.rejectChanges();
+                    if (self.isTree){
+                        self.closeListManagerResultsSearch();
+                        return self.treeSetSearch()
+                        .then(function (){
+                            self.currOperation = currOperation.none;
+                            return def.resolve(true);
+                        });
                     }
-                    return def.resolve(true);
-                });
+
+                    return self.eventManager
+                    .trigger(appMeta.EventEnum.startClearMainRowEvent, self, "cmdMainSetSearch")
+                    .then(function (){
+                        self.closeListManagerResultsSearch();
+                        return self.clear();
+                    })
+                    .then(function (){
+                        return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent,
+                            self,
+                            "cmdMainSetSearch").then(
+                            function (){
+                                self.currOperation = currOperation.none;
+                                return def.resolve(true);
+                            }
+                        );
+                    });
+                }
+                return def.resolve(true);
+            });
 
             return def.from(res).promise();
         },
@@ -1494,9 +1501,9 @@
          * @description ASYNC
          */
         treeSetSearch:function () {
-            var def =  Deferred("treeSetSearch");
+            const def = Deferred("treeSetSearch");
 
-            var self = this;
+            const self = this;
             this.state.setSearchState();
 
             this.helpForm.lastSelected(this.getPrimaryDataTable(), null);
@@ -1504,24 +1511,24 @@
 
             metaModel.allowAllClear(this.state.DS);
 
-            var res = this.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "treeSetSearch")
-                .then(function () {
-                    self.helpForm.lastValidText("");
-                    self.helpForm.clearControls();
-                    return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "treeSetSearch")
-                })
-                .then(function () {
-                    return self.freshToolBar();
-                })
-                .then(function () {
-                    self.setPageTitle();
-                    self.entityChanged = false;
-                    return self.callMethod(toOverrideEvent.afterClear)
-                })
-                .then(function () {
-                    self.currOperation = currOperation.done;
-                    return true;
-                });
+            const res = this.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "treeSetSearch")
+            .then(function (){
+                self.helpForm.lastValidText("");
+                self.helpForm.clearControls();
+                return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "treeSetSearch");
+            })
+            .then(function (){
+                return self.freshToolBar();
+            })
+            .then(function (){
+                self.setPageTitle();
+                self.entityChanged = false;
+                return self.callMethod(toOverrideEvent.afterClear);
+            })
+            .then(function (){
+                self.currOperation = currOperation.done;
+                return true;
+            });
 
             return def.from(res).promise();
 
@@ -1537,32 +1544,32 @@
          * @returns {Deferred}
          */
         cmdMainDoSearch:function (command, tag, startFilter) {
-            var def = Deferred("cmdMainDoSearch");
-            var self = this;
+            const def = Deferred("cmdMainDoSearch");
+            const self = this;
             this.currOperation = currOperation.search;
             self.state.setSearchState();
-            var emptyList = (command === "emptylist");
-            var listType = this.helpForm.getFieldLower(tag, 1);
+            const emptyList = (command === "emptylist");
+            let listType = this.helpForm.getFieldLower(tag, 1);
             if (!listType) listType = this.defaultListType;
             // vecchia gestione var startFilter = this.helpForm.getLastField(tag, 2);
             if (!startFilter) startFilter = this.startFilter;
             startFilter = this.helpForm.mergeFilters(startFilter, this.additionalSearchCondition);
 
-            var waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_search);
+            const waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_search);
 
-            var res = utils._if((!this.isList) || this.isTree)
-                ._then(function () {
-                    return self.searchRow(listType, startFilter, emptyList)
-                })
-                ._else(function () {
-                    return self.filterList(startFilter);
-                })
-                .then(function (data) {
-                    self.currOperation = currOperation.none;
+            const res = utils._if((!this.isList) || this.isTree)
+            ._then(function (){
+                return self.searchRow(listType, startFilter, emptyList);
+            })
+            ._else(function (){
+                return self.filterList(startFilter);
+            })
+            .then(function (data){
+                self.currOperation = currOperation.none;
 
-                    self.hideWaitingIndicator(waitingHandler);
-                    return data;
-                });
+                self.hideWaitingIndicator(waitingHandler);
+                return data;
+            });
 
             return def.from(res).promise();
         },
@@ -1574,55 +1581,55 @@
          * @param {string} listType
          * @param {jsDataQuery} startFilter filter SQL filter to apply in data retrieving
          * @param {boolean} emptyList
-         * @returns {Deferred(boolean)}
+         * @returns {Promise<boolean>}
          */
         searchRow: function(listType, startFilter, emptyList) {
 
             this.closeListManagerResultsSearch();
 
-            var def = Deferred('searchRow');
-            var self = this;
+            const def = Deferred('searchRow');
+            const self = this;
             if (!this.primaryTableName) return def.resolve(false);
-            var filter = this.helpForm.iterateGetSearchCondition();
-            var mergedFilter;
+            const filter = this.helpForm.iterateGetSearchCondition();
+            let mergedFilter;
             if (filter || startFilter) {
                 mergedFilter = self.helpForm.mergeFilters(filter, startFilter);
             } else {
                 logger.log(logType.WARNING, "iterateGetSearchCondition is undefined and startFilter undefined");
             }
 
-            var top = 1000;
+            let top = 1000;
             if (emptyList) top = 0;
             this.listTop = top;
 
-            var res = this.selectOne(listType, mergedFilter, null, null)
-                .then(function(dataRow) {
-                    if (!dataRow) return def.resolve(false);
+            const res = this.selectOne(listType, mergedFilter, null, null)
+            .then(function (dataRow){
+                if (!dataRow) return def.resolve(false);
 
-                    return self.selectRow(dataRow, listType)
-                        .then(function() {
-                            dataRow.del(); // TODO ci va ancora, perchè lo faceva in mdl???
-                            def.resolve(true);
-                        });
+                return self.selectRow(dataRow, listType)
+                .then(function (){
+                    dataRow.del(); // TODO ci va ancora, perchè lo faceva in mdl???
+                    def.resolve(true);
                 });
+            });
 
             return def.from(res).promise();
         },
 
         /**
          * @method selectRow
-         * @private
+         * @internal
          * @description ASYNC
          * Called when a row is selected form a list, should fill the mainform
          * subsequently. In case of a list-form, entity table should not be cleared.
          * dataRow is the row from which start the filling of the form  - does not belong to DS
          * @param {DataRow} dataRow
          * @param {string} listType
-         * @returns {Deferred(boolean)}
+         * @returns Promise<boolean>
          */
         selectRow:function(dataRow , listType) {
-            var def = Deferred('selectRow');
-            var self = this;
+            const def = Deferred('selectRow');
+            const self = this;
 
             if (!dataRow) return def.resolve(false);
             if (!this.helpForm.primaryTable) return def.resolve(false);
@@ -1634,66 +1641,66 @@
 
             metaModel.clearEntity(this.state.DS);
 
-            var waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_page_update, true);
+            const waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_page_update, true);
 
             this.goingToEditMode = true;
-            var res =  this.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, this, "selectRow")
-                .then(function () {
-                    return self.clear();
+            const res = this.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, this, "selectRow")
+            .then(function (){
+                return self.clear();
+            })
+            .then(function (){
+                return self.callMethod(toOverrideEvent.afterClear)
+                .then(function (){
+                    return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "selectRow");
                 })
-                .then(function () {
-                    return self.callMethod(toOverrideEvent.afterClear)
-                        .then(function () {
-                            return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "selectRow");
+                .then(function (){
+
+                    self.goingToEditMode = false;
+                    const primaryTable = self.getPrimaryDataTable();
+
+                    logger.log(logType.WARNING, "pre getDsByRowKey - Prima della chiamata al server: " + logger.getTimeMs());
+
+                    // Condensati insieme  getData.SEARCH_BY_KEY(R) + DO_GET(false, null);
+                    return getData.getDsByRowKey(dataRow, primaryTable, self.editType)
+                    .then(function (){
+                        logger.log(logType.WARNING, "post getDsByRowKey - Ho ricevuto il dataset popolato: " + logger.getTimeMs());
+
+                        if (primaryTable.rows.length === 0){
+                            return self.showMessageOk(localResource.rowSelectedNoMoreInDb).then(function (){
+                                self.hideWaitingIndicator(waitingHandler);
+                                return def.resolve(false);
+                            });
+                        }
+
+                        self.helpForm.lastSelected(primaryTable, primaryTable.rows[0]);
+
+                        self.state.setEditState();
+                        self.entityChanged = false;
+                        self.firstFillForThisRow = true;
+
+                        return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent,
+                            dataRow,
+                            "selectRow")
+                        .then(function (){
+                            logger.log(logType.WARNING, "pre reFillControls " + logger.getTimeMs());
+                            return self.reFillControls();
                         })
-                        .then(function () {
-
-                            self.goingToEditMode = false;
-                            var primaryTable = self.getPrimaryDataTable();
-
-                            logger.log(logType.WARNING, "pre getDsByRowKey - Prima della chiamata al server: " + logger.getTimeMs());
-
-                            // Condensati insieme  getData.SEARCH_BY_KEY(R) + DO_GET(false, null);
-                            return getData.getDsByRowKey(dataRow, primaryTable, self.editType)
-                                .then(function () {
-                                    logger.log(logType.WARNING, "post getDsByRowKey - Ho ricevuto il dataset popolato: " + logger.getTimeMs());
-
-                                    if (primaryTable.rows.length === 0) {
-                                        return self.showMessageOk(localResource.rowSelectedNoMoreInDb).then(function() {
-                                            self.hideWaitingIndicator(waitingHandler);
-                                            return def.resolve(false);
-                                        });
-                                    }
-
-                                    self.helpForm.lastSelected(primaryTable, primaryTable.rows[0]);
-
-                                    self.state.setEditState();
-                                    self.entityChanged = false;
-                                    self.firstFillForThisRow = true;
-
-                                    return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent,
-                                        dataRow,
-                                        "selectRow")
-                                        .then(function () {
-                                            logger.log(logType.WARNING, "pre reFillControls " + logger.getTimeMs());
-                                            return self.reFillControls();
-                                        })
-                                        .then( function () {
-                                            return self.eventManager.trigger(
-                                                appMeta.EventEnum.stopMainRowSelectionEvent,
-                                                dataRow,
-                                                "selectRow")
-                                        })
-                                        .then(function () {
-                                            logger.log(logType.WARNING, "then finale in getDsByRowKey " + logger.getTimeMs());
-                                            self.firstFillForThisRow = false;
-                                            self.drawState = drawStates.done;
-                                            self.hideWaitingIndicator(waitingHandler);
-                                            return true;
-                                        });
-                                });
+                        .then(function (){
+                            return self.eventManager.trigger(
+                                appMeta.EventEnum.stopMainRowSelectionEvent,
+                                dataRow,
+                                "selectRow");
+                        })
+                        .then(function (){
+                            logger.log(logType.WARNING, "then finale in getDsByRowKey " + logger.getTimeMs());
+                            self.firstFillForThisRow = false;
+                            self.drawState = drawStates.done;
+                            self.hideWaitingIndicator(waitingHandler);
+                            return true;
                         });
+                    });
                 });
+            });
 
             return def.from(res).promise();
         },
@@ -1704,16 +1711,16 @@
          * @description ASYNC
          * calls fillControls inside a before/afterFill 
          * @param {string} container. id of the html container
-         * @returns {Deferred}
+         * @returns {Promise}
          */
         reFillControls:function (container) {
-            var savedDrawState = this.drawState;
+            const savedDrawState = this.drawState;
             this.drawState = drawStates.filling;
             this.setPageTitle();
-            var self = this;
-            var lastSelectedRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
-            var res;
-            var def = Deferred("refillControls");
+            const self = this;
+            const lastSelectedRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
+            let res;
+            const def = Deferred("refillControls");
             if (lastSelectedRow) {
                 res = this.callMethod(toOverrideEvent.beforeFill)
                     .then( function () {
@@ -1733,7 +1740,7 @@
             //Se non c'è una riga corrente non chiama beforeFill/afterFill
             res = this.helpForm.fillControls(container)
                 .then( function () {
-                    return self.freshToolBar()
+                    return self.freshToolBar();
                 }).then(function () {
                     self.drawState = savedDrawState;
                     return true;
@@ -1747,33 +1754,33 @@
          * @description ASYNC
          * @param {DataRow} dataRow
          * @param {string} listType
-         * @returns {Deferred}
+         * @returns {Promise}
          */
         treeSelectRow:function(dataRow, listType) {
-            var def = Deferred("treeSelectRow");
-            var self = this;
+            const def = Deferred("treeSelectRow");
+            const self = this;
             if (!dataRow) return def.resolve();
 
             // metto attesa, effettua query per recuperare ventualmente il nuovo nodo
-            var waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_tree_updating);
+            const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_tree_updating);
 
-            var primaryTable = this.getPrimaryDataTable();
+            const primaryTable = this.getPrimaryDataTable();
             this.helpForm.lastSelected(primaryTable, null);
 
-            var tm = primaryTable.treemanager;
+            const tm = primaryTable.treemanager;
 
-            var res = tm.selectRow(dataRow, listType)
-                .then(function (dtRowToSelect) {
-                    self.state.setEditState();
-                    self.entityChanged = false;
-                    // N.B Ok lo fa la selecteRow delle'evento del tree a lanciare  helpForm.extendedControlChanged(helpForm.mainTableSelector, null, r);
-                    self.setPageTitle();
-                    return self.freshToolBar()
-                        .then(function () {
-                            self.hideWaitingIndicator(waitingHandler);
-                            def.resolve();
-                        })
+            const res = tm.selectRow(dataRow, listType)
+            .then(function (){
+                self.state.setEditState();
+                self.entityChanged = false;
+                // N.B Ok lo fa la selectedRow delle'evento del tree a lanciare  helpForm.extendedControlChanged(helpForm.mainTableSelector, null, r);
+                self.setPageTitle();
+                return self.freshToolBar()
+                .then(function (){
+                    self.hideWaitingIndicator(waitingHandler);
+                    def.resolve();
                 });
+            });
 
             return def.from(res).promise();
         },
@@ -1791,135 +1798,142 @@
          * @param {string} searchTableName Table from which data has to be retrieved
          * @param {DataTable} toMerge in-memory Table which has some changes to apply to searchtable
          * @param {boolean} filterLocked true if filter can't be changed during row selection
-         * @returns {Deferred(DataRow)} The selected row or null if no row selected
+         * @returns Promise<DataRow> The selected row or null if no row selected
          */
         selectOne: function (listingType, filter, searchTableName, toMerge, filterLocked) {
-            var def = Deferred("selectOne");
-            var isSearchTable = !!searchTableName; // memorizzo per capire se sedvo forzare la chiusura dell'elenco eventualmente aperto
+            const def = Deferred("selectOne");
+            const isSearchTable = !!searchTableName; // memorizzo per capire se sedvo forzare la chiusura dell'elenco eventualmente aperto
             if (!searchTableName) searchTableName = this.primaryTableName;
-            var mergedFilter = filter;
-            var self = this;
+            let mergedFilter = filter;
+            const self = this;
 
             if (!listingType)logger.log(logType.ERROR, localResource.getErrorListingTypeNull(searchTableName, filter.toString(), this.title));
 
-            var  metaToConsider = this.state.meta;
+            let metaToConsider = this.state.meta;
 
             if (searchTableName !== this.primaryTableName) {
                 metaToConsider = appMeta.getMeta(searchTableName);
                 metaToConsider.listTop = this.listTop;
             }
-            var prefilter = mergedFilter;
-            var dataTableSearch = this.getDataTable(searchTableName);
-            var sort =  metaToConsider.getSorting(listingType);
-            var staticFilter = metaToConsider.getStaticFilter(listingType);
+            const prefilter = mergedFilter;
+            const dataTableSearch = this.getDataTable(searchTableName);
+            let sort = metaToConsider.getSorting(listingType);
+            const staticFilter = metaToConsider.getStaticFilter(listingType);
 
-            var res = utils._if(!!dataTableSearch)
-                ._then(function () {
-                    // il sort prendod al emtadato.se non lo trovo allora provo a vedere se sta sulla tabella, perchè configurato sul meta server e serializzato
-                    sort =  (sort ? sort : dataTableSearch.orderBy());
-                    // il backend già me lo ha impostato. se è esplicitato sul meta js allora leggo anche quello
-                    mergedFilter = self.helpForm.mergeFilters(mergedFilter, staticFilter);
-                    mergedFilter = self.helpForm.mergeFilters(mergedFilter, self.state.DS.tables[searchTableName].staticFilter());
-                    return true;
-                })._else(function () {
+            const res = utils._if(!!dataTableSearch)
+            ._then(function (){
+                // Il sort prendo dal metadato. Se non lo trovo allora provo a vedere se sta sulla tabella,
+                //  perché configurato sul metadato lato server e serializzato
+                sort = (sort ? sort : dataTableSearch.orderBy());
+                // Il backend già me lo ha impostato. Se è esplicitato sul meta js allora leggo anche quello
+                mergedFilter = self.helpForm.mergeFilters(mergedFilter, staticFilter);
+                mergedFilter = self.helpForm.mergeFilters(mergedFilter, self.state.DS.tables[searchTableName].staticFilter());
+                return true;
+            })._else(function (){
 
-                    return getData.createTableByName(searchTableName, "*")
-                        .then(function(temp) {
-                            if (!temp.key().length) {
-                                if (!!metaToConsider.primaryKey && metaToConsider.primaryKey().length > 0) {
-                                    temp.key(metaToConsider.primaryKey());
-                                }
-                            }
-                            return metaToConsider.describeColumns(temp, listingType);
-                        });
-
-                }).then(function () {
-                    var hideListManger = false;
-                    // se sto su tab principale e già è aperto, chiudo prima il listmaanger aperto.
-                    // se è aperto, ma sto su un autochoose non devo chiudere il listManager. (su autochoose passo sicuramente searchTableName, altrimenti sto su ricerca di pagina)
-                    if (self.listManagerSearch && !isSearchTable) {
-                        hideListManger = true;
-                        self.closeListManagerResultsSearch();
+                return getData.createTableByName(searchTableName, "*")
+                .then(function (temp){
+                    if (!temp.key().length){
+                        if (!!metaToConsider.primaryKey && metaToConsider.primaryKey().length > 0){
+                            temp.key(metaToConsider.primaryKey());
+                        }
                     }
-
-                    return  utils._if(self.listTop !== 0 || filterLocked)
-
-                        ._then(function () {
-
-                            // eseguo la query. La prima volta vince il sorting del backend. successivamente se c'è un sorting passerò nel controllo quello del client
-                            return getData.getPagedTable(searchTableName, 1, appMeta.config.listManager_nRowPerPage, mergedFilter, listingType, null)
-
-                                .then(function(dataTablePaged, totPage, totRows) {
-
-                                    dataTablePaged.dataset = self.state.DS;
-                                    if ((!toMerge) && (totRows === 0)) {
-                                        var mergedFilterString = (mergedFilter) ? mergedFilter.toString() : "";
-                                        var filterString = localResource.getFilterMessage(mergedFilterString);
-                                        var msgNoRowFound = localResource.getNoRowFound(searchTableName,
-                                            filterString,
-                                            listingType);
-
-                                        if (!appMeta.security.isAdmin()) msgNoRowFound = null;
-
-                                        return new appMeta.BootstrapModal(localResource.alert,
-                                            localResource.noElementFound,
-                                            [localResource.ok],
-                                            appMeta.localResource.cancel,
-                                            msgNoRowFound).show(self)
-                                            .then(function() {
-                                                self.hideWaitingIndicator();
-                                                return def.resolve(null);
-                                            });
-                                    }
-
-                                    // When an external table is present, always display a list (no implicit selection done)
-                                    var toNotMergeCond = !toMerge;
-                                    if (toMerge && toMerge.rows.length === 0){
-                                        toNotMergeCond = true;
-                                    }
-
-                                    if (totRows === 1 && toNotMergeCond) {
-                                        if (dataTablePaged.rows.length === 0) {
-                                            return def.resolve(null);
-                                        }
-                                        self.hideWaitingIndicator();
-                                        return def.from(metaToConsider.checkSelectRow(dataTablePaged, dataTablePaged.rows[0].getRow()));
-                                    }
-
-                                    if (filterLocked) {
-                                        // mostra lista modale. Nel caso di elenco di ricerca salvo in var di classe, così lo chiudo quando necessario
-                                        // Nel caso autochoose lascio aperto l'elenco, e apro nuova modale per la liste dei risultati, senza nascondere l'elenco
-                                        // Utile nel caso di edit consecutivi di righe prese da un elenco (Al click singolo infatti l'elenco non si chiude)
-                                        var currList = null;
-                                        if (hideListManger) {
-                                            // l'ultimo prm !isSearchTable indica che la dìfunz è alnciata da un search dal bottone e non da un autochoose
-                                            // utile capire a fuori, quando eseguo override di createAndGetListManager() se è autochoose o elenco normale di pagina
-                                            // nel caso elenco potrei utilizzare un altro listMaanger
-                                            self.listManagerSearch = self.createAndGetListManager(searchTableName, listingType, prefilter, true, self.rootElement, self, filterLocked, toMerge, !isSearchTable, sort);
-                                            currList = self.listManagerSearch;
-                                        } else {
-                                            currList =  self.createAndGetListManager(searchTableName, listingType, prefilter, true, self.rootElement, self, filterLocked, toMerge, !isSearchTable, sort);
-                                        }
-                                        return currList.show(dataTablePaged, totPage, totRows)
-                                            .then(function (res) {
-                                                if (res) {
-                                                    // res tornato è un ObjectRow
-                                                    return def.from(metaToConsider.checkSelectRow(dataTableSearch, res.getRow()));
-                                                }
-                                                return def.resolve(null);
-                                            });
-                                    }
-
-                                    self.listManagerSearch = self.createAndGetListManager(searchTableName, listingType, prefilter, false, self.rootElement, self, filterLocked, null, !isSearchTable, sort);
-                                    return self.listManagerSearch.show(dataTablePaged, totPage, totRows);
-
-                                });
-                        })
-                        ._else(function () {
-                            self.listManagerSearch = self.createAndGetListManager(searchTableName, listingType, prefilter, false, self.rootElement, self, filterLocked, null, !isSearchTable, sort);
-                            return self.listManagerSearch.show(dataTablePaged, totPage, totRows);
-                        });
+                    return metaToConsider.describeColumns(temp, listingType);
                 });
+
+            }).then(function (){
+                let hideListManger = false;
+                // Se sono su tab principale e già è aperto, chiudo prima il listmaanger aperto.
+                // Se è aperto, ma sto su un autochoose non devo chiudere il listManager.
+                //       (su autochoose passo sicuramente searchTableName, altrimenti sto su ricerca di pagina)
+                if (self.listManagerSearch && !isSearchTable){
+                    hideListManger = true;
+                    self.closeListManagerResultsSearch();
+                }
+
+                return utils._if(self.listTop !== 0 || filterLocked)
+
+                ._then(function (){
+                    // Eseguo la query. La prima volta vince il sorting del backend.
+                    //  Successivamente se c'è un sorting passerò nel controllo quello del client
+                    return getData.getPagedTable(searchTableName, 1, appMeta.config.listManager_nRowPerPage,
+                            mergedFilter, listingType, null)
+
+                    .then(function (dataTablePaged, totPage, totRows){
+
+                        dataTablePaged.dataset = self.state.DS;
+                        if ((!toMerge) && (totRows === 0)){
+                            const mergedFilterString = (mergedFilter) ? mergedFilter.toString() : "";
+                            const filterString = localResource.getFilterMessage(mergedFilterString);
+                            let msgNoRowFound = localResource.getNoRowFound(searchTableName,
+                                filterString,
+                                listingType);
+
+                            if (!appMeta.security.isAdmin()) msgNoRowFound = null;
+
+                            return new appMeta.BootstrapModal(localResource.alert,
+                                localResource.noElementFound,
+                                [localResource.ok],
+                                appMeta.localResource.cancel,
+                                msgNoRowFound).show(self)
+                            .then(function (){
+                                self.hideWaitingIndicator();
+                                return def.resolve(null);
+                            });
+                        }
+
+                        // When an external table is present, always display a list (no implicit selection done)
+                        let toNotMergeCond = !toMerge;
+                        if (toMerge && toMerge.rows.length === 0){
+                            toNotMergeCond = true;
+                        }
+
+                        if (totRows === 1 && toNotMergeCond){
+                            if (dataTablePaged.rows.length === 0){
+                                return def.resolve(null);
+                            }
+                            self.hideWaitingIndicator();
+                            return def.from(metaToConsider.checkSelectRow(dataTablePaged, dataTablePaged.rows[0].getRow()));
+                        }
+
+                        if (filterLocked){
+                            // mostra lista modale. Nel caso di elenco di ricerca salvo in var di classe, così lo chiudo quando necessario
+                            // Nel caso autochoose lascio aperto l'elenco, e apro nuova modale per la liste dei risultati, senza nascondere l'elenco
+                            // Utile nel caso di edit consecutivi di righe prese da un elenco (Al click singolo infatti l'elenco non si chiude)
+                            let currList;
+                            if (hideListManger){
+                                // l'ultimo prm !isSearchTable indica che la dìfunz è alnciata da un search dal bottone e non da un autochoose
+                                // utile capire a fuori, quando eseguo override di createAndGetListManager() se è autochoose o elenco normale di pagina
+                                // nel caso elenco potrei utilizzare un altro listMaanger
+                                self.listManagerSearch = self.createAndGetListManager(searchTableName, listingType, prefilter, true, self.rootElement, self, filterLocked, toMerge, !isSearchTable, sort);
+                                currList = self.listManagerSearch;
+                            }
+                            else{
+                                currList = self.createAndGetListManager(searchTableName, listingType, prefilter, true, self.rootElement, self, filterLocked, toMerge, !isSearchTable, sort);
+                            }
+                            return currList.show(dataTablePaged, totPage, totRows)
+                            .then(function (res){
+                                if (res){
+                                    // res tornato è un ObjectRow
+                                    return def.from(metaToConsider.checkSelectRow(dataTableSearch, res.getRow()));
+                                }
+                                return def.resolve(null);
+                            });
+                        }
+
+                        self.listManagerSearch = self.createAndGetListManager(searchTableName, listingType, prefilter,
+                            false, self.rootElement, self, filterLocked, null, !isSearchTable, sort);
+                        return self.listManagerSearch.show(dataTablePaged, totPage, totRows);
+
+                    });
+                })
+                ._else(function (){
+                    // se arrivo qui filterLocked è sicuramente false, quindi mostro la lista non modale
+                    self.listManagerSearch = self.createAndGetListManager(searchTableName, listingType, prefilter,
+                        false, self.rootElement, self, filterLocked, null, !isSearchTable, sort);
+                    return self.listManagerSearch.show();
+                });
+            });
 
             return def.from(res).promise();
         },
@@ -1938,39 +1952,38 @@
          * @private
          * @description ASYNC
          * Called when cmdMainDoSearch is called on a list form
-         * @param {string} listType
          * @param {jsDataQuery} startFilter Initial filter to apply when filling form
          * @returns {Boolean}
          */
         filterList: function(startFilter) {
-            var def = Deferred("filterList");
+            const def = Deferred("filterList");
             if (!this.primaryTableName) return false;
-            var filter = this.helpForm.iterateGetSearchCondition();
-            var mergedFilter = this.helpForm.mergeFilters(filter, startFilter);
-            var self  =this;
-            var res =  this.getPrimaryTable(mergedFilter)
-                .then(function () {
-                    if (self.getPrimaryDataTable().rows.length === 0) {
-                        return self.showMessageOk(localResource.noElementFound)
-                            .then(function() {
-                                return false;
-                            });
-                    }
-                    self.state.setEditState();
+            const filter = this.helpForm.iterateGetSearchCondition();
+            const mergedFilter = this.helpForm.mergeFilters(filter, startFilter);
+            const self = this;
+            const res = this.getPrimaryTable(mergedFilter)
+            .then(function (){
+                if (self.getPrimaryDataTable().rows.length === 0){
+                    return self.showMessageOk(localResource.noElementFound)
+                    .then(function (){
+                        return false;
+                    });
+                }
+                self.state.setEditState();
 
-                    self.helpForm.lastSelected(self.getPrimaryDataTable(), null);
+                self.helpForm.lastSelected(self.getPrimaryDataTable(), null);
 
-                    return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "filterList")
-                        .then(function () {
-                            return self.reFillControls();
-                        })
-                        .then(function () {
-                            return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "filterList")
-                        })
-                        .then(function () {
-                            return true;
-                        })
+                return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "filterList")
+                .then(function (){
+                    return self.reFillControls();
+                })
+                .then(function (){
+                    return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "filterList");
+                })
+                .then(function (){
+                    return true;
                 });
+            });
 
             return def.from(res).promise();
         },
@@ -1984,14 +1997,15 @@
          * @returns {Deferred}
          */
         getPrimaryTable:function (filter) {
-            var def = Deferred('getPrimaryTable');
-            var self = this;
+            const def = Deferred('getPrimaryTable');
+            const self = this;
             return getData.readCached(this.state.DS)
                 .then(function () {
                     // N.B  era la MyClear su QueryCreator
                     self.clearDataTableAndGridRowIndex(self.getPrimaryDataTable());
-                    return def.from(getData.getRowsByFilter(filter, null, self.getPrimaryDataTable(), null, false, null)).promise();
-                })
+                    return def.from(getData.getRowsByFilter(filter, null,
+                        self.getPrimaryDataTable(), null, false, null)).promise();
+                });
         },
 
         /**
@@ -2006,7 +2020,7 @@
             if (table.rows.length === 0 ) return;
 
             // la ext property veniva settata da setLinkedGrid, nel sataDatagrid, ora sul costruttore del gridControl
-            var g = table.linkedGrid;
+            const g = table.linkedGrid;
             if (g) {
                 if (table.rows.length > 1 && g.dataTable.dataset === table.dataset) {
                     g.currentRow = null;
@@ -2016,6 +2030,7 @@
             table.clear();
         },
 
+        //TODO: move cmdShowLast implementation to a derived class
         /**
          * @method cmdShowLast
          * @private
@@ -2024,87 +2039,92 @@
          * @returns {Deferred}
          */
         cmdShowLast:function () {
-            var def = Deferred("cmdShowLast");
-            var msg = null;
-            var self = this;
-            var r = this.helpForm.lastSelected(this.getPrimaryDataTable());
+            const def = Deferred("cmdShowLast");
+            let msg = null;
+            const self = this;
+            const r = this.helpForm.lastSelected(this.getPrimaryDataTable());
+            let dtRow;
             if (r) {
-                var dtRow = r.getRow();
+                dtRow = r.getRow();
                 if (dtRow && dtRow.state === dataRowState.deleted || dtRow.state === dataRowState.detached) {
                     msg = localResource.getRowSelectedDetachedorDeleted();
                 }
             }
-            var res = utils._if(msg)
-                ._then(function () {
-                    return self.showMessageOk(msg)
-                        .then(function () {
-                            return def.resolve(true);
-                        })
-                })
-                ._else(function () {
-                    var txtcreate = "";
-
-                    if (dtRow.table.columns["cu"]) {
-                        txtcreate = localResource.createdByUser(r["cu"]);
-                    }
-                    if (dtRow.table.columns["createuser"]) {
-                        txtcreate = localResource.createdByUser(r["createuser"]);
-                    }
-
-                    if (dtRow.table.columns["ct"]) {
-                        if (txtcreate === "") {
-                            txtcreate = localResource.createdOn(r["ct"]);
-                        } else {
-                            txtcreate += localResource.onlyOn(r["ct"]);
-                        }
-                    }
-                    if (dtRow.table.columns["createtimestamp"]) {
-                        if (txtcreate === "") {
-                            txtcreate = localResource.createdOn(r["createtimestamp"]);
-                        } else {
-                            txtcreate += localResource.onlyOn(r["createtimestamp"]);
-                        }
-                    }
-
-                    if (txtcreate !== "") txtcreate += "\n";
-                    var txtupdate = "";
-
-                    if (dtRow.table.columns["lu"]) {
-                        txtupdate = localResource.modifiedBy(r["lu"]);
-                    }
-
-                    if (dtRow.table.columns["lastuser"]) {
-                        txtupdate = localResource.modifiedBy(r["lastuser"]);
-                    }
-
-                    if (dtRow.table.columns["lt"]) {
-                        if (txtupdate === "") {
-                            txtupdate = localResource.modifiedOn(r["lt"]);
-                        } else {
-                            txtupdate += localResource.onlyOn(r["lt"]);
-                        }
-                    }
-
-                    if (dtRow.table.columns["lastmodtimestamp"]) {
-                        if (txtupdate === "") {
-                            txtupdate = localResource.modifiedOn(r["lastmodtimestamp"]);
-                        } else {
-                            txtupdate += localResource.onlyOn(r["lastmodtimestamp"]);
-                        }
-                    }
-
-                    msg = txtcreate + txtupdate;
-                    if (!msg.length) {
-                        msg = localResource.info_not_avalilable;
-                    }
-                    return self.showMessageOk(msg)
-                        .then(function () {
-                            def.resolve(true);
-                        })
-                })
-                .then(function () {
-                    return true;
+            const res = utils._if(msg)
+            ._then(function (){
+                return self.showMessageOk(msg)
+                .then(function (){
+                    return def.resolve(true);
                 });
+            })
+            ._else(function (){
+                let txtcreate = "";
+
+                if (dtRow.table.columns.cu){
+                    txtcreate = localResource.createdByUser(r.cu);
+                }
+                if (dtRow.table.columns.createuser){
+                    txtcreate = localResource.createdByUser(r.createuser);
+                }
+
+                if (dtRow.table.columns.ct){
+                    if (txtcreate === ""){
+                        txtcreate = localResource.createdOn(r.ct);
+                    }
+                    else{
+                        txtcreate += localResource.onlyOn(r.ct);
+                    }
+                }
+                if (dtRow.table.columns.createtimestamp){
+                    if (txtcreate === ""){
+                        txtcreate = localResource.createdOn(r.createtimestamp);
+                    }
+                    else{
+                        txtcreate += localResource.onlyOn(r.createtimestamp);
+                    }
+                }
+
+                if (txtcreate !== "") txtcreate += "\n";
+                let txtupdate = "";
+
+                if (dtRow.table.columns.lu){
+                    txtupdate = localResource.modifiedBy(r.lu);
+                }
+
+                if (dtRow.table.columns.lastuser){
+                    txtupdate = localResource.modifiedBy(r.lastuser);
+                }
+
+                if (dtRow.table.columns.lt){
+                    if (txtupdate === ""){
+                        txtupdate = localResource.modifiedOn(r.lt);
+                    }
+                    else{
+                        txtupdate += localResource.onlyOn(r.lt);
+                    }
+                }
+
+                if (dtRow.table.columns.lastmodtimestamp){
+                    if (txtupdate === ""){
+                        txtupdate = localResource.modifiedOn(r.lastmodtimestamp);
+                    }
+                    else{
+                        txtupdate += localResource.onlyOn(r.lastmodtimestamp);
+                    }
+                }
+
+                msg = txtcreate + txtupdate;
+                if (!msg.length){
+                    msg = localResource.info_not_avalilable;
+                }
+                return self.showMessageOk(msg)
+                .then(function (){
+                    def.resolve(true);
+                });
+            })
+            .then(function (){
+                return true;
+            });
 
             return def.from(res).promise();
 
@@ -2116,7 +2136,8 @@
          * @description SYNC
          * Shows a modal loader indicator. It is not possible to close the modal by user
          * @param {string} msg. the message to show in the box
-         * @returns {number} the ahndler of the modal. It is used on hideWaitIndicator to remove the message form the list
+         * @param {boolean} [isBar]
+         * @returns {number} the handler of the modal. It is used on hideWaitIndicator to remove the message form the list
          */
         showWaitingIndicator:function (msg, isBar) {
             return appMeta.modalLoaderControl.show(msg, isBar);
@@ -2137,13 +2158,13 @@
         /**
          * @method cmdMainSave
          * @private
-         * @description ASYNC
-         * @returns {Deferred(boolean)} the deferred
+         * @description
+         * @returns Deferred<boolean> the deferred
          */
         cmdMainSave:function () {
-            var self  = this;
-            var waitingHandler;
-            // metto indicatore attesa. nel caso dettaglio nons erve perhcèno fa e2e, quindi apparirebbe per pochi ms inutilmente
+            const self = this;
+            let waitingHandler;
+            // Metto indicatore attesa. Nel caso dettaglio non serve perchè non fa e2e, quindi apparirebbe per pochi ms inutilmente
             if (!this.detailPage) {
                 waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_save);
             }
@@ -2188,217 +2209,218 @@
          * Save all changes made on the DataSet to DB. This is invoked when user clicks
          * "save" button or "Ok" button. Infact, both those buttons have a
          * "mainsave" tag.
-         * @returns {Deferred}
+         * @returns {Promise}
          */
         saveFormData: function() {
-            var def = Deferred("saveFormData");
+            const def = Deferred("saveFormData");
 
             this.currOperation = currOperation.save;
-            var self = this;
+            const self = this;
 
             // booleano per capire se devo uscire dal metodo nei succssivi then, senza fare le ultime righe di codice come il freshform
-            var returnImmediately = false;
+            let returnImmediately = false;
 
             // DEPRECATO enumerato che indica se devo risolvere il deferred globale "this.resultDeferred" della maschera oppure tornare solamente true/false
             // Questo poichè il saveformData potrebbe esserte chimato da cmdMainSave di un dettaglio,, in quel caso esco con resDialogResultOk
             // var resultType = ResultType.resFalse;
 
-            var res = this.callMethod(toOverrideEvent.beforePost).then(
-                function() {
-                    var last = self.helpForm.lastSelected(self.getPrimaryDataTable());
+            const res = this.callMethod(toOverrideEvent.beforePost).then(
+                function (){
+                    let last = self.helpForm.lastSelected(self.getPrimaryDataTable());
 
-                    var wasadelete = (!last);
+                    let wasadelete = (!last);
                     if (last) wasadelete = (last.getRow === undefined);  //(last.getRow().state === dataRowState.deleted);
 
                     return utils._if(self.detailPage)
-                        ._then(function() {
-                            self.entityChanged = true;
-                            return true; // va avanti nella then() con true
-                        })
-                        ._else(function() {
-                            if (self.state.DS.hasChanges()) {
-                                // entra nel loop di salvataggio. sincorno/asincorno, con maschera errori ed eventuale operazione ad db da effettuare
-                                // passo il prm dei messaggi vuoto, poichè in questo punto non ho messaggi accodati
-                                return postData.doPost(self.state.DS, self.primaryTableName, self.editType, [], self)
-                                    .then(function(postRes) {
-                                        // può tornare con false, cioè salvataggio non effettuato, oppure con true cioè salvataggio
-                                        if (postRes) self.entityChanged = true;
-                                        return postRes;
-                                    });
-                            }
+                    ._then(function (){
+                        self.entityChanged = true;
+                        return true; // va avanti nella then() con true
+                    })
+                    ._else(function (){
+                        if (self.state.DS.hasChanges()){
+                            // entra nel loop di salvataggio. sincorno/asincorno, con maschera errori ed eventuale operazione ad db da effettuare
+                            // passo il prm dei messaggi vuoto, poichè in questo punto non ho messaggi accodati
+                            return postData.doPost(self.state.DS, self.primaryTableName, self.editType, [], self)
+                            .then(function (postRes){
+                                // può tornare con false, cioè salvataggio non effettuato, oppure con true cioè salvataggio
+                                if (postRes) self.entityChanged = true;
+                                return postRes;
+                            });
+                        }
 
-                            // se non entro qui    if (self.state.DS.hasChanges()) nel succesivo then, vado avanti
-                            return true;
+                        // se non entro qui    if (self.state.DS.hasChanges()) nel succesivo then, vado avanti
+                        return true;
 
-                        })
-                        .then(function(res) {
+                    })
+                    .then(function (res){
 
-                            // N. B nel caso sia un dettaglio, poichè sto self.detailPage = true, quindi non passo nell'_else
-                            // res qui è sempre true
+                        // N. B nel caso sia un dettaglio, poichè sto self.detailPage = true, quindi non passo nell'_else
+                        // res qui è sempre true
 
-                            var last = self.helpForm.lastSelected(self.getPrimaryDataTable());
-                            var lastTreeNodeToSelect = false;
-                            var treemanager;
-                            return utils._if(res)
-                                ._then(function() {
-                                    return self.callMethod(toOverrideEvent.afterPost)
-                                        .then(function() {
+                        let last = self.helpForm.lastSelected(self.getPrimaryDataTable());
+                        let lastTreeNodeToSelect = false;
+                        let treemanager;
+                        return utils._if(res)
+                        ._then(function (){
+                            return self.callMethod(toOverrideEvent.afterPost)
+                            .then(function (){
 
-                                            if (self.detailPage && (self.mainSelectionEnabled === false)) {
+                                if (self.detailPage && (self.mainSelectionEnabled === false)){
+                                    self.currOperation = currOperation.none;
+                                    returnImmediately = true; // su mdl faceva return;
+                                    // resultType = ResultType.resDialogResultOk; // era LinkedForm.DialogResult = DialogResult.OK;
+                                    return true; // serve per uscire da questa then interna e andare sulla then dell' _if(res)
+                                }
+
+                                metaModel.allowAllClear(self.state.DS);
+                                if (!last){
+                                    //It was a successfully delete
+                                    self.helpForm.lastSelected(self.getPrimaryDataTable(), null);
+                                    if (!self.isList){
+                                        return self.eventManager
+                                        .trigger(appMeta.EventEnum.startClearMainRowEvent,
+                                            self,
+                                            "saveFormData")
+                                        .then(function (){
+                                            return self.clear()
+                                            .then(function (){
+                                                return self.eventManager.trigger(
+                                                    appMeta.EventEnum.stopClearMainRowEvent,
+                                                    self,
+                                                    "saveFormData");
+                                            })
+                                            .then(function (){
                                                 self.currOperation = currOperation.none;
                                                 returnImmediately = true; // su mdl faceva return;
-                                                // resultType = ResultType.resDialogResultOk; // era LinkedForm.DialogResult = DialogResult.OK;
-                                                return true; // serve per uscire da questa then interna e andare sulla then dell' _if(res)
-                                            }
-
-                                            metaModel.allowAllClear(self.state.DS);
-                                            if (!last) {
-                                                //It was a successfully delete
-                                                self.helpForm.lastSelected(self.getPrimaryDataTable(), null);
-                                                if (!self.isList) {
-                                                    return self.eventManager
-                                                        .trigger(appMeta.EventEnum.startClearMainRowEvent,
-                                                            self,
-                                                            "saveFormData")
-                                                        .then(function() {
-                                                            return self.clear()
-                                                                .then(function() {
-                                                                    return self.eventManager.trigger(
-                                                                        appMeta.EventEnum.stopClearMainRowEvent,
-                                                                        self,
-                                                                        "saveFormData");
-                                                                })
-                                                                .then(function() {
-                                                                    self.currOperation = currOperation.none;
-                                                                    returnImmediately = true; // su mdl faceva return;
-                                                                    return true; // serve per andare sul .then() dell' _if(res)
-                                                                });
-                                                        });
-                                                }
-
-
-                                                if (self.isTree) {
-                                                    treemanager = self.helpForm.mainTableSelector;
-                                                    var treenode = treemanager.selectedNode();
-
-                                                    return utils._if(treenode)
-                                                        ._then(function () {
-                                                            if (!treenode.original.dataRow.getRow) {
-                                                                treemanager.deleteCurrentNode(treenode);
-                                                                return true;
-                                                            }
-                                                            return self.beforeSelectTreeManager()
-                                                                .then(function () {
-                                                                    return self.afterSelectTreeManager()
-                                                                })
-                                                        })
-                                                        .then(function () {
-                                                            var curr = self.helpForm.lastSelected(self.getPrimaryDataTable());
-
-                                                            return utils._if(!curr)
-                                                                ._then(function () {
-                                                                    return self.doMainCommand("mainsetsearch");
-                                                                })
-                                                                .then(function () {
-                                                                    self.currOperation = currOperation.none;
-                                                                    returnImmediately = true;
-                                                                    return true;
-                                                                });
-                                                        })
-                                                }
-
-                                                // clears data from entity Controls
-                                                return self.selectARowInGridList()
-                                                    .then(function() {
-                                                        self.currOperation = currOperation.none;
-                                                        returnImmediately = true; // su mdl faceva return;
-                                                        return true;
-                                                    });
-
-                                            }
-
-                                            if (self.state.isInsertState()) {
-                                                if (self.isTree) {
-                                                    self.state.setEditState();
-                                                    // recupero il manager del tree
-                                                    treemanager = self.helpForm.mainTableSelector;
-                                                    return treemanager.fillNodes(false, false)
-                                                        .then(function () {
-                                                            lastTreeNodeToSelect  = true;
-                                                            return true;
-                                                        });
-                                                }
-
-                                                self.state.setEditState();
-                                                return self.eventManager
-                                                    .trigger(appMeta.EventEnum.startClearMainRowEvent,
-                                                        last,
-                                                        "saveFormData")
-                                                    .then(function() {
-                                                        return self.freshForm(true, false);
-                                                    })
-                                                    .then(function() {
-                                                        var g = self.helpForm.mainTableSelector;
-                                                        if(typeof g === 'GridControlX'){
-                                                            self.helpForm.setGridCurrentRow(g, last);
-                                                        }
-
-                                                        return self.eventManager.trigger(
-                                                            appMeta.EventEnum.stopClearMainRowEvent,
-                                                            last,
-                                                            "saveFormData");
-                                                    })
-                                                    .then(function() {
-                                                        last = null;
-                                                    });
-                                            } else if (self.isTree) {
-                                                // recupero il manager del tree
-                                                treemanager = self.helpForm.mainTableSelector;
-                                                lastTreeNodeToSelect  = true;
-                                                return treemanager.fillNodes(true, false)
-                                            }
-                                            return true;
+                                                return true; // serve per andare sul .then() dell' _if(res)
+                                            });
                                         });
-                                })._else(function() {
-                                    //an error occurred
-                                    if (wasadelete) {
-                                        self.state.DS.rejectChanges();
-                                        //a seguito del task 9394 penso che il commento sopra sia corretto, non si può
-                                        //annullare solo la riga padre, va annullato tutto altrimenti si rischia di cancellare solo la riga padre
-                                        // perchè potrebbe essere in stato di inserimento mentre le figlie sarebbero salvate senza padre,
-                                        // come è effettivamente accaduto
-                                        last = null;
                                     }
 
-                                    returnImmediately = true;
-                                    // resultType = resultType.resDialogResultNone;
 
-                                })
-                                .then(function() {
-                                    // su mdl c'era return in determinati punti, qui gestisco con booleano exit, calcolato sopra
-                                    // quindi se è true non faccio l'ultme operazioni
-                                    if (returnImmediately) return def.resolve(res);
+                                    if (self.isTree){
+                                        treemanager = self.helpForm.mainTableSelector;
+                                        const treenode = treemanager.selectedNode();
 
-                                    return utils._if(last)
-                                        ._then(function() {
-                                            
-                                            return utils._if(lastTreeNodeToSelect)
-                                                ._then(function() {
-                                                    return treemanager.selectNodeByRow(last, false);
-                                                })
-                                                .then(function() {
-                                                    return self.freshForm(true, false);
-                                                });
+                                        return utils._if(treenode)
+                                        ._then(function (){
+                                            if (!treenode.original.dataRow.getRow){
+                                                treemanager.deleteCurrentNode(treenode);
+                                                return true;
+                                            }
+                                            return self.beforeSelectTreeManager()
+                                            .then(function (){
+                                                return self.afterSelectTreeManager();
+                                            });
                                         })
-                                        .then(function() {
-                                            // se arrivo qui sicuro non è un form Child di qualche parent
-                                            self.currOperation = currOperation.none;
-                                            return def.resolve(true);
+                                        .then(function (){
+                                            const curr = self.helpForm.lastSelected(self.getPrimaryDataTable());
+
+                                            return utils._if(!curr)
+                                            ._then(function (){
+                                                return self.doMainCommand("mainsetsearch");
+                                            })
+                                            .then(function (){
+                                                self.currOperation = currOperation.none;
+                                                returnImmediately = true;
+                                                return true;
+                                            });
                                         });
+                                    }
 
-                                }); // chiude then() dell _if(res)
+                                    // clears data from entity Controls
+                                    return self.selectARowInGridList()
+                                    .then(function (){
+                                        self.currOperation = currOperation.none;
+                                        returnImmediately = true; // su mdl faceva return;
+                                        return true;
+                                    });
 
-                        }); // chiude then() dell '_if(IsSubEntity)
+                                }
+
+                                if (self.state.isInsertState()){
+                                    if (self.isTree){
+                                        self.state.setEditState();
+                                        // recupero il manager del tree
+                                        treemanager = self.helpForm.mainTableSelector;
+                                        return treemanager.fillNodes(false, false)
+                                        .then(function (){
+                                            lastTreeNodeToSelect = true;
+                                            return true;
+                                        });
+                                    }
+
+                                    self.state.setEditState();
+                                    return self.eventManager
+                                    .trigger(appMeta.EventEnum.startClearMainRowEvent,
+                                        last,
+                                        "saveFormData")
+                                    .then(function (){
+                                        return self.freshForm(true, false);
+                                    })
+                                    .then(function (){
+                                        // const g = self.helpForm.mainTableSelector;
+                                        // if (typeof g === 'GridControlX'){
+                                        //     self.helpForm.setGridCurrentRow(g, last);
+                                        // }
+
+                                        return self.eventManager.trigger(
+                                            appMeta.EventEnum.stopClearMainRowEvent,
+                                            last,
+                                            "saveFormData");
+                                    })
+                                    .then(function (){
+                                        last = null;
+                                    });
+                                }
+                                else if (self.isTree){
+                                    // recupero il manager del tree
+                                    treemanager = self.helpForm.mainTableSelector;
+                                    lastTreeNodeToSelect = true;
+                                    return treemanager.fillNodes(true, false);
+                                }
+                                return true;
+                            });
+                        })._else(function (){
+                            //an error occurred
+                            if (wasadelete){
+                                self.state.DS.rejectChanges();
+                                //A seguito del task 9394 penso che il commento sopra sia corretto, non si può
+                                // annullare solo la riga padre, va annullato tutto altrimenti si rischia di cancellare solo la riga padre
+                                // perché potrebbe essere in stato d'inserimento mentre le figlie sarebbero salvate senza padre,
+                                // come è effettivamente accaduto
+                                last = null;
+                            }
+
+                            returnImmediately = true;
+                            // resultType = resultType.resDialogResultNone;
+
+                        })
+                        .then(function (){
+                            // su mdl c'era return in determinati punti, qui gestisco con booleano exit, calcolato sopra
+                            // quindi se è true non faccio l'ultme operazioni
+                            if (returnImmediately) return def.resolve(res);
+
+                            return utils._if(last)
+                            ._then(function (){
+
+                                return utils._if(lastTreeNodeToSelect)
+                                ._then(function (){
+                                    return treemanager.selectNodeByRow(last, false);
+                                })
+                                .then(function (){
+                                    return self.freshForm(true, false);
+                                });
+                            })
+                            .then(function (){
+                                // se arrivo qui sicuro non è un form Child di qualche parent
+                                self.currOperation = currOperation.none;
+                                return def.resolve(true);
+                            });
+
+                        }); // chiude then() dell _if(res)
+
+                    }); // chiude then() dell '_if(IsSubEntity)
                 });
 
             return def.from(res).promise();
@@ -2411,8 +2433,8 @@
          * @returns {Deferred}
          */
         beforeSelectTreeManager:function () {
-            var def = Deferred('beforeSelectTreeManager');
-            var self =  this;
+            const def = Deferred('beforeSelectTreeManager');
+            const self = this;
 
             return this.warnUnsaved()
                 .then(function (res) {
@@ -2421,15 +2443,15 @@
                         self.state.setEditState();
                     }
 
-                    return def.resolve(res)
+                    return def.resolve(res);
                 });
         },
 
         /**
-         *
+         *@return Promise
          */
         afterSelectTreeManager:function () {
-            var def = Deferred('afterSelectTreeManager');
+            const def = Deferred('afterSelectTreeManager');
             return def.resolve();
         },
 
@@ -2441,16 +2463,16 @@
          * @returns {Deferred}
          */
         selectARowInGridList:function () {
-            var def = Deferred('selectARowInGridList');
-            var primaryTable = this.getPrimaryDataTable();
+            const def = Deferred('selectARowInGridList');
+            const primaryTable = this.getPrimaryDataTable();
             this.helpForm.iterateSetDataRowRelated(this.rootElement, primaryTable, null);
             this.helpForm.lastSelected(primaryTable, null);
-            var res;
+            let res;
             if (primaryTable.rows.length > 0) {
 
-                var g = this.helpForm.mainTableSelector;
+                const g = this.helpForm.mainTableSelector;
                 if (g){
-                    if(typeof g === 'GridControl'){
+                    if(g.setIndex){
                         g.setIndex(-1);
                     }
                 }
@@ -2474,7 +2496,7 @@
                         return self.freshForm(true, false); //Per fare scattare l'AfterFill()
                     })
                     .then(function () {
-                        return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "selectARowInGridList")
+                        return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "selectARowInGridList");
                     })
                     .then(function () {
                         self.firstFillForThisRow = false;
@@ -2488,14 +2510,14 @@
                         return self.clear();
                     })
                     .then(function () {
-                        return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "selectARowInGridList")
+                        return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "selectARowInGridList");
                     })
                     .then(function () {
                         return true;
                     });
             }
 
-            return def.from(res).promise()
+            return def.from(res).promise();
         },
 
         /**
@@ -2550,77 +2572,77 @@
          * @description ASYNC
          *
          *
-         * @returns {Deferred}
+         * @returns {Promise}
          */
         cmdMainInsert:function () {
-            var def = Deferred("cmdMainInsert");
-            var self = this;
+            const def = Deferred("cmdMainInsert");
+            const self = this;
 
             // this.closeListManagerResultsSearch();
 
-            var res = this.warnUnsaved()
-                .then(function (res) {
+            const res = this.warnUnsaved()
+            .then(function (res){
 
-                    if (!res) return def.resolve(null);
+                if (!res) return def.resolve(null);
 
-                    self.state.DS.rejectChanges();
+                self.state.DS.rejectChanges();
 
-                    if (!self.isList) return self.editNew();
+                if (!self.isList) return self.editNew();
 
-                    // List form -> finds main datagrid/datatable
-                    var gridtreetag = self.helpForm.mainTableSelector.tag;
+                // List form -> finds main datagrid/datatable
+                const gridtreetag = self.helpForm.mainTableSelector.tag;
 
-                    var editTypeRequested = self.helpForm.getFieldLower(gridtreetag, 2);
-                    // no sub-form to open: in-form insert mode
-                    if (!editTypeRequested) return self.editNew();
+                const editTypeRequested = self.helpForm.getFieldLower(gridtreetag, 2);
+                // no sub-form to open: in-form insert mode
+                if (!editTypeRequested) return self.editNew();
 
-                    // Sezione che gestisce l'edit di un dettaglio dell'entità stessa in un nuovo form
-                    // non è usata da alcun form al momento, poiché si preferisce l'in-form -detail
-                    var primaryTable = self.getPrimaryDataTable();
+                // Sezione che gestisce l'edit di un dettaglio dell'entità stessa in un nuovo form
+                // non è usata da alcun form al momento, poiché si preferisce l'in-form -detail
+                const primaryTable = self.getPrimaryDataTable();
 
-                    var waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_insert);
-                    // è giusto passare edittype di pagina, poichè serve solo per recuperare il ds principale lato server.
-                    return self.state.meta.getNewRow(null, primaryTable, self.editType)
+                const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_insert);
+                // è giusto passare edittype di pagina, poichè serve solo per recuperare il ds principale lato server.
+                return self.state.meta.getNewRow(null, primaryTable, self.editType)
 
-                        .then(function (rowToInsert) {
+                .then(function (rowToInsert){
 
-                            if (!rowToInsert) {
+                    if (!rowToInsert){
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(null);
+                    }
+
+                    self.state.editedRow = rowToInsert; // M.SetSource(R);
+
+                    return self.edit(primaryTable.name, editTypeRequested, true)
+
+                    // sull'insert viene aperto il form per l'inserimento, può/deve esserci il bottone di mainSave
+                    .then(function (dialogResult){
+
+                        return utils._if(dialogResult)
+                        ._then(function (){
+                            return self.saveFormData()
+                            .then(function (result){
+                                self.entityChanged = result;
+                                return true;
+                            });
+                        })
+                        ._else(function (){
+                            rowToInsert.del();
+                            return true; // serve per mandarlo nel ramo then() che deve essere sempre fatto
+                        })
+                        .then(function (){
+                            return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "cmdMainInsert")
+                            .then(function (){
+                                return self.freshForm(true, true); //21/1/2003
+                            })
+                            .then(function (){
                                 self.hideWaitingIndicator(waitingHandler);
-                                return def.resolve(null);
-                            }
-
-                            self.state.editedRow = rowToInsert; // M.SetSource(R);
-
-                            return self.edit(primaryTable.name, editTypeRequested, true)
-
-                                // sull'insert viene aperto il form per l'inserimento, può/deve esserci il bottone di mainSave
-                                .then(function (dialogResult) {
-
-                                    return utils._if(dialogResult)
-                                        ._then(function () {
-                                            return self.saveFormData()
-                                                .then(function (result) {
-                                                    self.entityChanged = result;
-                                                    return true;
-                                                });
-                                        })
-                                        ._else(function () {
-                                            rowToInsert.del();
-                                            return true; // serve per mandarlo nel ramo then() che deve essere sempre fatto
-                                        })
-                                        .then(function () {
-                                            return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "cmdMainInsert")
-                                                .then(function () {
-                                                    return self.freshForm(true, true); //21/1/2003
-                                                })
-                                                .then(function () {
-                                                    self.hideWaitingIndicator(waitingHandler);
-                                                    return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToInsert, "cmdMainInsert");
-                                                });
-                                        })
-                                }); // chiude then() di self.edit
-                        }); // chiude then del getNewRow()
-                }); // chiude primo then()
+                                return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToInsert, "cmdMainInsert");
+                            });
+                        });
+                    }); // chiude then() di self.edit
+                }); // chiude then del getNewRow()
+            }); // chiude primo then()
 
             return def.from(res).promise();
         },
@@ -2633,83 +2655,83 @@
          * @returns {Deferred}
          */
         editNew:function() {
-            var def = Deferred("editNew");
+            const def = Deferred("editNew");
             //return def.resolve().promise();
 
-            var self = this;
+            const self = this;
             this.currOperation = currOperation.insert;
             self.state.setInsertState();
-            var exit = false;
-            var res = utils._if(!this.isList)
-                ._then(function () {
+            let exit = false;
+            const res = utils._if(!this.isList)
+            ._then(function (){
 
-                    self.gointToInsertMode = true;
+                self.gointToInsertMode = true;
 
-                    return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "editNew")
-                        .then(function () {
-                            return self.clear();
-                        })
-                        .then(function () {
-                            return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "editNew")
-                        })
-                        .then(function () {
-                            self.gointToInsertMode = false;
-                            if (!self.isEmpty()){
-                                exit  = true; // AfterClear has generated an "insert"
-                            }
-
-                            return true; // deve andare sempre sul ramo then()
-                        });
+                return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "editNew")
+                .then(function (){
+                    return self.clear();
                 })
-                .then(function () {
-
-                    if (exit) return def.resolve(false);
-
-                    var parentRow = null;
-                    var primaryDataTable = self.getPrimaryDataTable();
-                    if (self.isTree) {
-                        parentRow = self.helpForm.lastSelected(primaryDataTable);
-                        if (parentRow)  parentRow = parentRow.getRow(); // devo passare un DataRow
+                .then(function (){
+                    return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, self, "editNew");
+                })
+                .then(function (){
+                    self.gointToInsertMode = false;
+                    if (!self.isEmpty()){
+                        exit = true; // AfterClear has generated an "insert"
                     }
 
-                    // N.B fatto latoserver qaundo si legge il dataSet, tramite la getDataSet
-                    // il setDefaults() qui non fa nulla, potrebbe essere implementato da chi deriva il MetaData lato js
-                    var meta = self.state.meta;
-                    //meta.setDefaults(primaryDataTable); lo fa già nell'activate, non deve rifarlo qui
-                    var waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_insert);
-                    return meta.getNewRow(parentRow, primaryDataTable, self.editType)
-
-                        .then(function (rowToEdit) {
-                            if (!rowToEdit) {
-                                self.currOperation = currOperation.none;
-                                self.hideWaitingIndicator(waitingHandler);
-                                return def.resolve(false);
-                            }
-
-                            self.helpForm.lastSelected(primaryDataTable, rowToEdit.current);
-                            // rowToEdit now is the row from which start the filling of the form
-                            self.state.setInsertState();
-
-                            return getData.doGet(self.state.DS,  rowToEdit, self.primaryTableName, false)
-                                .then(function () {
-                                    self.entityChanged = true;
-                                    self.firstFillForThisRow = true;
-                                    return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToEdit, "editNew")
-                                })
-                                .then(function () {
-                                    return self.reFillControls();
-                                })
-                                .then(function () {
-                                    return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToEdit, "editNew")
-                                })
-                                .then(function () {
-                                    self.firstFillForThisRow = false;
-                                    self.currOperation = currOperation.none;
-                                    self.hideWaitingIndicator(waitingHandler);
-                                    return def.resolve(true);
-                                });
-                        }); // chiude then del getNewRow()
+                    return true; // deve andare sempre sul ramo then()
                 });
+            })
+            .then(function (){
+
+                if (exit) return def.resolve(false);
+
+                let parentRow = null;
+                const primaryDataTable = self.getPrimaryDataTable();
+                if (self.isTree){
+                    parentRow = self.helpForm.lastSelected(primaryDataTable);
+                    if (parentRow) parentRow = parentRow.getRow(); // devo passare un DataRow
+                }
+
+                // N.B fatto latoserver qaundo si legge il dataSet, tramite la getDataSet
+                // il setDefaults() qui non fa nulla, potrebbe essere implementato da chi deriva il MetaData lato js
+                const meta = self.state.meta;
+                //meta.setDefaults(primaryDataTable); lo fa già nell'activate, non deve rifarlo qui
+                const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_insert);
+                return meta.getNewRow(parentRow, primaryDataTable, self.editType)
+
+                .then(function (rowToEdit){
+                    if (!rowToEdit){
+                        self.currOperation = currOperation.none;
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(false);
+                    }
+
+                    self.helpForm.lastSelected(primaryDataTable, rowToEdit.current);
+                    // rowToEdit now is the row from which start the filling of the form
+                    self.state.setInsertState();
+
+                    return getData.doGet(self.state.DS, rowToEdit, self.primaryTableName, false)
+                    .then(function (){
+                        self.entityChanged = true;
+                        self.firstFillForThisRow = true;
+                        return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToEdit, "editNew");
+                    })
+                    .then(function (){
+                        return self.reFillControls();
+                    })
+                    .then(function (){
+                        return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToEdit, "editNew");
+                    })
+                    .then(function (){
+                        self.firstFillForThisRow = false;
+                        self.currOperation = currOperation.none;
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(true);
+                    });
+                }); // chiude then del getNewRow()
+            });
 
             return def.from(res).promise();
 
@@ -2723,97 +2745,97 @@
          * @returns {Deferred}
          */
         cmdMainInsertCopy:function () {
-            var def = Deferred("cmdMainInsertCopy");
-            var self = this;
-            var res =  this.showMessage(localResource.alert,
+            const def = Deferred("cmdMainInsertCopy");
+            const self = this;
+            const res = this.showMessage(localResource.alert,
                 localResource.getPressedInsertAndcopy(),
                 [localResource.confirm, localResource.cancel],
                 localResource.cancel)
-                .then(function(res) {
-                    if (res !== localResource.confirm) return def.resolve(null);
+            .then(function (res){
+                if (res !== localResource.confirm) return def.resolve(null);
 
-                    var waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_insertcopy);
+                const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_insertcopy);
 
-                    return self.warnUnsaved()
-                        .then(function (res) {
-                            if (!res) {
-                                self.hideWaitingIndicator(waitingHandler);
-                                return def.resolve(null);
-                            }
+                return self.warnUnsaved()
+                .then(function (res){
+                    if (!res){
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(null);
+                    }
 
-                            self.state.DS.rejectChanges();
+                    self.state.DS.rejectChanges();
 
-                            if (!self.isList) {
-                                return self.editNewCopyJsSide()
-                                    .then(function () {
-                                        self.hideWaitingIndicator(waitingHandler);
-                                        return def.resolve();
-                                    })
-                            }
+                    if (!self.isList){
+                        return self.editNewCopyJsSide()
+                        .then(function (){
+                            self.hideWaitingIndicator(waitingHandler);
+                            return def.resolve();
+                        });
+                    }
 
-                            //List form -> finds main datagrid/datatable
-                            var gridtreetag = self.helpForm.mainTableSelector.tag;
-                            var edit_type = self.helpForm.getFieldLower(gridtreetag, 2);
-                            if (!edit_type) {
-                                // no sub-form to open: in-form insert mode
-                                return self.editNewCopyJsSide()
-                                    .then(function () {
-                                        self.hideWaitingIndicator(waitingHandler);
-                                        return def.resolve();
-                                    })
-                            }
-                            var currCopy = self.helpForm.lastSelected(self.getPrimaryDataTable());
-                            if (!currCopy) return;
+                    //List form -> finds main datagrid/datatable
+                    const gridtreetag = self.helpForm.mainTableSelector.tag;
+                    const edit_type = self.helpForm.getFieldLower(gridtreetag, 2);
+                    if (!edit_type){
+                        // no sub-form to open: in-form insert mode
+                        return self.editNewCopyJsSide()
+                        .then(function (){
+                            self.hideWaitingIndicator(waitingHandler);
+                            return def.resolve();
+                        });
+                    }
+                    const currCopy = self.helpForm.lastSelected(self.getPrimaryDataTable());
+                    if (!currCopy) return;
 
-                            var currMeta =  appMeta.getMeta(self.primaryTableName);
+                    const currMeta = appMeta.getMeta(self.primaryTableName);
 
-                            return currMeta.getNewRow(null, self.getPrimaryDataTable(), self.editType)
-                                .then(function (rowToInsert) {
-                                    if (!rowToInsert)  {
-                                        self.hideWaitingIndicator(waitingHandler);
-                                        return def.resolve();
-                                    }
+                    return currMeta.getNewRow(null, self.getPrimaryDataTable(), self.editType)
+                    .then(function (rowToInsert){
+                        if (!rowToInsert){
+                            self.hideWaitingIndicator(waitingHandler);
+                            return def.resolve();
+                        }
 
-                                    var primaryDataTable  =  self.getPrimaryDataTable();
+                        const primaryDataTable = self.getPrimaryDataTable();
 
-                                    _.forEach(primaryDataTable.columns, function (col) {
-                                        // don't copy autoincrements
-                                        if (primaryDataTable.autoIncrement(col.name)) return true;
-                                        // don't copy keys
-                                        if (col.isPrimaryKey) return true;
-                                        rowToInsert.current[col.name] = currCopy[col.name];
-                                    });
-
-
-                                    self.state.editedRow = rowToInsert;
-
-                                    return self.edit(self.getPrimaryDataTable().name, edit_type, true)
-                                        .then(function () {
-                                            // entityCalledChanged valorizzato nella returnToCaller()
-                                            return utils._if(self.entityCalledChanged)
-                                                ._then(function () {
-                                                    return self.saveFormData()
-                                                        .then(function (result) {
-                                                            self.entityChanged = result;
-                                                            return true;
-                                                        })
-                                                })
-                                                ._else(function () {
-                                                    rowToInsert.del();
-                                                    return true;
-                                                }).then(function () {
-                                                    return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "cmdMainInsertCopy")
-                                                }).then(function () {
-                                                    return self.freshForm(true, true);
-                                                }).then(function () {
-                                                    self.hideWaitingIndicator(waitingHandler);
-                                                    return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToInsert, "cmdMainInsertCopy")
-                                                });
-                                        });
-                                });
+                        _.forEach(primaryDataTable.columns, function (col){
+                            // don't copy autoincrements
+                            if (primaryDataTable.autoIncrement(col.name)) return true;
+                            // don't copy keys
+                            if (col.isPrimaryKey) return true;
+                            rowToInsert.current[col.name] = currCopy[col.name];
                         });
 
+
+                        self.state.editedRow = rowToInsert;
+
+                        return self.edit(self.getPrimaryDataTable().name, edit_type, true)
+                        .then(function (){
+                            // entityCalledChanged valorizzato nella returnToCaller()
+                            return utils._if(self.entityCalledChanged)
+                            ._then(function (){
+                                return self.saveFormData()
+                                .then(function (result){
+                                    self.entityChanged = result;
+                                    return true;
+                                });
+                            })
+                            ._else(function (){
+                                rowToInsert.del();
+                                return true;
+                            }).then(function (){
+                                return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "cmdMainInsertCopy");
+                            }).then(function (){
+                                return self.freshForm(true, true);
+                            }).then(function (){
+                                self.hideWaitingIndicator(waitingHandler);
+                                return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToInsert, "cmdMainInsertCopy");
+                            });
+                        });
+                    });
                 });
+
+            });
 
             return def.from(res).promise();
 
@@ -2828,20 +2850,20 @@
          */
          recursiveNewCopyChilds:function(destRow, sourceRow) {
             /* DataTable */
-            var sourceTable = sourceRow.getRow().table;
+            const sourceTable = sourceRow.getRow().table;
             /* DataSet */
-            var dsSource = destRow.getRow().table.dataset;
-            var relations = sourceTable.childRelations();
+            const dsSource = destRow.getRow().table.dataset;
+            const relations = sourceTable.childRelations();
 
-            var allNewChildRowDeferred = [];
+            const allNewChildRowDeferred = [];
 
-            var self = this;
+            const self = this;
 
             _.forEach(relations, function (rel) {
 
-                    var childTableName = rel.childTable;
-                    var childTable = dsSource.tables[childTableName];
-                    if (childTable.skipInsertCopy()) return true;
+                const childTableName = rel.childTable;
+                const childTable = dsSource.tables[childTableName];
+                if (childTable.skipInsertCopy()) return true;
 
                     if (!metaModel.isSubEntity(childTable, destRow.getRow().table)) {
                         return true; // continua nel ciclo
@@ -2851,18 +2873,18 @@
                         return true; // continua nel ciclo
                     }
 
-                    var childRowCopy = sourceRow.getRow().getChildRows(rel.name);
+                const childRowCopy = sourceRow.getRow().getChildRows(rel.name);
 
-                    var metaChild = appMeta.getMeta(childTableName);
-                    metaChild.setDefaults(childTable);
+                const metaChild = appMeta.getMeta(childTableName);
+                metaChild.setDefaults(childTable);
 
                     // creo catena di deferred iterative, ognuna ha bisogno del risultato precedente. poichè se ci sono più child devo inserire in
                     // self.state.DS.tables[defObj.childTableName] le righe con id momentaneo calcolato diverso. Lui riesce a calcolare
                     // l'id ovviamente solo se già ci sono le righe messe in precedenza. Nel vecchi metodo prima di questa modifica,
                     // metteva solo una riga l'ultima poichè l'id era sempre lo stesso. nel ciclo passavo sempre la tabella vuota all'inizio
-                    var chain = $.when();
+                let chain = $.when();
 
-                    _.forEach(childRowCopy, function (childSourceRow) {
+                _.forEach(childRowCopy, function (childSourceRow) {
 
                         chain = chain.then(function() {
                             return metaChild.getNewRow(destRow.getRow(), childTable)
@@ -2883,7 +2905,7 @@
                                     });
 
                                     return self.recursiveNewCopyChilds(newChildRow.current, childSourceRow);
-                                })
+                                });
                         });
                     });
 
@@ -2901,105 +2923,105 @@
          * @private
          * @description ASYNC
          * Creates a new entity as a copy of current row
-         * @returns {Deferred}
+         * @returns {Promise}
          */
         editNewCopyJsSide:function() {
-            var def = Deferred("editNewCopyJsSide");
-            var self = this;
-            var exitImmediately = false;
+            const def = Deferred("editNewCopyJsSide");
+            const self = this;
+            let exitImmediately = false;
             // check preliminari e leggo al riga corrente
             if (!this.primaryTableName) return def.resolve(false);
-            var primaryDataTable = this.getPrimaryDataTable();
-            var currRow = this.helpForm.lastSelected(primaryDataTable);
+            const primaryDataTable = this.getPrimaryDataTable();
+            const currRow = this.helpForm.lastSelected(primaryDataTable);
             if (!currRow) return def.resolve(false);
 
-            var dsCopy  = appMeta.getDataUtils.cloneDataSet(this.state.DS);
+            const dsCopy = appMeta.getDataUtils.cloneDataSet(this.state.DS);
 
-            var keyfilter = currRow.getRow().table.keyFilter(currRow);
-            var primaryRowCopy = dsCopy.tables[this.primaryTableName].select(keyfilter)[0];
-            var meta = self.state.meta;
-            var rowToInsert;
-            var res = utils._if(!this.isList)
-                ._then(function () {
-                    self.isClearBeforeInsert = true;
-                    return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, null, "editNewCopyJsSide")
-                        .then(function () {
-                            return self.clear();
-                        })
-                        .then(function () {
-                            return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, null, "editNewCopyJsSide");
-                        })
-                        .then(function () {
-                            self.isClearBeforeInsert = false;
-                            if (!self.isEmpty()) {
-                                exitImmediately = true;
-                            } // AfterClear has generated an "insert"
-                            return true;
-                        })
+            const keyfilter = currRow.getRow().table.keyFilter(currRow);
+            const primaryRowCopy = dsCopy.tables[this.primaryTableName].select(keyfilter)[0];
+            const meta = self.state.meta;
+            let rowToInsert;
+            const res = utils._if(!this.isList)
+            ._then(function (){
+                self.isClearBeforeInsert = true;
+                return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, null, "editNewCopyJsSide")
+                .then(function (){
+                    return self.clear();
                 })
-                .then(function () {
-                    if (exitImmediately) return def.resolve();
-
-                    meta.setDefaults(primaryDataTable);
-                    return meta.getNewRow(null, primaryDataTable, self.editType)
-
-                }).then(function (rowOut) {
-                    rowToInsert = rowOut;
-                    if(!rowToInsert) {
-                        return self.showMessageOk(localResource.getInvalidData(self.primaryTableName)).then(function () {
-                            return def.resolve();
-                        })
-                    }
-
-                    _.forEach(primaryDataTable.columns, function (col) {
-                        // don't copy autoincrements
-                        if (rowToInsert.table.autoIncrement(col.name)) return true;
-                        // don't copy keys
-                        if (col.isPrimaryKey) return true;
-                        meta.insertCopyColumn(col, primaryRowCopy, rowToInsert.current);
-                    });
-
-                    self.helpForm.lastSelected(self.getPrimaryDataTable(), rowToInsert.current);
-                    self.currOperation = currOperation.insert;
-                    self.state.setInsertState();
-                    if(false) { // this.isList
-                        self.entityChanged = true;
-                        self.firstFillForThisRow = true;
-
-                        return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "editNewCopyJsSide")
-                            .then(function () {
-                                return self.reFillControls();
-                            })
-                            .then(function () {
-                                return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToInsert, "editNewCopyJsSide")
-                            })
-                            .then(function () {
-                                self.firstFillForThisRow = false;
-                                return def.resolve(true);
-                            });
-                    }
-
-                    // EFFETTUA IL DEEP-COPY
-                    return self.recursiveNewCopyChilds(rowToInsert.current, primaryRowCopy);
-                }).then(function() {
-                    // rowToInsert now is the row from which start the filling of the form
-                    return getData.doGet(self.state.DS, rowToInsert, self.primaryTableName, true)
-                        .then(function () {
-                            self.entityChanged = true;
-                            self.firstFillForThisRow = true;
-                            return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "editNewCopyJsSide")
-                        })
-                        .then(function () {
-                            return self.reFillControls();
-                        })
-                        .then(function () {
-                            return self.eventManager.trigger(appMeta.EventEnum.stopRowSelectionEvent, rowToInsert, "editNewCopyJsSide")
-                        })
-                        .then(function () {
-                            self.firstFillForThisRow = false;
-                            return true;
-                        })
+                .then(function (){
+                    return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, null, "editNewCopyJsSide");
+                })
+                .then(function (){
+                    self.isClearBeforeInsert = false;
+                    if (!self.isEmpty()){
+                        exitImmediately = true;
+                    } // AfterClear has generated an "insert"
+                    return true;
                 });
+            })
+            .then(function (){
+                if (exitImmediately) return def.resolve();
+
+                meta.setDefaults(primaryDataTable);
+                return meta.getNewRow(null, primaryDataTable, self.editType);
+
+            }).then(function (rowOut){
+                rowToInsert = rowOut;
+                if (!rowToInsert){
+                    return self.showMessageOk(localResource.getInvalidData(self.primaryTableName)).then(function (){
+                        return def.resolve();
+                    });
+                }
+
+                _.forEach(primaryDataTable.columns, function (col){
+                    // don't copy autoincrements
+                    if (rowToInsert.table.autoIncrement(col.name)) return true;
+                    // don't copy keys
+                    if (col.isPrimaryKey) return true;
+                    meta.insertCopyColumn(col, primaryRowCopy, rowToInsert.current);
+                });
+
+                self.helpForm.lastSelected(self.getPrimaryDataTable(), rowToInsert.current);
+                self.currOperation = currOperation.insert;
+                self.state.setInsertState();
+                if (false){ // this.isList
+                    self.entityChanged = true;
+                    self.firstFillForThisRow = true;
+
+                    return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "editNewCopyJsSide")
+                    .then(function (){
+                        return self.reFillControls();
+                    })
+                    .then(function (){
+                        return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToInsert, "editNewCopyJsSide");
+                    })
+                    .then(function (){
+                        self.firstFillForThisRow = false;
+                        return def.resolve(true);
+                    });
+                }
+
+                // EFFETTUA IL DEEP-COPY
+                return self.recursiveNewCopyChilds(rowToInsert.current, primaryRowCopy);
+            }).then(function (){
+                // rowToInsert now is the row from which start the filling of the form
+                return getData.doGet(self.state.DS, rowToInsert, self.primaryTableName, true)
+                .then(function (){
+                    self.entityChanged = true;
+                    self.firstFillForThisRow = true;
+                    return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "editNewCopyJsSide");
+                })
+                .then(function (){
+                    return self.reFillControls();
+                })
+                .then(function (){
+                    return self.eventManager.trigger(appMeta.EventEnum.stopRowSelectionEvent, rowToInsert, "editNewCopyJsSide");
+                })
+                .then(function (){
+                    self.firstFillForThisRow = false;
+                    return true;
+                });
+            });
 
             return def.from(res).promise();
         },
@@ -3012,107 +3034,107 @@
          * @returns {Deferred}
          */
         editNewCopy:function() {
-            var def = Deferred("editNewCopy");
-            var self = this;
-            var exitImmediately = false;
+            const def = Deferred("editNewCopy");
+            const self = this;
+            let exitImmediately = false;
             // check preliminari e leggo al riga corrente
             if (!this.primaryTableName) return def.resolve(false);
-            var primaryDataTable = this.getPrimaryDataTable();
-            var currRow = this.helpForm.lastSelected(primaryDataTable);
+            const primaryDataTable = this.getPrimaryDataTable();
+            const currRow = this.helpForm.lastSelected(primaryDataTable);
             if (!currRow) return def.resolve(false);
 
-            var dsCopy  = appMeta.getDataUtils.cloneDataSet(this.state.DS);
+            const dsCopy = appMeta.getDataUtils.cloneDataSet(this.state.DS);
 
-            var keyfilter = currRow.getRow().table.keyFilter(currRow);
-            var primaryRowCopy = dsCopy.tables[this.primaryTableName].select(keyfilter)[0];
+            const keyfilter = currRow.getRow().table.keyFilter(currRow);
+            const primaryRowCopy = dsCopy.tables[this.primaryTableName].select(keyfilter)[0];
 
-            var res = utils._if(!this.isList)
-                ._then(function () {
-                    self.isClearBeforeInsert = true;
-                    return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, null, "editNewCopy")
-                        .then(function () {
-                            return self.clear();
-                        })
-                        .then(function () {
-                            return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, null, "editNewCopy");
-                        })
-                        .then(function () {
-                            self.isClearBeforeInsert = false;
-                            if (!self.isEmpty()) {
-                                exitImmediately = true;
-                            } // AfterClear has generated an "insert"
-                            return true;
-                        })
+            const res = utils._if(!this.isList)
+            ._then(function (){
+                self.isClearBeforeInsert = true;
+                return self.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, null, "editNewCopy")
+                .then(function (){
+                    return self.clear();
                 })
-                .then(function () {
-                    if (exitImmediately) return def.resolve();
-
-                    var meta = self.state.meta;
-                    meta.setDefaults(primaryDataTable);
-
-                    return meta.getNewRow(null, primaryDataTable, self.editType)
-
-                        .then(function (rowToInsert) {
-                            if(!rowToInsert) {
-                                return self.showMessageOk(localResource.getInvalidData(self.primaryTableName)).then(function () {
-                                    return def.resolve();
-                                })
-                            }
-
-                            _.forEach(primaryDataTable.columns, function (col) {
-                                if (self.isList) {
-                                    // don't copy autoincrements
-                                    if (rowToInsert.table.autoIncrement(col.name)) return true;
-                                    // don't copy keys
-                                    if (col.isPrimaryKey) return true;
-                                }
-
-                                meta.insertCopyColumn(col, primaryRowCopy, rowToInsert.current);
-                            });
-
-                            self.helpForm.lastSelected(primaryDataTable, rowToInsert.current);
-                            self.currOperation = currOperation.insert;
-                            self.state.setInsertState();
-                            if(self.isList) {
-                                self.entityChanged = true;
-                                self.firstFillForThisRow = true;
-
-                                return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "editNewCopy")
-                                    .then(function () {
-                                        return self.reFillControls();
-                                    })
-                                    .then(function () {
-                                        return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToInsert, "editNewCopy")
-                                    })
-                                    .then(function () {
-                                        self.firstFillForThisRow = false;
-                                        return def.resolve(true);
-                                    });
-                            }
-
-                            // EFFETTUA IL DEEP-COPY
-                            return meta.recusiveNewCopyChilds(primaryRowCopy.getRow(), rowToInsert, dsCopy, self.state.DS, self.primaryTableName, self.editType)
-                                .then(function () {
-                                    // rowToInsert now is the row from which start the filling of the form
-                                    return getData.doGet(self.state.DS, rowToInsert, self.primaryTableName, true)
-                                        .then(function () {
-                                            self.entityChanged = true;
-                                            self.firstFillForThisRow = true;
-                                            return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "editNewCopy")
-                                        })
-                                        .then(function () {
-                                            return self.reFillControls();
-                                        })
-                                        .then(function () {
-                                            return self.eventManager.trigger(appMeta.EventEnum.stopRowSelectionEvent, rowToInsert, "editNewCopy")
-                                        })
-                                        .then(function () {
-                                            self.firstFillForThisRow = false;
-                                            return true;
-                                        })
-                                });
-                        });
+                .then(function (){
+                    return self.eventManager.trigger(appMeta.EventEnum.stopClearMainRowEvent, null, "editNewCopy");
+                })
+                .then(function (){
+                    self.isClearBeforeInsert = false;
+                    if (!self.isEmpty()){
+                        exitImmediately = true;
+                    } // AfterClear has generated an "insert"
+                    return true;
                 });
+            })
+            .then(function (){
+                if (exitImmediately) return def.resolve();
+
+                const meta = self.state.meta;
+                meta.setDefaults(primaryDataTable);
+
+                return meta.getNewRow(null, primaryDataTable, self.editType)
+
+                .then(function (rowToInsert){
+                    if (!rowToInsert){
+                        return self.showMessageOk(localResource.getInvalidData(self.primaryTableName)).then(function (){
+                            return def.resolve();
+                        });
+                    }
+
+                    _.forEach(primaryDataTable.columns, function (col){
+                        if (self.isList){
+                            // don't copy autoincrement columns
+                            if (rowToInsert.table.autoIncrement(col.name)) return true;
+                            // don't copy keys
+                            if (col.isPrimaryKey) return true;
+                        }
+
+                        meta.insertCopyColumn(col, primaryRowCopy, rowToInsert.current);
+                    });
+
+                    self.helpForm.lastSelected(primaryDataTable, rowToInsert.current);
+                    self.currOperation = currOperation.insert;
+                    self.state.setInsertState();
+                    if (self.isList){
+                        self.entityChanged = true;
+                        self.firstFillForThisRow = true;
+
+                        return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "editNewCopy")
+                        .then(function (){
+                            return self.reFillControls();
+                        })
+                        .then(function (){
+                            return self.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, rowToInsert, "editNewCopy");
+                        })
+                        .then(function (){
+                            self.firstFillForThisRow = false;
+                            return def.resolve(true);
+                        });
+                    }
+
+                    // EFFETTUA IL DEEP-COPY
+                    return meta.recusiveNewCopyChilds(primaryRowCopy.getRow(), rowToInsert, dsCopy, self.state.DS, self.primaryTableName, self.editType)
+                    .then(function (){
+                        // rowToInsert now is the row from which start the filling of the form
+                        return getData.doGet(self.state.DS, rowToInsert, self.primaryTableName, true)
+                        .then(function (){
+                            self.entityChanged = true;
+                            self.firstFillForThisRow = true;
+                            return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, rowToInsert, "editNewCopy");
+                        })
+                        .then(function (){
+                            return self.reFillControls();
+                        })
+                        .then(function (){
+                            return self.eventManager.trigger(appMeta.EventEnum.stopRowSelectionEvent, rowToInsert, "editNewCopy");
+                        })
+                        .then(function (){
+                            self.firstFillForThisRow = false;
+                            return true;
+                        });
+                    });
+                });
+            });
 
             return def.from(res).promise();
         },
@@ -3128,14 +3150,20 @@
          * @returns {Deferred}
          */
         getNewRowEditCopy:function (metaChild, rowToInsert, childTable, childRow, rel) {
-            var def = Deferred('getNewRowEditCopy');
+            const def = Deferred('getNewRowEditCopy');
             metaChild.setDefaults(childTable);
-            var res =  metaChild.getNewRow(rowToInsert, childTable, this.editType)
-                .then(function (newChildRow) {
-                    //costruisco oggetto js oltre che con il risultato della getNewRow, anche con i vari parametri utili poi nella successiva logica
-                    var objres = {metaChild:metaChild, childRow: childRow, newChildRow: newChildRow.current, childTableName:childTable.name, rel:rel };
-                    return def.resolve(objres);
-                });
+            const res = metaChild.getNewRow(rowToInsert, childTable, this.editType)
+            .then(function (newChildRow){
+                //costruisco oggetto js oltre che con il risultato della getNewRow, anche con i vari parametri utili poi nella successiva logica
+                const objres = {
+                    metaChild: metaChild,
+                    childRow: childRow,
+                    newChildRow: newChildRow.current,
+                    childTableName: childTable.name,
+                    rel: rel
+                };
+                return def.resolve(objres);
+            });
 
             return def.from(res).promise();
         },
@@ -3149,8 +3177,8 @@
          * @returns {Deferred}
          */
         doDelete:function (currEntityRow) {
-            var def = Deferred("doDelete");
-            var self = this;
+            const def = Deferred("doDelete");
+            const self = this;
             try {
 
                 metaModel.applyCascadeDelete(currEntityRow);
@@ -3195,8 +3223,8 @@
                             .then(function () {
                                 self.currOperation = currOperation.none;
                                 return def.resolve(null);
-                            })
-                    })
+                            });
+                    });
 
             }
         },
@@ -3209,70 +3237,69 @@
          * @returns {Deferred}
          */
         cmdMainDelete:function () {
-            var def = Deferred("cmdMainDelete");
-            var self = this;
-            var primaryDataTable = this.getPrimaryDataTable();
+            const def = Deferred("cmdMainDelete");
+            const self = this;
+            const primaryDataTable = this.getPrimaryDataTable();
 
-            var res = this.getFormData(true)
-                .then(function () {
-                    self.currOperation = currOperation.delete;
+            const res = this.getFormData(true)
+            .then(function (){
+                self.currOperation = currOperation.delete;
 
-                    var currEntityRow = self.helpForm.lastSelected(primaryDataTable);
-                    if (!currEntityRow) return def.resolve(null);
+                const currEntityRow = self.helpForm.lastSelected(primaryDataTable);
+                if (!currEntityRow) return def.resolve(null);
 
 
-                    if (self.detailPage) {
-                        // in pag dettaglio metteva il dialog result a cencel: formController.linkedForm.DialogResult = DialogResult.Cancel;
-                        self.currOperation = currOperation.none;
+                if (self.detailPage){
+                    // in pag dettaglio metteva il dialog result a cencel: formController.linkedForm.DialogResult = DialogResult.Cancel;
+                    self.currOperation = currOperation.none;
 
-                        // Deve fare qualcosa di simile a quel che c'è in btnMainSave (return to caller, DeferredResult.resolve(false) )
-                        return appMeta.returnToCaller()
-                            .then(function() {
-                                def.resolve(null);
-                                self.deferredResult.resolve(false);
-                                return;
+                    // Deve fare qualcosa di simile a quel che c'è in btnMainSave (return to caller, DeferredResult.resolve(false) )
+                    return appMeta.returnToCaller()
+                    .then(function (){
+                        def.resolve(null);
+                        self.deferredResult.resolve(false);
+                    });
+
+                }
+
+                const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_delete);
+
+                if (self.state.isInsertState()){
+                    if (!self.dontWarnOnInsertCancel){
+                        return self.showMessageOkCancel(localResource.getDeleteRowConfirm(self.name))
+                        .then(function (res){
+                            if (!res){
+                                self.currOperation = currOperation.none;
+                                self.hideWaitingIndicator(waitingHandler);
+                                return def.resolve(null);
+                            }
+
+                            return self.doDelete(currEntityRow)
+                            .then(function (){
+                                self.hideWaitingIndicator(waitingHandler);
+                                return def.resolve(true);
                             });
-
+                        });
                     }
+                    self.currOperation = currOperation.none;
+                    self.hideWaitingIndicator(waitingHandler);
+                    return def.resolve(null);
+                }
 
-                    var waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_delete);
-
-                    if (self.state.isInsertState()) {
-                        if (!self.dontWarnOnInsertCancel) {
-                            return self.showMessageOkCancel(localResource.getDeleteRowConfirm(self.name))
-                                .then(function (res) {
-                                    if (!res){
-                                        self.currOperation = currOperation.none;
-                                        self.hideWaitingIndicator(waitingHandler);
-                                        return def.resolve(null);
-                                    }
-
-                                    return self.doDelete(currEntityRow)
-                                        .then(function () {
-                                            self.hideWaitingIndicator(waitingHandler);
-                                            return def.resolve(true);
-                                        })
-                                });
-                        }
+                return self.showMessageOkCancel(localResource.getDeleteObjInsert(self.getName()))
+                .then(function (res){
+                    if (!res){
                         self.currOperation = currOperation.none;
                         self.hideWaitingIndicator(waitingHandler);
                         return def.resolve(null);
                     }
-
-                    return self.showMessageOkCancel(localResource.getDeleteObjInsert(self.getName()))
-                        .then(function (res) {
-                            if (!res){
-                                self.currOperation = currOperation.none;
-                                self.hideWaitingIndicator(waitingHandler);
-                                return  def.resolve(null);
-                            }
-                            return self.doDelete(currEntityRow)
-                                .then(function () {
-                                    self.hideWaitingIndicator(waitingHandler);
-                                    return def.resolve(true);
-                                })
-                        });
+                    return self.doDelete(currEntityRow)
+                    .then(function (){
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(true);
+                    });
                 });
+            });
 
             return def.from(res).promise();
         },
@@ -3285,23 +3312,23 @@
          * @param {string} startfield
          * @param {string} startvalue
          * @param {jsDataQuery} filter
-         * @param {html element} origin
+         * @param {element} origin
          * @returns {Deferred}
          */
         manage:function (command, startfield, startvalue, filter, origin) {
-            var def = Deferred("manage");
+            const def = Deferred("manage");
 
-            var rootEl = origin || this.rootElement;
-            var self = this;
-            var waitingHandler;
+            const rootEl = origin || this.rootElement;
+            const self = this;
+            let waitingHandler;
             return this.getFormData(true)
                 .then(function () {
-                    var cmd = self.helpForm.getFieldLower(command, 0);
+                    const cmd = self.helpForm.getFieldLower(command, 0);
                     if (cmd !== "manage") return def.resolve(false);
 
                     //entity is the name of the table in the DataSet
-                    var entityName = self.helpForm.getFieldLower(command, 1);
-                    var entityTable = self.getDataTable(entityName);
+                    const entityName = self.helpForm.getFieldLower(command, 1);
+                    let entityTable = self.getDataTable(entityName);
                     if (!entityTable) {
                         return self.showMessageOk(localResource.getMissingTableDataSet(entityName)).then(function() {
                             return def.resolve(false);
@@ -3309,12 +3336,12 @@
                     }
 
                     //unaliased is the name of the actual metadata to build and get from db
-                    var unaliased = self.getDataTable(entityName).tableForReading();
+                    const unaliased = self.getDataTable(entityName).tableForReading();
 
-                    var editmode = self.helpForm.getFieldLower(command, 2);
+                    const editmode = self.helpForm.getFieldLower(command, 2);
                     // Ora è passato cone parametro var filter = self.helpForm.getLastField(command, 3);
 
-                    var currMetaData = appMeta.getMeta(unaliased);
+                    const currMetaData = appMeta.getMeta(unaliased);
 
                     if (!currMetaData) {
                         return self.showMessageOk(localResource.getEntityNotfound(unaliased, self.title)).then(function() {
@@ -3333,14 +3360,14 @@
                     self.state.toInherit.filterLocked = true;
                     self.state.toInherit.startFilter = filter;
 
-                    var selected = null;
+                    let selected = null;
                     self.state.editedRow = null;
                     return utils._if(!!startvalue)
                         ._then(function () {
                             //try to load a row directly, without opening a new form
-                            var stripped = startvalue;
+                            let stripped = startvalue;
                             if (stripped.endsWith("%")) stripped = stripped.slice(0, -1);
-                            var filter2 =  self.helpForm.mergeFilters(filter, q.isNullOrEq(startfield, stripped));
+                            const filter2 = self.helpForm.mergeFilters(filter, q.isNullOrEq(startfield, stripped));
                             waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_search);
                             return currMetaData.selectByCondition(filter2, unaliased)
                                 .then(function (dtRow) {
@@ -3357,7 +3384,7 @@
                                     }
                                     self.hideWaitingIndicator(waitingHandler);
                                     return true;
-                                })
+                                });
                         })
                         .then(function () {
 
@@ -3382,14 +3409,14 @@
                                                                     if (self.isEmpty()){
                                                                         return self.doPreFill(entityName, null);
                                                                     }
-                                                                    return self.freshForm(true, false, entityName)
+                                                                    return self.freshForm(true, false, entityName);
 
-                                                                })
+                                                                });
                                                         })
                                                         .then(function () {
                                                             // da questo ramo esce sempre con false, deve uscire dalla funz
                                                             return false;
-                                                        })
+                                                        });
 
                                                 }) // chiude then if(!dialogResult)
                                                 ._else(function () {
@@ -3415,7 +3442,7 @@
                                     }
 
                                     if (!selected) {
-                                        var savedDrawState = self.drawState;
+                                        const savedDrawState = self.drawState;
                                         self.drawState = drawStates.filling;
                                         return utils._if(self.canRecache(entityTable))
                                             ._then(function () {
@@ -3426,7 +3453,7 @@
 
                                                 return self.beforeRowSelect(entityTable, null)
                                                     .then(function () {
-                                                        return getData.doGet(self.state.DS, null, self.primaryTableName, true)
+                                                        return getData.doGet(self.state.DS, null, self.primaryTableName, true);
                                                     })
                                                     .then(function () {
                                                         return self.doPreFill();
@@ -3449,7 +3476,7 @@
                                     // DataSet and possibly has a different TableName
 
                                     // in case of selectByCondition, selected is already dataRow
-                                    var dtRow = selected ? (selected.getRow ? selected.getRow() : selected) : null;
+                                    const dtRow = selected ? (selected.getRow ? selected.getRow() : selected) : null;
                                     return self.manageSelectedRow(dtRow, entityTable, true, rootEl)
                                         .then(function () {
                                             self.hideWaitingIndicator(waitingHandler);
@@ -3470,10 +3497,10 @@
          * @param {string} metaName
          * @param {string} editType
          * @param {boolean} wantsRow
-         * @returns {Deferred(boolean)}
+         * @returns {Promise<boolean>}
          */
         edit:function (metaName, editType, wantsRow) {
-            var def = Deferred("edit");
+            const def = Deferred("edit");
 
             return def
                 .from(appMeta.callPage(metaName, editType, wantsRow))
@@ -3482,90 +3509,91 @@
 
         /**
          * @method choose
-         * @private
+         * @internal
          * @description ASYNC
          * Manages the choice of a row
          * @param {string} command
          * @param {jsDataQuery} filter
-         * @param {html element} origin
-         * @returns {Deferred(boolean)}  it is true if a row has been selected
+         * @param {element} origin
+         * @returns Promise<boolean>  it is true if a row has been selected
          */
         choose:function (command, filter, origin) {
 
-            var def = Deferred("choose");
-            var self  = this;
+            const def = Deferred("choose");
+            const self = this;
 
-            var currRootElement = origin || this.rootElement;
+            const currRootElement = origin || this.rootElement;
 
-            var waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_valuesSearching);
+            const waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_valuesSearching);
 
-            var res =  this.getFormData(true).then(function () {
+            const res = this.getFormData(true).then(function (){
 
-                var cmd = self.helpForm.getFieldLower(command, 0);
+                const cmd = self.helpForm.getFieldLower(command, 0);
                 if (cmd !== "choose") return def.resolve(false);
-                var entityName = self.helpForm.getFieldLower(command, 1);
-                var unaliased = self.getDataTable(entityName).tableForReading();
-                if (!unaliased) {
+                const entityName = self.helpForm.getFieldLower(command, 1);
+                const unaliased = self.getDataTable(entityName).tableForReading();
+                if (!unaliased){
                     self.hideWaitingIndicator(waitingHandler);
-                    return self.showMessageOk(localResource.getCommandExecutionError(command)).then(function() {
+                    return self.showMessageOk(localResource.getCommandExecutionError(command)).then(function (){
                         return def.resolve(false);
                     });
                 }
-                var listtype = self.helpForm.getFieldLower(command, 2);
-                var filterTag = self.helpForm.getLastField(command, 3); //o clear o niente
-                var currMetaData = appMeta.getMeta(unaliased);
+                const listtype = self.helpForm.getFieldLower(command, 2);
+                const filterTag = self.helpForm.getLastField(command, 3); //o clear o niente
+                const currMetaData = appMeta.getMeta(unaliased);
 
-                if (!currMetaData) {
+                if (!currMetaData){
                     self.hideWaitingIndicator(waitingHandler);
-                    return self.showMessageOk(localResource.getEntityNotfound(unaliased, self.title)).then(function() {
+                    return self.showMessageOk(localResource.getEntityNotfound(unaliased, self.title)).then(function (){
                         return def.resolve(false);
                     });
                 }
 
                 //currMetaData.filterLocked = true; // passato come parametro esplicito alla selectOne
-                var entityTable = self.getDataTable(entityName);
+                const entityTable = self.getDataTable(entityName);
 
                 //sometimes unnecessary cause SelectOne does the filter merging
-                if (filterTag && filterTag !== "clear" && entityName !== unaliased && entityTable.staticFilter()) {
-                    if (filter &&  entityTable.staticFilter()){
+                if (filterTag && filterTag !== "clear" && entityName !== unaliased && entityTable.staticFilter()){
+                    if (filter && entityTable.staticFilter()){
                         filter = q.and(filter, entityTable.staticFilter());
-                    } else if (entityTable.staticFilter()){
+                    }
+                    else if (entityTable.staticFilter()){
                         filter = entityTable.staticFilter();
                     }
                 }
 
-                if (filterTag &&  filterTag !== "clear") {
+                if (filterTag && filterTag !== "clear"){
                     if (filter && currMetaData.searchFilter(entityTable)){
                         filter = q.and(filter, currMetaData.searchFilter(entityTable));
-                    } else if (currMetaData.searchFilter(entityTable)){
+                    }
+                    else if (currMetaData.searchFilter(entityTable)){
                         filter = currMetaData.searchFilter(entityTable);
                     }
                 }
 
                 entityTable.clear();
-                var selectedRow = null;
 
-                if (filterTag === "clear") {
+                if (filterTag === "clear"){
                     return self.helpForm.fillSpecificRowControls(currRootElement, entityTable, null)
-                        .then(function() {
-                            return self.manageSelectedRow(null, entityTable, true, currRootElement)
-                        }).then(function() {
-                            self.hideWaitingIndicator(waitingHandler);
-                            return def.resolve(false);
-                        })
+                    .then(function (){
+                        return self.manageSelectedRow(null, entityTable, true, currRootElement);
+                    }).then(function (){
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(false);
+                    });
                 }
 
                 // Da qui in poi "filter" è sicuramente diverso da clear
 
-                var exclude = null;
+                let exclude = null;
                 if (metaModel.notEntityChild(entityTable)) exclude = entityTable;
 
                 return self.selectOne(listtype, filter, unaliased, exclude, true)
-                    .then(function(dataRow) {
-                        return self.selectOneCompleted(dataRow, entityTable, currRootElement)
-                    }).then(function (res) {
-                        return def.resolve(res);
-                    });
+                .then(function (dataRow){
+                    return self.selectOneCompleted(dataRow, entityTable, currRootElement);
+                }).then(function (res){
+                    return def.resolve(res);
+                });
             });
 
             return def.from(res).promise();
@@ -3575,24 +3603,25 @@
          *
          * @param {DataRow} selectedRow
          * @param {DataTable} entityTable
+         * @param {element} currRootElement
          * @returns {*}
          */
         selectOneCompleted:function(selectedRow, entityTable, currRootElement) {
-            var def = Deferred("selectOneCompleted");
-            var self  = this;
+            const def = Deferred("selectOneCompleted");
+            const self = this;
             if (!selectedRow) {
                 return def.resolve(false);
             }
             //SelectedRow may have been retrieved from a view
-            var waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update);
-            var exit = false;
+            const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update);
+            let exit = false;
             return utils._if(selectedRow.table.name !== entityTable.name)
                 ._then(function() {
                     //search selected row in EntityTable
-                    var keyFilter = getData.getWhereKeyClause(selectedRow, entityTable, entityTable, false);
-                    var existingRows = entityTable.select(keyFilter);
+                    const keyFilter = getData.getWhereKeyClause(selectedRow, entityTable, entityTable, false);
+                    const existingRows = entityTable.select(keyFilter);
                     if (!existingRows.length) {
-                        var newRow = entityTable.newRow();
+                        const newRow = entityTable.newRow();
                         if (self.getRowFromList(selectedRow, newRow.getRow())) {
                             if (!self.isEmpty()) {
                                 newRow.getRow().acceptChanges();
@@ -3673,13 +3702,13 @@
          * @param {DataRow} selected A row that May (in case of choose) or may NOT belong to Monitored
          * @param {DataTable} monitored current DataSet Table
          * @param {boolean} canPreFill
-         * @param {Html element} currRootElement Control parent to eventually update with children
+         * @param {element} currRootElement Control parent to eventually update with children
          * @returns {Deferred}
          */
         manageSelectedRow:function(selected, monitored, canPreFill, currRootElement) {
-            var def = Deferred('manageSelectedRow');
-            var keyfilter = null;
-            var sqlkeyfilter = null;
+            const def = Deferred('manageSelectedRow');
+            let keyfilter = null;
+            let sqlkeyfilter = null;
             if (selected) {
                 metaModel.copyPrimaryKey(selected.table, monitored);
                 keyfilter = getData.getWhereKeyClause(selected, selected.table, selected.table, false);
@@ -3689,128 +3718,128 @@
             if (this.canRecache(monitored)) {
                 metaModel.reCache(monitored);
             }
-            var self = this;
-            var objRowSelected = selected ? selected.current : null;
-            var result = this.beforeRowSelect(monitored, objRowSelected).then(function () {
+            const self = this;
+            let objRowSelected = selected ? selected.current : null;
+            const result = this.beforeRowSelect(monitored, objRowSelected).then(function (){
 
                 return utils._if(self.isEmpty())
-                    ._then(function () {
+                ._then(function (){
 
-                        var savedDrawState = self.drawState;
-                        self.drawState = drawStates.filling;
+                    const savedDrawState = self.drawState;
+                    self.drawState = drawStates.filling;
 
-                        return getData.readCached(self.state.DS).then(
-                            function () {
-                                return utils._if(canPreFill)
-                                    ._then(function(){
-                                        return self.doPreFill(monitored.name);
-                                    })
-                                    .then(function () {
-                                        if (selected) {
-                                            selected.table.name = monitored.name;
-                                            var oneSelected = monitored.select(keyfilter);
-                                            if (oneSelected.length) {
-                                                selected = oneSelected[0].getRow();
-                                                objRowSelected = oneSelected[0];
-                                            }
-                                        }
-
-                                        return self.beforeRowSelect(monitored, objRowSelected)
-                                            .then(function(){
-                                                return self.helpForm.fillParentControls(currRootElement, monitored, selected);
-                                            })
-                                            .then(function(){
-                                                return self.helpForm.fillSpecificRowControls(currRootElement, monitored, selected);
-                                            })
-                                            .then(function () {
-                                                self.helpForm.iterateFillRelatedControls(currRootElement, null, monitored, objRowSelected);
-                                                self.drawState = savedDrawState;
-                                                return self.freshToolBar();
-                                            })
-                                            .then(function(){
-                                                return self.afterRowSelect(monitored, objRowSelected);
-                                            });
-                                    })
+                    return getData.readCached(self.state.DS).then(
+                        function (){
+                            return utils._if(canPreFill)
+                            ._then(function (){
+                                return self.doPreFill(monitored.name);
                             })
-                    })
-                    ._else(function () {
-
-                        return utils._if(!!selected)
-                            ._then(function () {
-                                if (selected.state === dataRowState.detached && selected.table.name === monitored.name){
-                                    return getData.runSelectIntoTable(monitored, sqlkeyfilter, null).then(function () {
-                                        var oneSelected = monitored.select(keyfilter);
-                                        if (oneSelected.length > 0) {
-                                            selected = oneSelected[0].getRow();
-                                            return true;
-                                        }
-                                        else {
-                                            logger.log(logType.ERROR, "Impossibile collegare la riga alla tabella " + monitored.name + " nel metadato  " + self.state.meta.getName(self.editType));
-                                            return def.resolve(false);
-                                        }
-                                    })
+                            .then(function (){
+                                if (selected){
+                                    selected.table.name = monitored.name;
+                                    const oneSelected = monitored.select(keyfilter);
+                                    if (oneSelected.length){
+                                        selected = oneSelected[0].getRow();
+                                        objRowSelected = oneSelected[0];
+                                    }
                                 }
 
-                                return true;
-                            })
-                            .then(function () {
-
-                                self.helpForm.makeChildPrimaryORSubentity(selected, monitored, null);
-
-                                if (!self.detailPage || !self.state.isInsertState()){
-                                    self.checkEntityChildRowAdditions(selected, null)
-                                }
-
-                                return self.eventManager.trigger(appMeta.EventEnum.startRowSelectionEvent, self, selected)
-                                    .then(function () {
-                                        return self.freshForm(canPreFill, true, monitored.name, currRootElement);
-                                    })
-                                    .then(function () {
-                                        return self.eventManager.trigger(appMeta.EventEnum.stopRowSelectionEvent, self, selected)
-                                    })
-                                    .then(function () {
-
-                                        if (selected){
-                                            if (selected.state === dataRowState.detached) selected = null;
-                                        }
-
-                                        return utils._if(!selected && keyfilter)
-                                            ._then(function () {
-                                                return getData.runSelectIntoTable(monitored, keyfilter, null).then(function () {
-                                                    var oneSelected = monitored.select(keyfilter);
-                                                    if (oneSelected.length) selected = oneSelected[0].getRow();
-                                                    return true;
-                                                });
-                                            })
-                                            .then(function () {
-                                                return utils._if(!!selected)
-                                                    ._then(function () {
-                                                        var oneSelected = monitored.select(keyfilter);
-                                                        if (!oneSelected.length) {
-                                                            return getData.runSelectIntoTable(monitored, keyfilter, null).then(function () {
-                                                                var oneSelected = monitored.select(keyfilter);
-                                                                if (oneSelected.length) selected = oneSelected[0].getRow();
-                                                                return true;
-                                                            });
-                                                        }
-                                                    })
-                                                    .then(function () {
-                                                        objRowSelected = selected ? selected.current : null;
-                                                        return self.beforeRowSelect(monitored, objRowSelected);
-                                                    })
-                                                    .then(function () {
-                                                        self.helpForm.iterateFillRelatedControls(currRootElement, null, monitored, objRowSelected);
-                                                        return self.freshToolBar();
-                                                    })
-                                                    .then(function(){
-                                                        return self.afterRowSelect(monitored, objRowSelected);
-                                                    });
-                                            });
-                                    })
-
+                                return self.beforeRowSelect(monitored, objRowSelected)
+                                .then(function (){
+                                    return self.helpForm.fillParentControls(currRootElement, monitored, selected);
+                                })
+                                .then(function (){
+                                    return self.helpForm.fillSpecificRowControls(currRootElement, monitored, selected);
+                                })
+                                .then(function (){
+                                    self.helpForm.iterateFillRelatedControls(currRootElement, null, monitored, objRowSelected);
+                                    self.drawState = savedDrawState;
+                                    return self.freshToolBar();
+                                })
+                                .then(function (){
+                                    return self.afterRowSelect(monitored, objRowSelected);
+                                });
                             });
+                        });
+                })
+                ._else(function (){
+
+                    return utils._if(!!selected)
+                    ._then(function (){
+                        if (selected.state === dataRowState.detached && selected.table.name === monitored.name){
+                            return getData.runSelectIntoTable(monitored, sqlkeyfilter, null).then(function (){
+                                const oneSelected = monitored.select(keyfilter);
+                                if (oneSelected.length > 0){
+                                    selected = oneSelected[0].getRow();
+                                    return true;
+                                }
+                                else{
+                                    logger.log(logType.ERROR, "Impossibile collegare la riga alla tabella " + monitored.name + " nel metadato  " + self.state.meta.getName(self.editType));
+                                    return def.resolve(false);
+                                }
+                            });
+                        }
+
+                        return true;
+                    })
+                    .then(function (){
+
+                        self.helpForm.makeChildPrimaryORSubentity(selected, monitored, null);
+
+                        if (!self.detailPage || !self.state.isInsertState()){
+                            self.checkEntityChildRowAdditions(selected, null);
+                        }
+
+                        return self.eventManager.trigger(appMeta.EventEnum.startRowSelectionEvent, self, selected)
+                        .then(function (){
+                            return self.freshForm(canPreFill, true, monitored.name, currRootElement);
+                        })
+                        .then(function (){
+                            return self.eventManager.trigger(appMeta.EventEnum.stopRowSelectionEvent, self, selected);
+                        })
+                        .then(function (){
+
+                            if (selected){
+                                if (selected.state === dataRowState.detached) selected = null;
+                            }
+
+                            return utils._if(!selected && keyfilter)
+                            ._then(function (){
+                                return getData.runSelectIntoTable(monitored, keyfilter, null).then(function (){
+                                    const oneSelected = monitored.select(keyfilter);
+                                    if (oneSelected.length) selected = oneSelected[0].getRow();
+                                    return true;
+                                });
+                            })
+                            .then(function (){
+                                return utils._if(!!selected)
+                                ._then(function (){
+                                    const oneSelected = monitored.select(keyfilter);
+                                    if (!oneSelected.length){
+                                        return getData.runSelectIntoTable(monitored, keyfilter, null).then(function (){
+                                            const oneSelected = monitored.select(keyfilter);
+                                            if (oneSelected.length) selected = oneSelected[0].getRow();
+                                            return true;
+                                        });
+                                    }
+                                })
+                                .then(function (){
+                                    objRowSelected = selected ? selected.current : null;
+                                    return self.beforeRowSelect(monitored, objRowSelected);
+                                })
+                                .then(function (){
+                                    self.helpForm.iterateFillRelatedControls(currRootElement, null, monitored, objRowSelected);
+                                    return self.freshToolBar();
+                                })
+                                .then(function (){
+                                    return self.afterRowSelect(monitored, objRowSelected);
+                                });
+                            });
+                        });
 
                     });
+
+                });
             });
 
             return def.from(result).promise();
@@ -3867,14 +3896,14 @@
          */
         assurePageState: function() {
             "use strict";
-            var res = new Deferred("assurePageState");
+            const res = new Deferred("assurePageState");
             if (this.state) {
                 return res.resolve(this.state).promise();
             }
             //eventually some other logic..
             this.state = new appMeta.MetaPageState();
             this.state.meta = appMeta.getMeta(this.primaryTableName);
-            var self = this;
+            const self = this;
             this.callMethod(toOverrideEvent.onAssurePageState)
                 .then(function() {
                     res.resolve(self.state);
@@ -3891,21 +3920,21 @@
          * @returns {Deferred}
          */
         init: function () {
-            var def = Deferred("init");
+            const def = Deferred("init");
             if (this.inited) {//the meta page already has been inited
                 return (def.resolve().promise());
             }
-            var waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_page_init);
-            var self = this;
-            var res = this.assurePageState()
-                .then(this.assureDataSet.bind(this))
-                .then(function () {
-                    // Helpform is created when the page is inited
-                    self.helpForm = new appMeta.HelpForm(self.state, self.primaryTableName, self.rootElement);
-                    self.inited = true;
-                    self.hideWaitingIndicator(waitingHandler);
-                    return def.resolve(self);
-                });
+            const waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_page_init);
+            const self = this;
+            const res = this.assurePageState()
+            .then(this.assureDataSet.bind(this))
+            .then(function (){
+                // Helpform is created when the page is inited
+                self.helpForm = new appMeta.HelpForm(self.state, self.primaryTableName, self.rootElement);
+                self.inited = true;
+                self.hideWaitingIndicator(waitingHandler);
+                return def.resolve(self);
+            });
 
             return def.from(res).promise();
         },
@@ -3942,45 +3971,45 @@
          * @description ASYNC
          * Reads data from page controls and put them into dataset
          * @param {boolean} noCheck
-         * @returns {Deferred(boolean)}
+         * @returns Promise<boolean>
          */
         getFormData: function (noCheck) {
-            var def = Deferred("getFormData");
+            const def = Deferred("getFormData");
             if (this.state.isSearchState()) return def.resolve(true);
-            var self = this;
-            var ds = self.state.DS;
+            const self = this;
+            const ds = self.state.DS;
 
-            var primaryRow =  this.helpForm.lastSelected(this.getPrimaryDataTable());
+            const primaryRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
             if (!primaryRow) return def.resolve(true);
 
             this.helpForm.getControls();
 
-            var res = this.callMethod(toOverrideEvent.afterGetFormData)
-                .then(function() {
-                    if (noCheck) return def.resolve(false);
-                    var allRowsToCheck = [primaryRow.getRow()];
-                    // collect all subentity to check
-                    _.forIn(self.state.extraEntities,
-                        function (subentity) {
-                            var subTable = ds.tables[subentity];
-                            if (!subTable.rows.length) return true;
-                            var entityRow = self.helpForm.getCurrChildRow(primaryRow, subTable);
-                            if (entityRow && entityRow.getRow().state !== dataRowState.unchanged) allRowsToCheck.push(entityRow.getRow());
-                        });
+            const res = this.callMethod(toOverrideEvent.afterGetFormData)
+            .then(function (){
+                if (noCheck) return def.resolve(false);
+                const allRowsToCheck = [primaryRow.getRow()];
+                // collect all subentity to check
+                _.forIn(self.state.extraEntities,
+                    function (subentity){
+                        const subTable = ds.tables[subentity];
+                        if (!subTable.rows.length) return true;
+                        const entityRow = self.helpForm.getCurrChildRow(primaryRow, subTable);
+                        if (entityRow && entityRow.getRow().state !== dataRowState.unchanged) allRowsToCheck.push(entityRow.getRow());
+                    });
 
-                    return self.manageValidResults(allRowsToCheck)
-                        .then(function(valid) {
-                            if (!valid) return def.resolve(false);
+                return self.manageValidResults(allRowsToCheck)
+                .then(function (valid){
+                    if (!valid) return def.resolve(false);
 
-                            if (!self.detailPage) return def.resolve(true);
+                    if (!self.detailPage) return def.resolve(true);
 
-                            return self.propagateChangesToMaster()
-                                .then(function (wasValid) {
-                                    if (!wasValid) return def.resolve(false);
-                                    return def.resolve(true);
-                                });
-                        });
+                    return self.propagateChangesToMaster()
+                    .then(function (wasValid){
+                        if (!wasValid) return def.resolve(false);
+                        return def.resolve(true);
+                    });
                 });
+            });
 
             return def.from(res).promise();
         },
@@ -3994,68 +4023,68 @@
          * @returns {Deferred(boolean)}
          */
         manageValidResults: function(rowsToCheck) {
-            var self = this;
-            var def = Deferred("manageValidResults");
+            const self = this;
+            const def = Deferred("manageValidResults");
             // salvo i check, che sono deid eferred in 1 array, che sbrigleiro con una when
-            var allDeferredChecks = [];
+            const allDeferredChecks = [];
             _.forEach(rowsToCheck, function (row) {
                 allDeferredChecks.push(self.manageValidResult(row));
             });
 
-            var result = $.when.apply($, allDeferredChecks)
-                .then(function() {//ha in input tutti i risultati dei manageValidResult
+            const result = $.when.apply($, allDeferredChecks)
+            .then(function (){//ha in input tutti i risultati dei manageValidResult
 
-                    // torna il primo elemento che non ha warning, quindi è obbligatorio. se non trova torna undefined
-                    var mandatoryMsg = _.find(arguments,
-                        function(defObj) {
-                            // se è null significa che la isValid era ok quindi non è un defObj Mandatorio
-                            if (!defObj) return false;
-                            return (defObj.errMsg);
+                // torna il primo elemento che non ha warning, quindi è obbligatorio. se non trova torna undefined
+                const mandatoryMsg = _.find(arguments,
+                    function (defObj){
+                        // se è null significa che la isValid era ok quindi non è un defObj Mandatorio
+                        if (!defObj) return false;
+                        return (defObj.errMsg);
+                    });
+
+                // mostro il primo messaggio obbligatorio
+                if (mandatoryMsg){
+
+                    // mostro messagebox informativa
+                    return self.showMessageOk(mandatoryMsg.errMsg)
+                    .then(function (){
+                        // metto il focus sul controllo
+                        self.helpForm.focusField(mandatoryMsg.errField, mandatoryMsg.row.table.name);
+                        return false;
+                        // return Deferred("manageValidResults/showMessageOk").resolve(false).promise(); //deve uscire con false a prescindere dal fatto che uno prema ok
+                    });
+                }
+
+                // recupera solo i warning
+                const allWarning = _.filter(arguments,
+                    function (defObj){
+                        if (!defObj) return false;
+                        return defObj.warningMsg;//se truthy allora viene restituito
+                    });
+
+                // se non ci sono warning esco con true
+                if (allWarning.length === 0) return def.resolve(true); //return Deferred("manageValidResults/allWarning empty").resolve(true).promise();
+
+                // inizializzo primo elemento della catena di then
+                let f = $.Deferred().resolve(true).promise();
+
+                // per ogni iterazione sui warningMessage creo una then
+                _.forEach(
+                    allWarning,
+                    function (defObj){
+                        f = f.then(function (prevValue){
+                            if (prevValue) return self.showMessageOkCancel(defObj.warningMsg);
+
+                            // metto il focus sul controllo
+                            self.helpForm.focusField(defObj.errField, defObj.row.table.name);
+                            // esco dal ciclo for
+                            return false;
                         });
+                    });
 
-                    // mostro il primo messaggio obbligatorio
-                    if (mandatoryMsg) {
-
-                        // mostro messagebox informativa
-                        return self.showMessageOk(mandatoryMsg.errMsg)
-                            .then(function() {
-                                // metto il focus sul controllo
-                                self.helpForm.focusField(mandatoryMsg.errField, mandatoryMsg.row.table.name);
-                                return false;
-                                // return Deferred("manageValidResults/showMessageOk").resolve(false).promise(); //deve uscire con false a prescindere dal fatto che uno prema ok
-                            });
-                    }
-
-                    // recupera solo i warning
-                    var allWarning = _.filter(arguments,
-                        function(defObj) {
-                            if (!defObj) return false;
-                            return defObj.warningMsg;//se truthy allora viene restituito
-                        });
-
-                    // se non ci sono warning esco con true
-                    if (allWarning.length === 0) return def.resolve(true); //return Deferred("manageValidResults/allWarning empty").resolve(true).promise();
-
-                    // inizializzo primo elemento della catena di then
-                    var f = $.Deferred().resolve(true).promise();
-
-                    // per ogni iterazione sui warningMessage creo una then
-                    _.forEach(
-                        allWarning,
-                        function(defObj) {
-                            f = f.then(function(prevValue) {
-                                if (prevValue) return self.showMessageOkCancel(defObj.warningMsg);
-
-                                // metto il focus sul controllo
-                                self.helpForm.focusField(defObj.errField, defObj.row.table.name);
-                                // esco dal ciclo for
-                                return false;
-                            });
-                        });
-
-                    // invoca la funzione appena costruita
-                    return f;
-                });
+                // invoca la funzione appena costruita
+                return f;
+            });
 
             return def.from(result).promise();
         },
@@ -4081,11 +4110,11 @@
          * @description SYNC
          * Checks if a row is valid, could potentially imply server logic
          * @param {DataRow} rowToCheck
-         * @returns {Deferred}
+         * @returns Deferred
          */
         manageValidResult: function (rowToCheck) {
             // inizializzo il metaDato
-            var currMetaData = this.state.meta;
+            let currMetaData = this.state.meta;
             // se non è primary table lo recupero
             if (rowToCheck.table.name !== this.primaryTableName) currMetaData = appMeta.getMeta(rowToCheck.table.tableForReading());
             // ho il metadato chiamo la isValid
@@ -4103,7 +4132,7 @@
          * @returns {function}
          */
         fnMethod: function (method) {
-            var self = this;
+            const self = this;
             return function () {
                return self.callMethod(method);
             };
@@ -4114,11 +4143,11 @@
          * @public
          * @description ASYNC
          * Calls a method if it exists and returns ther result as a promise
-         * @param {string|Function} methodName
-         * @returns {Deferred}
+         * @param {string|Function} method
+         * @returns Promise
          */
         callMethod: function (method) {
-            var res = Deferred("callMethod " + method);
+            const res = Deferred("callMethod " + method);
             if (typeof (method) === "string") {
                 method = this[method];
             }
@@ -4145,24 +4174,24 @@
          * @description ASYNC
          * Prepares the page to be filled. This is generally done only the first time the page appears, but some time can be repeated
          * if there is the concrete possibility that secondary tables have been modified outside here
-         * @param {string} tableWantedName
-         * @param {jsDataQuery} filter
-         * @returns {Deferred}
+         * @param {string} [tableWantedName]
+         * @param {jsDataQuery} [filter]
+         * @returns Promise
          */
         doPreFill:function (tableWantedName, filter) {
-            var def = Deferred('doPrefill');
-            var  saved = this.drawState;
+            const def = Deferred('doPrefill');
+            const saved = this.drawState;
             this.drawState = appMeta.DrawStates.prefilling;
-            var selList  = [];
-            var self = this;
-            var res =  this.helpForm.preFillControls(tableWantedName, filter, selList)
-                .then(function () {
-                    return getData.multiRunSelect(selList);
-                })
-                .then(function () {
-                    self.drawState  = saved;
-                    return true;
-                });
+            const selList = [];
+            const self = this;
+            const res = this.helpForm.preFillControls(tableWantedName, filter, selList)
+            .then(function (){
+                return getData.multiRunSelect(selList);
+            })
+            .then(function (){
+                self.drawState = saved;
+                return true;
+            });
 
             return def.from(res).promise();
         },
@@ -4175,7 +4204,7 @@
          * @returns {boolean}
          */
         isEmpty:function () {
-            var primaryTable = this.getPrimaryDataTable();
+            const primaryTable = this.getPrimaryDataTable();
             if (!primaryTable) return true;
             if (primaryTable.rows.length === 0) return true;
             return false;
@@ -4191,9 +4220,9 @@
          */
         checkEntityChildRowAdditions:function (row, relName) {
             if (!row) return;
-            var primary = this.helpForm.lastSelected(this.getPrimaryDataTable());
+            const primary = this.helpForm.lastSelected(this.getPrimaryDataTable());
             if (!primary) return;
-            var isMadeChild = this.helpForm.makeChild(primary.getRow(), primary.getRow().table, row, relName);
+            const isMadeChild = this.helpForm.makeChild(primary.getRow(), primary.getRow().table, row, relName);
             if (isMadeChild) {
                 if (!relName) {
                     metaModel.addNotEntityChild(primary.getRow().table, row.table);
@@ -4216,29 +4245,29 @@
          */
         insertClick:function (that, grid) {
 
-            var def = Deferred('insertClick');
+            const def = Deferred('insertClick');
             if (!grid.fillControl) {
 	            grid = that.helpForm.getLinkedGrid(this);
             }
 
-            var g = grid ;
+            const g = grid;
             if (!g) {
                 return that.eventManager.trigger(appMeta.EventEnum.insertClick, that, "insertClick")
                     .then(function () {
                         return def.resolve(false).promise();
-                    })
+                    });
             }
 
             // if ($(this).prop('disabled')) return def.resolve(false);
             $(this).prop('disabled', true);
 
             try {
-                var self = this;
-                var res =  that.insertGridRow(g, that.helpForm.getFieldLower(g.tag, 2))
-                    .then(function () {
-                        $(self).prop('disabled', false);
-                        return that.eventManager.trigger(appMeta.EventEnum.insertClick, g, "insertClick");
-                    });
+                const self = this;
+                const res = that.insertGridRow(g, that.helpForm.getFieldLower(g.tag, 2))
+                .then(function (){
+                    $(self).prop('disabled', false);
+                    return that.eventManager.trigger(appMeta.EventEnum.insertClick, g, "insertClick");
+                });
 
                 return def.from(res).resolve(true);
             }
@@ -4258,25 +4287,25 @@
          * @returns {Deferred}
          */
         editClick:function (that, grid) {
-            var def = Deferred('editClick');
+            const def = Deferred('editClick');
             if (!grid) {
                 return that.eventManager.trigger(appMeta.EventEnum.editClick, that, "editClick")
                     .then(function () {
-                        return def.resolve(false)
-                    })
+                        return def.resolve(false);
+                    });
             }
 
             try {
-                var res = that.editGridRow(grid, that.helpForm.getFieldLower(grid.tag, 2))
-                    .then(function () {
-                        return that.eventManager.trigger(appMeta.EventEnum.editClick, grid, "editClick");
-                    });
+                const res = that.editGridRow(grid, that.helpForm.getFieldLower(grid.tag, 2))
+                .then(function (){
+                    return that.eventManager.trigger(appMeta.EventEnum.editClick, grid, "editClick");
+                });
 
                 return def.from(res).promise();
 
             } catch (e) {
                 logger.log(logType.ERROR, "MetaPage.editClick", e.message);
-                return def.resolve(false)
+                return def.resolve(false);
             }
         },
 
@@ -4287,15 +4316,15 @@
          * Called when an edit button is clicked on a grid. If there is a current row it opens a detail page to edit the row
          * @param {GridControl} grid
          * @param {string} editType
-         * @returns {Deferred(DataRow)}
+         * @returns {Promise<DataRow>}
          */
         editGridRow:function (grid, editType) {
-            var def = Deferred('editGridRow');
+            const def = Deferred('editGridRow');
 
-            var self = this;
+            const self = this;
             if (!grid) return  def.resolve(null);
 
-            var row = grid.getCurrentRow().row;
+            const row = grid.getCurrentRow().row;
             if (!row) {
                 return self.showMessageOk(localResource.selectRowInAGrid)
                     .then(function () {
@@ -4304,63 +4333,63 @@
             }
 
             // gets data from form
-            var res = this.getFormData(true)
-                .then(function () {
+            const res = this.getFormData(true)
+            .then(function (){
 
-                    if (!grid.DS) {
-                        var msg = localResource.getGridControlTagWrong(grid.tag, self.title);
-                        return self.showMessageOk(msg)
-                            .then(function () {
-                            return def.resolve(null);
-                        })
-                    }
+                if (!grid.DS){
+                    const msg = localResource.getGridControlTagWrong(grid.tag, self.title);
+                    return self.showMessageOk(msg)
+                    .then(function (){
+                        return def.resolve(null);
+                    });
+                }
 
-                    var res = self.helpForm.getCurrentRow(grid.el);  // N.b restituisce un obj così { table: this.dataTable, row: this.currentRow };
-                    if (!res.row) {
-                        return self.showMessageOk(localResource.selectRowInAGrid)
-                            .then(function () {
-                                return def.resolve(null);
-                            });
-                    }
-                    var sourceTable = res.table;
-                    var currDR = res.row;
+                const res = self.helpForm.getCurrentRow(grid.el);  // N.b restituisce un obj così { table: this.dataTable, row: this.currentRow };
+                if (!res.row){
+                    return self.showMessageOk(localResource.selectRowInAGrid)
+                    .then(function (){
+                        return def.resolve(null);
+                    });
+                }
+                const sourceTable = res.table;
+                let currDR = res.row;
 
-                    return self.editDataRow(res.row.getRow(), editType)
+                return self.editDataRow(res.row.getRow(), editType)
 
-                        .then(function (dialogResult) {
+                .then(function (dialogResult){
 
-                            var waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update);
+                    const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update);
 
-                            return utils._if(dialogResult)
-                                ._then(function () {
+                    return utils._if(dialogResult)
+                    ._then(function (){
 
-                                    // Questa è stata valorizzata nel child sull'Ok
-                                    currDR = self.state.newSourceRow;
+                        // Questa è stata valorizzata nel child sull'Ok
+                        currDR = self.state.newSourceRow;
 
-                                    // Deve essere child della tab principale + tuttele chiave della primaria devono essere anceh chiavi della child
-                                    // Ade sempio un grid apre un dettaglio in edit, le mod vengono riversate sul padre, se e solo se lui è considerato subentity
-                                    // e quindi la tabella child sul dataset deve avere la chiave della tab padre
-                                    if (metaModel.isSubEntity(sourceTable, self.getPrimaryDataTable())) self.entityChanged = true;
+                        // Deve essere child della tab principale + tuttele chiave della primaria devono essere anceh chiavi della child
+                        // Ade sempio un grid apre un dettaglio in edit, le mod vengono riversate sul padre, se e solo se lui è considerato subentity
+                        // e quindi la tabella child sul dataset deve avere la chiave della tab padre
+                        if (metaModel.isSubEntity(sourceTable, self.getPrimaryDataTable())) self.entityChanged = true;
 
-                                    self.helpForm.iterateFillRelatedControls( $(grid.el).parent(), grid.el , sourceTable, currDR);
+                        self.helpForm.iterateFillRelatedControls($(grid.el).parent(), grid.el, sourceTable, currDR);
 
-                                    // It's necesssary to do something cause Grid must re-evaluated:
-                                    // - calculated fields
-                                    // - resize of columns
-                                    metaModel.getTemporaryValues(sourceTable);
+                        // It's necesssary to do something cause Grid must re-evaluated:
+                        // - calculated fields
+                        // - resize of columns
+                        metaModel.getTemporaryValues(sourceTable);
 
-                                    return self.doPreFill(sourceTable.name, null)
-                                        .then(function () {
-                                            return self.freshForm(true, true)
-                                        });
-                                })
-                                .then(function () {
-                                    self.hideWaitingIndicator(waitingHandler);
-                                    return def.resolve(currDR);
-                                })
+                        return self.doPreFill(sourceTable.name, null)
+                        .then(function (){
+                            return self.freshForm(true, true);
+                        });
+                    })
+                    .then(function (){
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(currDR);
+                    });
 
-                        })
                 });
+            });
 
             return def.from(res).promise();
         },
@@ -4373,14 +4402,14 @@
          * of R.Table is considered.
          * @param {DataRow} dataRow
          * @param {string} editType
-         * @returns {Deferred(DataRow)}
+         * @returns {Promise<DataRow>}
          */
         editDataRow:function (dataRow, editType) {
 
-            var def = Deferred('editDataRow');
+            const def = Deferred('editDataRow');
 
-            var sourceTable = dataRow.table;
-            var unaliased = sourceTable.tableForReading();
+            const sourceTable = dataRow.table;
+            const unaliased = sourceTable.tableForReading();
 
             // Gli extra parameters vengono passati nella callPage  , sullo stato della calledPage, ok???
             // come passiamo le altre informazioni alla pagina called, cioè quello nelle 2 prox funzioni, setDefaults() e setSource()?
@@ -4391,10 +4420,10 @@
             // M.ExtraParameter = SourceTable.ExtendedProperties[(è una costante stringa) FormController.extraParams];
             // questo è fatto all'ultimo momento nella callPage
 
-            var res = this.edit(unaliased, editType, true)
-                .then(function (dialogResult) {
-                    return dialogResult;
-                });
+            const res = this.edit(unaliased, editType, true)
+            .then(function (dialogResult){
+                return dialogResult;
+            });
 
             return def.from(res).promise();
 
@@ -4417,22 +4446,22 @@
          */
         deleteClick:function (that, grid) {
 
-            var def = Deferred('deleteClick');
+            const def = Deferred('deleteClick');
             if (!grid) {
                 return that.eventManager.trigger(appMeta.EventEnum.deleteClick, that, "deleteClick")
                     .then(function () {
-                        return def.resolve(false)
-                    })
+                        return def.resolve(false);
+                    });
             }
 
             try {
-                var self = this;
+                const self = this;
 
-                var res = that.deleteGridRow(grid)
-                    .then(function (res) {
-                        return that.eventManager.trigger(appMeta.EventEnum.deleteClick, grid, "deleteClick", res);
-                    });
-                return def.from(res).resolve(true)
+                const res = that.deleteGridRow(grid)
+                .then(function (res){
+                    return that.eventManager.trigger(appMeta.EventEnum.deleteClick, grid, "deleteClick", res);
+                });
+                return def.from(res).resolve(true);
             } catch (e){
                 logger.log(logType.ERROR, 'MetaPage.deleteClick', e.message);
             }
@@ -4450,25 +4479,25 @@
          */
         unlinkClick:function (that, grid) {
 
-            var def = Deferred('unlinkClick');
+            const def = Deferred('unlinkClick');
 
             if (!grid) {
                 return that.eventManager.trigger(appMeta.EventEnum.unlinkClick, that, "unlinkClick")
                     .then(function () {
                         return def.resolve(false);
-                    })
+                    });
             }
 
             if ($(this).prop('disabled'))return def.resolve(false);
             $(this).prop('disabled', true);
 
             try {
-                var self = this;
-                var res = that.unlinkGrid(grid)
-                    .then(function () {
-                        $(self).prop('disabled', false);
-                        return that.eventManager.trigger(appMeta.EventEnum.unlinkClick, that, "unlinkClick");
-                    });
+                const self = this;
+                const res = that.unlinkGrid(grid)
+                .then(function (){
+                    $(self).prop('disabled', false);
+                    return that.eventManager.trigger(appMeta.EventEnum.unlinkClick, that, "unlinkClick");
+                });
 
                 return def.from(res).resolve(true);
             } catch (e){
@@ -4485,10 +4514,10 @@
          * @returns {Deferred}
          */
         unlinkGrid:function (grid) {
-            var def = Deferred('unlinkGrid');
-            var currMeta = this.state.meta;
+            const def = Deferred('unlinkGrid');
+            const currMeta = this.state.meta;
             if (!currMeta) return def.resolve(false);
-            return def.from(this.unlinkGridRow(grid))
+            return def.from(this.unlinkGridRow(grid));
         },
 
         /**
@@ -4500,26 +4529,26 @@
          * @returns {Deferred}
          */
         unlinkGridRow:function (grid) {
-            var def = Deferred('unlinkGridRow');
+            const def = Deferred('unlinkGridRow');
             if (!grid.currentRow) return def.resolve(false);
-            var self = this;
+            const self = this;
             //gets data from form
 
-            var res = this.getFormData(true)
-                .then(function () {
-                    if (!grid.DS) {
-                        var msg = localResource.getGridControlTagWrong(grid.tag, self.title);
-                        return self.showMessageOk(msg).then(function () {
-                            return def.resolve(null);
-                        })
-                    }
+            const res = this.getFormData(true)
+            .then(function (){
+                if (!grid.DS){
+                    const msg = localResource.getGridControlTagWrong(grid.tag, self.title);
+                    return self.showMessageOk(msg).then(function (){
+                        return def.resolve(null);
+                    });
+                }
 
-                    var res = self.helpForm.getCurrentRow(grid.el);  // N.b restituisce un obj così { table: this.dataTable, row: this.currentRow };
-                    if (!res.row)  return def.resolve(null);
-                    var currDR = res.row;
+                const res = self.helpForm.getCurrentRow(grid.el);  // N.b restituisce un obj così { table: this.dataTable, row: this.currentRow };
+                if (!res.row) return def.resolve(null);
+                const currDR = res.row;
 
-                    return self.unlink(currDR.getRow(), grid);
-                });
+                return self.unlink(currDR.getRow(), grid);
+            });
 
             return def.from(res).promise();
         },
@@ -4535,35 +4564,36 @@
          * @returns {Deferred}
          */
         unlink:function (dataRow, grid) {
-            var def = Deferred('unlink');
-            var self = this;
+            const def = Deferred('unlink');
+            const self = this;
             if (!dataRow) return def.resolve(null);
 
-            var linkedTable = dataRow.table;
-            var waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_unlink_row);
-            var res = this.unlinkDataRow(this.getPrimaryDataTable(), dataRow)
-                .then(function (dtRow) {
+            const linkedTable = dataRow.table;
+            const waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_unlink_row);
+            const res = this.unlinkDataRow(this.getPrimaryDataTable(), dataRow)
+            .then(function (dtRow){
 
-                    if (!dtRow){
-                        self.hideWaitingIndicator(waitingHandler);
-                        return def.resolve(null);
-                    }
+                if (!dtRow){
+                    self.hideWaitingIndicator(waitingHandler);
+                    return def.resolve(null);
+                }
 
-                    if (linkedTable.rows.length > 0) {
-                        metaModel.addNotEntityChild(self.getPrimaryDataTable(), linkedTable);
-                    } else {
-                        self.unMarkTableAsNotEntityChild(linkedTable);
-                    }
+                if (linkedTable.rows.length > 0){
+                    metaModel.addNotEntityChild(self.getPrimaryDataTable(), linkedTable);
+                }
+                else{
+                    self.unMarkTableAsNotEntityChild(linkedTable);
+                }
 
-                    self.helpForm.iterateFillRelatedControls($(grid.el).parent(), null, linkedTable, null);
+                self.helpForm.iterateFillRelatedControls($(grid.el).parent(), null, linkedTable, null);
 
-                    return self.freshForm(true, false)
-                        .then(function () {
-                            self.hideWaitingIndicator(waitingHandler);
-                            return def.resolve(dtRow);
-                        });
-
+                return self.freshForm(true, false)
+                .then(function (){
+                    self.hideWaitingIndicator(waitingHandler);
+                    return def.resolve(dtRow);
                 });
+
+            });
 
             return def.from(res).promise();
         },
@@ -4579,13 +4609,13 @@
          * @returns {DataRow | null}
          */
         unlinkDataRow:function(primaryTable, dataRow) {
-            var def = Deferred('unlinkDataRow');
-            var self = this;
+            const def = Deferred('unlinkDataRow');
+            const self = this;
             if (!dataRow) return def.resolve(null);
 
-            var sourceTable = dataRow.table;
+            const sourceTable = dataRow.table;
             // Unlinks R from parent-child relation with primary table.
-            var relFound = null;
+            let relFound = null;
 
             _.forEach(primaryTable.childRelations(), function (rel) {
                 if (rel.childTable === sourceTable.name) {
@@ -4594,27 +4624,27 @@
                     _.forEach(relFound.childCols, function (col) {
                         if (sourceTable.isKey(col)) return true; // è un continue
                         dataRow.current[col] = null;
-                    })
+                    });
                 }
             });
 
-            var res = utils._if(!relFound)
-                ._then(function () {
-                    var msg = appMeta.localResource.getCantUnlinkDataTable(sourceTable.name, primaryTable.name);
-                    return self.showMessageOk(msg)
-                        .then(function() {
-                            return def.resolve(null);
-                        });
-                })
-                ._else(function () {
-                    // toglie la riga se inutile
-                    if (metaModel.checkForFalseUpdates(dataRow)) {
-                        dataRow.del();
-                        //dataRow.acceptChanges();
-                    }
-
-                    return def.resolve(dataRow);
+            const res = utils._if(!relFound)
+            ._then(function (){
+                const msg = appMeta.localResource.getCantUnlinkDataTable(sourceTable.name, primaryTable.name);
+                return self.showMessageOk(msg)
+                .then(function (){
+                    return def.resolve(null);
                 });
+            })
+            ._else(function (){
+                // toglie la riga se inutile
+                if (metaModel.checkForFalseUpdates(dataRow)){
+                    dataRow.del();
+                    //dataRow.acceptChanges();
+                }
+
+                return def.resolve(dataRow);
+            });
 
             return def.from(res).promise();
         },
@@ -4641,116 +4671,116 @@
          * @returns {Deferred}
          */
         insertGridRow:function (grid, editType) {
-            var def = Deferred('insertGridRow');
+            const def = Deferred('insertGridRow');
 
-            var self = this;
+            const self = this;
 
-            var waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_insert);
+            let waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_insert);
 
-            var res = this.getFormData(true)
-                .then(function () {
-                    var sourceDataSet = grid.DS;
-                    if (!sourceDataSet) {
-                        return self.showMessageOk(localResource.getGridControlTagWrong(grid.tag, self.title))
-                            .then(function () {
-                                self.hideWaitingIndicator(waitingHandler);
-                                return def.resolve(null);
-                            });
+            const res = this.getFormData(true)
+            .then(function (){
+                const sourceDataSet = grid.DS;
+                if (!sourceDataSet){
+                    return self.showMessageOk(localResource.getGridControlTagWrong(grid.tag, self.title))
+                    .then(function (){
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(null);
+                    });
+                }
+                const tableName = grid.dataSourceName;
+                const sourceTable = self.getDataTable(tableName);
+
+                const primaryDataTable = self.getPrimaryDataTable();
+                const parentDataRow = self.helpForm.lastSelected(primaryDataTable);
+                if (!parentDataRow){
+                    return self.showMessageOk(localResource.noPrimaryDataSelected)
+                    .then(function (){
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(null);
+
+                    });
+                }
+
+                // N.B note su vecchie chiamate di MDL , ora spostate in altri punti, logici:
+                // questo viene passato nella callPage ---> M.ExtraParameter = SourceTable.ExtendedProperties[FormController.extraParams];
+                // edit_type parametro della callPage  ---> M.edit_type = edit_type;
+                // Fatto all'atto del getDataSet lato server ---> M.SetDefaults(SourceTable);
+                // Lato js faccio il setDefaults, eventualmente sarà metodo del derivato di MetaData.
+
+                const meta = appMeta.getMeta(sourceTable.tableForReading());
+                //meta.setDefaults(sourceTable); // andrebbe  usata con moderazione, perchè sovrascrive i valori impostati nella pagina
+
+                return meta.getNewRow(parentDataRow.getRow(), sourceTable, self.editType)
+
+                .then(function (rowToInsert){
+                    //a questo punto sourceTable è corredata di autoincrement properties e via dicendo
+                    // queste servono (tra le altre cose) a nascondere le colonne ad autoincremento per le righe in state "added"
+                    // Quindi è importante che siano copiate anche nel dataset del form di detail
+                    if (!rowToInsert){
+
+                        return self.showMessageOk(localResource.getGridDataNoValid(tableName))
+                        .then(function (){
+                            self.hideWaitingIndicator(waitingHandler);
+                            return def.resolve(null);
+
+                        });
                     }
-                    var tableName = grid.dataSourceName;
-                    var sourceTable = self.getDataTable(tableName);
 
-                    var primaryDataTable = self.getPrimaryDataTable();
-                    var parentDataRow = self.helpForm.lastSelected(primaryDataTable);
-                    if (!parentDataRow) {
-                        return self.showMessageOk(localResource.noPrimaryDataSelected)
-                            .then(function () {
-                                self.hideWaitingIndicator(waitingHandler);
-                                return def.resolve(null);
+                    self.state.editedRow = rowToInsert;
 
-                            });
-                    }
+                    const unaliased = sourceTable.tableForReading();
 
-                    // N.B note su vecchie chiamate di MDL , ora spostate in altri punti, logici:
-                    // questo viene passato nella callPage ---> M.ExtraParameter = SourceTable.ExtendedProperties[FormController.extraParams];
-                    // edit_type parametro della callPage  ---> M.edit_type = edit_type;
-                    // Fatto all'atto del getDataSet lato server ---> M.SetDefaults(SourceTable);
-                    // Lato js faccio il setDefaults, eventualmente sarà metodo del derivato di MetaData.
+                    self.hideWaitingIndicator(waitingHandler);
+                    return self.edit(unaliased, editType, true)
 
-                    var meta = appMeta.getMeta(sourceTable.tableForReading());
-                    //meta.setDefaults(sourceTable); // andrebbe  usata con moderazione, perchè sovrascrive i valori impostati nella pagina
+                    .then(function (dialogResult){
 
-                    return meta.getNewRow(parentDataRow.getRow(), sourceTable, self.editType)
+                        return utils._if(dialogResult)
+                        ._then(function (){
+                            //27/5/2021 c'era una nuova variabile ma inutilizzata
+                            waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update);
+                            // recupero newSourceRow dallo stato. è un ObjectRow
+                            rowToInsert = self.state.newSourceRow;
 
-                        .then(function (rowToInsert) {
-                            //a questo punto sourceTable è corredata di autoincrement properties e via dicendo
-                            // queste servono (tra le altre cose) a nascondere le colonne ad autoincremento per le righe in state "added"
-                            // Quindi è importante che siano copiate anche nel dataset del form di detail
-                            if (!rowToInsert) {
-
-                                return self.showMessageOk(localResource.getGridDataNoValid(tableName))
-                                    .then(function () {
-                                        self.hideWaitingIndicator(waitingHandler);
-                                        return def.resolve(null);
-
-                                    });
+                            if (metaModel.isSubEntity(sourceTable, self.getDataTable(tableName))){
+                                self.entityChanged = true;
                             }
 
-                            self.state.editedRow = rowToInsert;
+                            self.helpForm.iterateFillRelatedControls($(grid.el).parent(), null, sourceTable, rowToInsert);
+                            return true; // iterateFillRelatedControls sincrona, quindi torno true per andare su ramo then()
 
-                            var  unaliased = sourceTable.tableForReading();
+                        })
+                        ._else(function (){
+                            rowToInsert.del(); // viene da un getNewRow, quindi è un DataRow
+                            // rowToInsert.acceptChanges(); // No database activity is needed
+                            rowToInsert = null;
 
-                            self.hideWaitingIndicator(waitingHandler);
-                            return self.edit(unaliased, editType, true)
+                            return true; // deve andare sul ramo then()
+                        })
+                        .then(function (){
 
-                                .then(function (dialogResult) {
+                            if (!dialogResult){
+                                self.hideWaitingIndicator(waitingHandler);
+                                return true;
+                            }
 
-                                    return utils._if(dialogResult)
-                                        ._then(function () {
-                                            //27/5/2021 c'era una nuova variabile ma inutilizzata
-                                            waitingHandler =  self.showWaitingIndicator(localResource.modalLoader_wait_page_update);
-                                            // recupero newSourceRow dallo stato. è un ObjectRow
-                                            rowToInsert = self.state.newSourceRow;
+                            // It's necesssary to do something cause Grid must re-evaluated:
+                            // - calculated fields
+                            // - resize of columns
+                            metaModel.getTemporaryValues(sourceTable);
 
-                                            if (metaModel.isSubEntity(sourceTable, self.getDataTable(tableName))) {
-                                                self.entityChanged = true;
-                                            }
-
-                                            self.helpForm.iterateFillRelatedControls($(grid.el).parent(), null, sourceTable, rowToInsert);
-                                            return true; // iterateFillRelatedControls sincrona, quindi torno true per andare su ramo then()
-
-                                        })
-                                        ._else(function () {
-                                            rowToInsert.del(); // viene da un getNewRow, quindi è un DataRow
-                                            // rowToInsert.acceptChanges(); // No database activity is needed
-                                            rowToInsert = null;
-
-                                            return true; // deve andare sul ramo then()
-                                        })
-                                        .then(function () {
-
-                                            if (!dialogResult) {
-                                                self.hideWaitingIndicator(waitingHandler);
-                                                return true;
-                                            }
-
-                                            // It's necesssary to do something cause Grid must re-evaluated:
-                                            // - calculated fields
-                                            // - resize of columns
-                                            metaModel.getTemporaryValues(sourceTable);
-
-                                            return self.doPreFill(tableName, null)
-                                                .then(function () {
-                                                    self.helpForm.iterateFillRelatedControls($(grid.el).parent(), null, sourceTable, rowToInsert);
-                                                    return self.freshForm(true, true)
-                                                }).then(function () {
-                                                    self.hideWaitingIndicator(waitingHandler);
-                                                    return true;
-                                                });
-                                        }); // chiude il then() dell' _if
-                                });
-                        });
+                            return self.doPreFill(tableName, null)
+                            .then(function (){
+                                self.helpForm.iterateFillRelatedControls($(grid.el).parent(), null, sourceTable, rowToInsert);
+                                return self.freshForm(true, true);
+                            }).then(function (){
+                                self.hideWaitingIndicator(waitingHandler);
+                                return true;
+                            });
+                        }); // chiude il then() dell' _if
+                    });
                 });
+            });
 
             return def.from(res).promise();
 
@@ -4765,9 +4795,9 @@
          * @returns {Deferred}
          */
         deleteGridRow:function (grid) {
-            var def = Deferred('deleteGridRow');
+            const def = Deferred('deleteGridRow');
 
-            var row = grid.getCurrentRow().row;
+            const row = grid.getCurrentRow().row;
             if (!row) {
                 return this.showMessageOk(localResource.noPrimaryDataSelected)
                     .then(function () {
@@ -4776,55 +4806,55 @@
             }
 
             if (!this.inited) return def.resolve(false).promise();
-            var self = this;
+            const self = this;
 
             // gets data from form
-            var res = this.getFormData(true)
-                .then(function () {
+            const res = this.getFormData(true)
+            .then(function (){
 
-                    var sourceDataSet = grid.DS;
-                    if (!sourceDataSet) {
-                        return self.showMessageOk(localResource.getGridControlTagWrong(grid.tag, self.title))
-                            .then(function () {
-                                return def.resolve(false);
-                            })
-                    }
+                const sourceDataSet = grid.DS;
+                if (!sourceDataSet){
+                    return self.showMessageOk(localResource.getGridControlTagWrong(grid.tag, self.title))
+                    .then(function (){
+                        return def.resolve(false);
+                    });
+                }
 
-                    var res = self.helpForm.getCurrentRow(grid.el);
+                const res = self.helpForm.getCurrentRow(grid.el);
 
-                    if (!res.row){
-                        return self.showMessageOk(localResource.noPrimaryDataSelected)
-                            .then(function () {
-                                return def.resolve(false);
-                            });
-                    }
+                if (!res.row){
+                    return self.showMessageOk(localResource.noPrimaryDataSelected)
+                    .then(function (){
+                        return def.resolve(false);
+                    });
+                }
 
-                    var currDR = res.row;
-                    var sourceTable = res.table;
+                const currDR = res.row;
+                const sourceTable = res.table;
 
-                    // mostra messaggio di conferma ok cancel
-                    return self.showMessageOkCancel(localResource.getDeleteObjInsert(sourceTable.name))
-                        .then(function (res) {
+                // mostra messaggio di conferma ok cancel
+                return self.showMessageOkCancel(localResource.getDeleteObjInsert(sourceTable.name))
+                .then(function (res){
 
-                            if (!res) return def.resolve(false);
-                            var waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update);
+                    if (!res) return def.resolve(false);
+                    const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_page_update);
 
-                            // prima faceva solo currDR.getRow().del(); invece ha senso fare la cascade delte, che mette delted le subentity strette
-                            // e unlinka lenotsub entity
-                            metaModel.applyCascadeDelete(currDR);
+                    // prima faceva solo currDR.getRow().del(); invece ha senso fare la cascade delte, che mette delted le subentity strette
+                    // e unlinka lenotsub entity
+                    metaModel.applyCascadeDelete(currDR);
 
-                            if (metaModel.isSubEntity(sourceTable, self.getPrimaryDataTable())) self.entityChanged = true;
+                    if (metaModel.isSubEntity(sourceTable, self.getPrimaryDataTable())) self.entityChanged = true;
 
-                            self.helpForm.lastSelected(sourceTable, null);
-                            self.helpForm.iterateSetDataRowRelated(self.rootElement, sourceTable, null);
-                            metaModel.getTemporaryValues(sourceTable);
-                            return self.freshForm(true, false)
-                                .then(function () {
-                                    self.hideWaitingIndicator(waitingHandler);
-                                    return def.resolve(currDR);
-                                })
-                        })
-                }) ;
+                    self.helpForm.lastSelected(sourceTable, null);
+                    self.helpForm.iterateSetDataRowRelated(self.rootElement, sourceTable, null);
+                    metaModel.getTemporaryValues(sourceTable);
+                    return self.freshForm(true, false)
+                    .then(function (){
+                        self.hideWaitingIndicator(waitingHandler);
+                        return def.resolve(currDR);
+                    });
+                });
+            });
 
             return def.from(res).promise();
 
@@ -4854,8 +4884,9 @@
          * @public
          * @description SYNC
          * Adds the dependencies between element parent and child. A child element value is calculated with a formula, that depends from parent value.
-         * @param {Html element} elParent usually a textBox
-         * @param {Html element} elChild usually a textBox
+         * @param {element} elParent usually a textBox
+         * @param {element} elChild usually a textBox
+         * @param {event} event
          */
         addDependencies:function (elParent, elChild, event) {
 
@@ -4873,7 +4904,7 @@
                 return;
             }
 
-            var eleId  = $(elParent).attr('id');
+            const eleId = $(elParent).attr('id');
             if (!eleId){
                 console.log("Set the id on html tag " + $(elParent).data("tag") + " to insert dependencies on this control");
                 return;
@@ -4902,25 +4933,25 @@
          */
         reCalcFormulaEvent:function (that) {
 
-            var eleId  = $(this).attr('id');
+            const eleId = $(this).attr('id');
             if (!eleId) return Deferred("reCalcFormulaEvent").resolve();
-            var allDeferredFill = [];
+            const allDeferredFill = [];
             that.helpForm.getControls();
 
             _.forEach(that.dependencies[eleId],
                 function(child){
                     // recupero la function attachcata con registerFormula()
-                    var fn = $(child).data("mdlFn");
+                    const fn = $(child).data("mdlFn");
                     if(fn) {
                         // rieseguo la get, per rinfrescare il ds ,prima di calcolare la formula
 
                         // recupero la riga principale
-                        var r = that.helpForm.lastSelected(that.getPrimaryDataTable());
+                        const r = that.helpForm.lastSelected(that.getPrimaryDataTable());
                         // invoco funzione della formula con la riga principale per il calcolo del nuovo valore
-                        var newVal = fn(r);
+                        const newVal = fn(r);
                         // recupero oggetto dom, richiesto come parametro da fillControl e getcontrol.
                         // Non trovato modo migliore con jquery
-                        var domEl = $(child).get(0);
+                        const domEl = $(child).get(0);
                         // imposto nuovo valore sul figlio. Salvo array di deferred
                         allDeferredFill.push(
                             that.helpForm.fillControl(domEl, newVal)
@@ -4933,7 +4964,7 @@
                 });
 
             // terminati i fillcontrol dei figli del primo parent vado in cascade
-            var resultWhen = $.when.apply($, allDeferredFill);
+            const resultWhen = $.when.apply($, allDeferredFill);
 
 
             return Deferred("reCalcFormulaEvent").from(resultWhen);
@@ -4944,7 +4975,7 @@
          * @public
          * @description ASYNC
          * Assigns the formula function to the "elChild" html Element
-         * @param {Html node} elChild usually a textBox
+         * @param {element} elChild usually a textBox
          * @param {function} fn the function with the formula attached to the textBox
          */
         registerFormula:function (elChild, fn) {
@@ -4959,7 +4990,7 @@
          * @description SYNC
          * Assigns the jsDataQuery filter to the "elChild" html Element. Used for example for Autochoose element:
          * Es: metapage.registerFilter($("#autochoose1"), filter); where metapage is an instance of MetaPage and filter is a jsDataQuery
-         * @param {Html node} elChild usually a textBox
+         * @param {element} elChild usually a textBox
          * @param {jsDataQuery} filter the function with the formula attached to the textBox
          */
         registerFilter:function (elChild, filter) {
@@ -4980,20 +5011,20 @@
          * Necessary condition is that FormDataSet does contain only one row of the same
          * table as SourceRow. This function can be redefined to implement additional operations
          * to do in SourceRow.Table when changes to SourceRow are accepted.
-         * @returns {Deferred boolean} true when operation succeded
+         * @returns {Promise<boolean>} true when operation succeded
          */
         propagateChangesToMaster:function() {
-            var def = Deferred('propagateChangesToMaster');
-            var self = this;
+            const def = Deferred('propagateChangesToMaster');
+            const self = this;
             if (!this.detailPage) return def.resolve(true).promise();
 
             // recupero riga di partenza, sarebbe quella del form principale, su cui poi dovrò propagare i valori di questo form
-            var sourceRow = this.state.sourceRow(); // collegato errore 5176
+            const sourceRow = this.state.sourceRow(); // collegato errore 5176
             this.state.callerState.newSourceRow = sourceRow; // temporary value
 
             if (this.isList) return false; //it should never happen (a form-list can't be a subentity!)
-            var unaliased = sourceRow.table.tableForReading();
-            var t = this.getDataTable(unaliased);
+            const unaliased = sourceRow.table.tableForReading();
+            const t = this.getDataTable(unaliased);
             if (!t) return true;
             if (t.rows.length !== 1) {
                 return self.showMessageOk(localResource.getMoreThenRow(t.name))
@@ -5003,11 +5034,11 @@
             }
 
             // Riga DI QUESTO FORM (OSSIA IL DETTAGLIO), prenderò i valori di qeusta riga e li copierò sulla riga del dt di partenza, tramite la xcopy
-            var externalRow = t.rows[0];
-            var externalRowDataRow = externalRow.getRow();
+            const externalRow = t.rows[0];
+            const externalRowDataRow = externalRow.getRow();
 
-            var dsSource = sourceRow.table.dataset;
-            var changes = metaModel.xVerifyChangeChilds(dsSource, sourceRow.table, self.state.DS, externalRow);
+            const dsSource = sourceRow.table.dataset;
+            let changes = metaModel.xVerifyChangeChilds(dsSource, sourceRow.table, self.state.DS, externalRow);
             if (!changes) changes = metaModel.xVerifyChangeChilds(self.state.DS, t, dsSource, sourceRow.current);
             if (!changes) {
                 metaModel.calculateRow(sourceRow.current);
@@ -5024,9 +5055,9 @@
                         metaModel.calcTemporaryID(sourceRow.table, externalRowDataRow);
                     }
 
-                    var filter = getData.getWhereKeyClause(externalRowDataRow, externalRowDataRow.table, externalRowDataRow.table, false); //  QueryCreator.WHERE_KEY_CLAUSE(externalRow, DataRowVersion.Default, false);
+                    const filter = getData.getWhereKeyClause(externalRowDataRow, externalRowDataRow.table, externalRowDataRow.table, false); //  QueryCreator.WHERE_KEY_CLAUSE(externalRow, DataRowVersion.Default, false);
 
-                    var existentFound = sourceRow.table.select(filter);
+                    const existentFound = sourceRow.table.select(filter);
                     if (existentFound.length > 0) {
                         if (existentFound[0].getRow() !== sourceRow) {
                             return self.showMessageOk(localResource.sameValuesForTheKey)
@@ -5055,8 +5086,8 @@
          * @returns {Deferred}
          */
         show:function () {
-            var def = Deferred("metapage-show");
-            var res = appMeta.globalEventManager.trigger(appMeta.EventEnum.showPage, this, 'show');
+            const def = Deferred("metapage-show");
+            const res = appMeta.globalEventManager.trigger(appMeta.EventEnum.showPage, this, 'show');
             return def.from(res).promise();
         },
 
@@ -5078,7 +5109,7 @@
          * @description SYNC
          * set data-tag value for el element. N.B .data() only set value on memory, data() does not affect attributes in the DOM
          * If you use data() the selector doesn't work if we need to scan dom by data-tag
-         * @param {Html node} el
+         * @param {element} el
          * @param {String} value. Should be accept also object but this method is used only for data-tag changed on DOM.
          */
         setDataTagAttr:function (el, value) {
@@ -5101,10 +5132,11 @@
          * @param filterLocked
          * @param toMerge
          * @param {boolean} isCommandSearch, useful for overriden class that want to know if the listManager is called for a search
+         * @param {string} sort
          * @returns {*|ListManager}
          */
         createAndGetListManager:function (searchTableName, listingType, prefilter, isModal, rootElement, metaPage, filterLocked, toMerge, isCommandSearch, sort) {
-            var lm = new window.appMeta.ListManager(searchTableName, listingType, prefilter, isModal, rootElement, metaPage, filterLocked, toMerge, sort);
+            const lm = new window.appMeta.ListManager(searchTableName, listingType, prefilter, isModal, rootElement, metaPage, filterLocked, toMerge, sort);
             lm.init();
             return lm;
         }
@@ -5114,7 +5146,7 @@
     /**
      * @constructor AutoInfo
      * @description
-     * @param {Html node} G usually DIV or SPAN
+     * @param {element} G usually DIV or SPAN
      * @param {string} type
      * @param {jsDataQuery} startfilter
      * @param {string} startfield

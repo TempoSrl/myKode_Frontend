@@ -7,7 +7,7 @@
  * Collection of utility functions
  */
 (function (Deferred, OriginaDeferred, when) {
-
+    "use strict";
 
     /** Detect free variable `global` from Node.js. */
     let freeGlobal = typeof global === 'object' && global && global.Object === Object && global;
@@ -35,7 +35,7 @@
      * If fn returns a deferred, its inner result is used to fullfill the result
      * The averall result is always a deferred value
      * @param {function} fn
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     utils.callOptAsync = function (fn) {
         let res = Deferred("utils.callOptAsync");
@@ -85,7 +85,7 @@
      * @param {boolean} condition
      * @param {function} func
      * @param {object} defaultValue
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     utils.optionalDeferred = function(condition, func, defaultValue) {
         if (!condition) return Deferred("utils.optionalDeferred").resolve(defaultValue).promise();
@@ -98,7 +98,7 @@
      * @description ASYNC
      * returns deferred function that accepts a parameter
      * @param {function} func
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     utils.skipRun = function(func) {
         return function(result) {
@@ -117,7 +117,7 @@
      * Returns function "fun" binded to "obj" or null if fun is null. Arguments can be provided
      * @param {function} fun  function to bind
      * @param {object} obj   object to use as "this"
-     * @param {object} args  optional arguments
+     * @param {object} [args]  optional arguments
      * @returns {function}
      */
     utils.optBind = function(fun, obj, args) {
@@ -270,7 +270,7 @@
      * @description ASYNC
      * Evaluates the expression. if it is a deferred function then returns it, otherwise returns a Deferred
      * @param {Function} expression
-     * @returns {Deferred}
+     * @returns {Promise}
      */
     utils.asDeferred = function(expression) {
 

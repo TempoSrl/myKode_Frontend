@@ -48,7 +48,9 @@
          * @param {Request} req
          */
         setRequest: function (req){
-            if (!req) return;
+            if (!req) {
+                return;
+            }
             const ctx = req.app.locals.context;
 
             //This applies to backend. On the frontend side they are assigned to LocalResource prototype once at the beginning
@@ -212,7 +214,7 @@
 
         /**
          * @method setCaption
-         * @private
+         * @public
          * @description SYNC
          * To override in extended classes if user want to assign a friendly name to the column.
          * Friendly names are used in isValid messages
@@ -427,7 +429,7 @@
 
         /**
          * @method setDefaults
-         * @private
+         * @public
          * @description ASYNCH
          * Sets the default values for a DataTable. DataTable coming from server ha already its defaults. This method can contain some customization
          * @param {DataTable} table
@@ -710,7 +712,7 @@
     (typeof appMeta === 'undefined') ? undefined : appMeta.getMeta.bind(appMeta),
     (typeof appMeta === 'undefined') ? undefined : appMeta.getData,
     (typeof jsDataSet === 'undefined') ? require('./../metadata/jsDataSet').CType : jsDataSet.CType,
-    (typeof appMeta === 'undefined') ? undefined : appMeta.security,
+    (typeof appMeta === 'undefined') ? undefined : appMeta.security
     )
 );
 

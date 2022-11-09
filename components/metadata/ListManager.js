@@ -1,3 +1,4 @@
+/*global appMeta,_,$ */
 /// <reference path="MetaApp.js" />
 /**
  * @module ListManager
@@ -5,14 +6,14 @@
  * Manages the graphics and the logic of an html List Manager
  */
 (function() {
-
+    "use strict";
     // utilizzo GridControl per costruire la griglia
-    var GridController;
-    var getData = appMeta.getData;
-    var Deferred = appMeta.Deferred;
-    var locale = appMeta.localResource;
-    var q = window.jsDataQuery;
-    var utils = appMeta.utils;
+    let GridController;
+    let getData = appMeta.getData;
+    let Deferred = appMeta.Deferred;
+    let locale = appMeta.localResource;
+    let q = window.jsDataQuery;
+    let utils = appMeta.utils;
 
     /**
      * @constructor ListManager
@@ -22,12 +23,14 @@
      * @param {string} listType
      * @param {jsDataQuery} filter
      * @param {boolean} isModal
-     * @param {Html node} rootElement
+     * @param {element} rootElement
      * @param {MetaPage} metaPage
      * @param {boolean} filterLocked true if filter can't be changed during row selection
      * @param {DataTable} toMerge. It contains the Rows to "merge" with those found in DB
+     * @param {string} [sort]
      */
-    function ListManager(tableName, listType, filter, isModal, rootElement, metaPage, filterLocked, toMerge, sort) {
+    function ListManager(tableName, listType, filter, isModal, rootElement,
+                         metaPage, filterLocked, toMerge, sort) {
 
         this.filterLocked = filterLocked || false;
         this.toMerge = toMerge;
@@ -93,7 +96,7 @@
 
         /**
          *
-         * @param visble
+         * @param visible
          */
         setShowFooter:function (visible) {
             this.showFooter = visible;
@@ -132,16 +135,16 @@
          * @public
          * @description ASYNC
          * Builds and shows a listManger control, and returns a Promise
-         * @param {DataTable} dataTablePaged
-         * @param {int} totPage
-         * @param {int} totRows
+         * @param {DataTable} [dataTablePaged]
+         * @param {int} [totPage]
+         * @param {int} [totRows]
          * @returns {Deferred}
          */
         show: function (dataTablePaged, totPage, totRows) {
-            var self = this;
-            var def = Deferred("show-ListManager");
+            let self = this;
+            let def = Deferred("show-ListManager");
 
-            var res = self.createList(dataTablePaged, totPage, totRows)
+            let res = self.createList(dataTablePaged, totPage, totRows)
                 .then(function () {
                     self.hideWaitingIndicator();
                     // caso autochoose modale
@@ -170,11 +173,11 @@
          * Adjusts the size and the position of the modal based on its content (based on the grid)
          */
         adjustSizeModal:function () {
-            var screenW  = $(window).width();
+            let screenW  = $(window).width();
             // attuale width del rect bianco della mdoale
-            var currwcont = parseInt($(this.myModalUnivoqueId + ' .modal-content').css("width").replace("px",""));
+            let currwcont = parseInt($(this.myModalUnivoqueId + ' .modal-content').css("width").replace("px",""));
             // new width come griglia contenuta. tolgo 10 così appare la scrollabr
-            var newcontint = parseInt(this.gridControl.mytable.css("width").replace("px","")) - 10;
+            let newcontint = parseInt(this.gridControl.mytable.css("width").replace("px","")) - 10;
             // la new width non può uscire dallo schermo
             if (newcontint > screenW) newcontint = screenW - 50;
             // left attuale metà schermo meno metà della content bianca, posizionata al centro
@@ -183,15 +186,15 @@
             var widthAdded = newcontint - currwcont;
 
             // fisso altezza in base allo schermo
-            var h = ($(window).height() - 100).toString() + "px";
+            let h = ($(window).height() - 100).toString() + "px";
             $(this.myModalUnivoqueId + ' .modal-content').css("height", h);
 
             if (widthAdded <= 0) return;
-            var newleftint = (widthAdded / 2);
+            let newleftint = (widthAdded / 2);
             // se vado troppo a sx rimetto 50 px avanti
             if (newleftint > actualeft) newleftint = actualeft - 50;
-            var newleft = (-newleftint).toString() + "px";
-            var newcontw = (newcontint).toString() + "px"; // -10 così appare la scroll orizz
+            let newleft = (-newleftint).toString() + "px";
+            let newcontw = (newcontint).toString() + "px"; // -10 così appare la scroll orizz
 
             // asegno nuove prop css calcolate
             $(this.myModalUnivoqueId + ' .modal-content').css("width", newcontw);
@@ -206,7 +209,7 @@
          */
         addBtnCloseNotModal:function () {
             if (!this.isModal){
-                var $button = $('<button class="btn btn-secondary" style="float: right">');
+                let $button = $('<button class="btn btn-secondary" style="float: right">');
                 $button.text(appMeta.localResource.close);
                 $button.on("click", _.partial(this.hideControl, this));
                 $(this.currentRootElement).append($button);
@@ -221,7 +224,7 @@
          * @returns {string}
          */
         getModalHtml:function () {
-            var modalHtml = "<div class='modal'  id=" + this.myModalUnivoqueId.substr(1) + " tabindex='-1' role='dialog' data-backdrop='static' data-keyboard='false'" +
+            let modalHtml = "<div class='modal'  id=" + this.myModalUnivoqueId.substr(1) + " tabindex='-1' role='dialog' data-backdrop='static' data-keyboard='false'" +
                 " style='display:none;'>" +
                 "<div class='modal-dialog modal-lg'>" +
                 "<div class='modal-content'  >" +
@@ -248,7 +251,7 @@
          */
         buildModal:function () {
             // prendo il template html della modale e lo aggiungo al rootElement
-            var currModal = $(this.getModalHtml());
+            let currModal = $(this.getModalHtml());
             $(this.currentRootElement).append(currModal);
             // una volta aggiunto al currentRootElement, lo popolo con i dati parametrici che ho calcolato nella createList
             $(this.myModalUnivoqueId + ' .modal-body').append($(this.myRootListManger));
@@ -303,28 +306,28 @@
          * @returns {Deferred}
          */
         createList: function(dataTablePaged, totPage, totRows) {
-            var self = this;
-            var def = Deferred("listManager.createList");
+            let self = this;
+            let def = Deferred("listManager.createList");
             // mostro il loader
             this.loader.showControl();
-
+            let res;
             // la prima volta le passa metaPage sullo show  qaundo chiama l'elenco poichè già ha fatto la query e non la rifaccio
             if (dataTablePaged) {
-                var res = self.loadCore(dataTablePaged, totPage, totRows);
+                res = self.loadCore(dataTablePaged, totPage, totRows);
             } else {
                 // passo qui, quando premo i pulsanti di navigazione della paginazione, quindi qui si ricalcola il dt
                 // oppure se eseguo un oridnamento sulla griglia e ci sono più pagine
-                var res = getData.getPagedTable(this.tableName, this.currentPageDisplayed, this.nRowPerPage, this.filter, this.listType, this.newSort)
+                res = getData.getPagedTable(this.tableName, this.currentPageDisplayed, this.nRowPerPage, this.filter, this.listType, this.newSort)
                     .then(function(dtp, totp, totr) {
-                        // nel momento in cui torno la riga alla metapage viene fatta della logica sulla riga seelzionata
-                        // su relazioni etc.. quindi recupera dalla table la proprietà dataset, che in questo caso non avrebbe perchè
+                        // Nel momento in cui torno la riga alla metapage viene fatta della logica sulla riga selezionata
+                        // su relazioni etc... Quindi recupera dalla table la proprietà dataset, che in questo caso non avrebbe perchè
                         // getPagedTable() torna solo un datatable, e lo devo quindi associare al ds corrente della metapage
                         dtp.dataset = self.metaPage.state.DS;
                         return self.loadCore(dtp, totp, totr);
                     });
             }
 
-            return def.from(res).promise()
+            return def.from(res).promise();
         },
 
         /**
@@ -349,10 +352,11 @@
          * @returns {Deferred}
          */
         loadCore:function (dataTablePaged, totPage, totRows) {
-            var self = this;
-            var def = Deferred("loadCore");
+            let self = this;
+            let def = Deferred("loadCore");
             self.totpages = totPage;
-            self.title =  self.getTitle() + " - " + self.getNumberOfRowOnTot(totRows); // calcolo titolo dinamicamente. utilizzato nelc aso modale usualmente
+            //Calcolo titolo dinamicamente. Utilizzato nel caso modale usualmente
+            self.title =  self.getTitle() + " - " + self.getNumberOfRowOnTot(totRows);
             if (!self.isModal) $("#" +  this.dialogNotmodalId + "_title").text(self.getNumberOfRowOnTot(totRows));
             if ( $(self.myModalUnivoqueId  + ' .modal-title').length) $(this.myModalUnivoqueId  + ' .modal-title').text(self.title);
             // "dataTablePaged" è il DataTable calcolato da getPagedTable()
@@ -370,11 +374,11 @@
             // inizializzo il controllo griglia se già non è stato fatto
             self.getGridInstance(dataTablePaged);
             self.gridControl.dataTable = dataTablePaged;
-            var  metaToConsider = appMeta.getMeta(dataTablePaged.tableForReading());
-            // il be fa la describeCol, ma il programmatore pottebbe non imlementare.
-			// ripeto qui, quella client veloce, e se non fosse implementata sul js prenderebbe quella in cache eventualmente
+            let  metaToConsider = appMeta.getMeta(dataTablePaged.tableForReading());
+            // Il be fa la describeCol, ma il programmatore potrebbe non implementare.
+			// Ripeto qui, quella client veloce, e se non fosse implementata sul js prenderebbe quella in cache eventualmente
 			//popolo la griglia
-            var res = metaToConsider.describeColumns(self.gridControl.dataTable, self.listType)
+            let res = metaToConsider.describeColumns(self.gridControl.dataTable, self.listType)
                 .then(function() {
                     return self.gridControl.fillControl();
                 }).then(function() {
@@ -387,7 +391,7 @@
                     return true;
                 });
 
-            return def.from(res).promise()
+            return def.from(res).promise();
         },
 
         /**
@@ -395,15 +399,16 @@
          * @private
          * @description SYNC
          * Returns the string "Results xx" or "Results from zzz to yyy of xxx", where "xxx" is rowsShowed
-         * @param {string} rowsShowed. should be a number
+         * @param {int} rowsShowed.
          */
         getNumberOfRowOnTot:function (rowsShowed) {
             // se sono più del totale msotrato paginato mostro "xx di 100"
             var from = (this.currentPageDisplayed - 1) * this.nRowPerPage;
             var to = from + this.nRowPerPage;
             if (to > rowsShowed) to = rowsShowed;
-            if (rowsShowed > this.nRowPerPage) rowsShowed = locale.from + " " + from + " " + locale.to + " " + to + " " + locale.of + " " + rowsShowed;
-            return locale.getNumberOfRows(rowsShowed)
+            let msgShow = rowsShowed.toString();
+            if (rowsShowed > this.nRowPerPage) msgShow = locale.from + " " + from + " " + locale.to + " " + to + " " + locale.of + " " + rowsShowed;
+            return locale.getNumberOfRows(msgShow);
         },
 
         /**
@@ -417,16 +422,16 @@
 
             if (!this.toMerge) return;
 
-            var self = this;
+            let self = this;
             // è un jsDataQuery
-            var noChildFilter = appMeta.metaModel.notEntityChild(this.toMerge);
+            let noChildFilter = appMeta.metaModel.notEntityChild(this.toMerge);
 
             // Delete from list those who have not the filter property in the ToMerge Table
-            var toExclude = this.toMerge.select(q.not(noChildFilter));
+            let toExclude = this.toMerge.select(q.not(noChildFilter));
             _.forEach(toExclude, function (r) {
-                var  cond = getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
+                let  cond = getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
 
-                var toDelete = dt.select(cond);
+                let toDelete = dt.select(cond);
                 if (toDelete.length > 0) {
                     toDelete[0].getRow().del();
                     toDelete[0].getRow().acceptChanges();
@@ -434,17 +439,17 @@
             });
 
             // Add to list those who are not present in the list and are present in the ToMerge table
-            var toAdd = this.toMerge.select(noChildFilter);
+            let toAdd = this.toMerge.select(noChildFilter);
             _.forEach(toAdd, function (r) {
-                var cond = getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
-                var toInsert = dt.select(cond);
+                let cond = getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
+                let toInsert = dt.select(cond);
                 // Removes eventually present row from DT
                 _.forEach(toInsert, function (rIns) {
                     rIns.getRow().del();
                     rIns.getRow().acceptChanges();
                 });
 
-                var newRow = dt.newRow();
+                let newRow = dt.newRow();
                 _.forEach(self.toMerge.columns, function (c) {
                     if(dt.columns[c.name]){
                         newRow[c.name] = r.getRow().current[c.name];
@@ -479,10 +484,10 @@
             if(this.totpages <= 1 ) return true;
 
             // unica riga dell' elemento footer
-            var $tr = $("<tr>");
+            let $tr = $("<tr>");
 
             // calcolo bottoni di avanzamento
-            var upperLimit;
+            let upperLimit;
             if(( this.currentPageDisplayed + this.numberOfPagesInFooter - 1) > this.totpages)
                 upperLimit = this.totpages;
             else
@@ -491,16 +496,16 @@
             // Inserisco bottone   "<<"
             this.buildButtonFooter($tr,
                 "<<",
-                !(this.currentPageDisplayed > 1),
+                this.currentPageDisplayed <= 1,
                 _.partial(this.showPreviousPages, this));
 
             // Inserisco bottone   "<"
             this.buildButtonFooter($tr,
                 "<",
-                !(this.currentPageDisplayed > 1),
+                this.currentPageDisplayed <= 1,
                 _.partial(this.goPreviousPage, this));
 
-            var startIndex = upperLimit - this.numberOfPagesInFooter + 1;
+            let startIndex = upperLimit - this.numberOfPagesInFooter + 1;
             if (startIndex < 1) {
                 startIndex = 1;
             }
@@ -515,13 +520,13 @@
             // Inserisco bottone   ">"
             this.buildButtonFooter($tr,
                 ">",
-                !(this.currentPageDisplayed < this.totpages),
+                this.currentPageDisplayed >= this.totpages,
                 _.partial(this.goNextPage, this));
 
             // Inserisco bottone   ">>"
             this.buildButtonFooter($tr,
                 ">>",
-                !(upperLimit < this.totpages),
+                upperLimit >= this.totpages,
                 _.partial(this.showNextPages, this));
 
             // Aggiungo la riga creata sull'oggetto parent
@@ -532,9 +537,10 @@
 
             // ogni volta rimetto footer
             if (this.isModal){
-                if  ($('.modal-footer').length) {
-                    $('.modal-footer').find("table").remove();
-                    $('.modal-footer').append($(this.myfooter));
+                let footer= $('.modal-footer');
+                if  (footer.length) {
+                    footer.find("table").remove();
+                    footer.append($(this.myfooter));
                 }
             } else {
                 var $fooDiv = $("<div>");
@@ -552,14 +558,14 @@
          * @private
          * @description SYNC
          * Builds a button located on the footer of the control.
-         * @param {Html element} $tr tr html element where add the new td element
+         * @param {element} $tr tr html element where add the new td element
          * @param {string} txt the text of the button
          * @param {boolean} isDisabled
          * @param {Function} partial the event attached to the button
          */
         buildButtonFooter: function ($tr, txt, isDisabled, partial) {
-            var $td = $("<td>");
-            var $button = $('<button class="btn btn-secondary">');
+            let $td = $("<td>");
+            let $button = $('<button class="btn btn-secondary">');
             $button.text(txt);
             $button.prop("disabled", isDisabled);
             $button.on("click", partial);
@@ -674,15 +680,15 @@
 
                 // per il mobile la selezione avviene al singolo click
                 if (appMeta.isMobile) {
-                   this.closeAndResolveDeferred(row)
+                   this.closeAndResolveDeferred(row);
                 }
                 return Deferred("rowSelect").resolve();
             }
             // qui invece viene invocato la rowSelct sulla MetaPage vera e propria e lei torna Deferred
             // Di qua passa quando il listManager non è modale, ossia è associato ad un form elenco sulla tabella principale
-            var dtRow = row ? (row.getRow ? row.getRow() : null) : null;
+            let dtRow = row ? (row.getRow ? row.getRow() : null) : null;
 
-            var self = this;
+            let self = this;
             // console.log("rowSelect " + appMeta.logger.getTimeMs());
             return this.metaPage.warnUnsaved()
                 .then(function (res) {
@@ -690,7 +696,7 @@
                         return Deferred("rowSelect").from(self.metaPage.selectRow(dtRow, self.listType)).promise();
                     }
                     self.gridControl.resetSelectedRow();
-                    return Deferred("rowSelect").resolve()
+                    return Deferred("rowSelect").resolve();
                 });
         },
 
@@ -738,7 +744,7 @@
                             return Deferred("closeListManager").from(self.metaPage.selectRow(dtRow, self.listType)).promise();
                         }
                         self.gridControl.resetSelectedRow();
-                        return Deferred("closeListManager").resolve()
+                        return Deferred("closeListManager").resolve();
                     });
             }
         },
