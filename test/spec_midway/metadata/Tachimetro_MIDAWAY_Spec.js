@@ -9,7 +9,7 @@ describe("Tachimetro",
         // invoca la getToolBarManager per instanziare la toolbar, che poi sarà richiamata nei vari freshForm
         beforeAll(function (){
             appMeta.basePath = "base/";
-            appMeta.initToolBarManager();
+            appMeta.currApp.initToolBarManager();
         });
 
         beforeEach(function (){

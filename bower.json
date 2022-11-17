@@ -1,6 +1,6 @@
 {
-  "name": "portale_client",
-  "description": "Client side of Portale base project",
+  "name": "MyKode",
+  "description": "Client side of a MyKode application",
   "main": "app/main/main.html",
   "authors": [
     "Gaetano Lazzo"
@@ -20,8 +20,6 @@
     "jquery": "3.6.1",
     "jquery-ui": "1.12.1",
     "jstree": "~3.3.6",
-    "jsDataSet": "git://github.com/gaelazzo/jsDataSet.git",
-    "jsDataQuery": "git://github.com/gaelazzo/jsDataQuery.git",
     "json3": "~3.3.1",
     "es5-shim": "~3.0.1",
     "lodash": "~4.17.21",

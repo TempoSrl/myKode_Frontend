@@ -14,11 +14,12 @@
 	var logType = appMeta.logTypeEnum;
     /**
      *
-     * @param {html node} el
+     * @param {element} el
      * @param {HelpForm} helpForm
      * @param {DataTable} table
      * @param {DataTable} primaryTable
      * @param {string} listType
+	 * @param {bool} isListManager
      * @constructor
      */
 	function CalendarControl(el, helpForm, table, primaryTable, listType, isListManager) {
@@ -410,7 +411,7 @@
 				that.timeoutId = null;
 				that.rowClick(event);
 				Stabilizer.decreaseNesting("rowClickEv.timeout");
-			}, appMeta.dbClickTimeout);
+			}, appMeta.currApp.dbClickTimeout);
 		},
 
 
@@ -418,7 +419,7 @@
          * @method rowDblClick
          * @private
          * @description SYNC
-         * @param {EventObject} event
+         * @param {event} event
          * @returns {Deferred}
          */
 		rowDblClick: function (event) {

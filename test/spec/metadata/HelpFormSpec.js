@@ -18,7 +18,8 @@ describe("helpForm",
         var currencyDecimalSeparator = appMeta.currencyDecimalSeparator;
         var currencySymbol = appMeta.currencySymbol;
         var TypedObject = appMeta.TypedObject;
-        
+
+
         beforeEach(function() {
             Stabilizer.nesting = 0;
             //jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
@@ -1066,7 +1067,7 @@ describe("helpForm",
                                 helpForm.lastSelected(t, objrow);
                                 helpForm.fillControls();
                                 stabilize(true).then(function() {
-                                    expect($("#txtBox1").val()).toBe("-4" + numberDecimalSeparator + "00");
+                                    expect($("#txtBox1").val()).toBe("4" + numberDecimalSeparator + "00");
                                     expect($("#radio1").is(":checked")).toBe(false);
                                     expect($("#radio2").is(":checked"))
                                         .toBe(

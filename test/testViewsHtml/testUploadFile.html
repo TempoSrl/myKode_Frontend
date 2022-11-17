@@ -1,0 +1,211 @@
+<html>
+<head>
+    <title>Test e2e</title>
+    <link  href="../../VisualMDLW/styles/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link  href="../../VisualMDLW/styles/app.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../bower_components/jquery-ui/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="../../bower_components/fullcalendar/dist/fullcalendar.min.css">
+    <link rel="stylesheet" href="../../bower_components/fullcalendar/dist/fullcalendar.print.min.css" media="print">
+    <script defer src="../../VisualMDLW/styles/fontawesome/fontawesome-all.js"></script>
+
+</head>
+<body>
+<script src="../../bower_components/jquery/dist/jquery.js"></script>
+<script src="../../bower_components/lodash/lodash.js"></script>
+<script src="../../bower_components/observe-js/src/observe.js"></script>
+<script src="../../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+<script src="../../bower_components/jsDataSet/src/jsDataSet.js"></script>
+<script src="../app/styles/bootstrap/js/bootstrap.js"></script>
+<script src="../../bower_components/moment/min/moment.min.js"></script>
+<script src="../../bower_components/fullcalendar/dist/fullcalendar.min.js"></script>
+<script src="../../bower_components/fullcalendar/dist/locale-all.js"></script>
+<script src="../../components/metadata/MetaApp.js"></script>
+<script src="../../components/metadata/Config.js"></script>
+<script src="../../components/metadata/ConfigDev.js"></script>
+<script src="../../components/metadata/Logger.js"></script>
+<script src="../../components/metadata/Routing.js"></script>
+<script src="../../components/metadata/EventManager.js"></script>
+<script src="../../components/metadata/ConnWebService.js"></script>
+<script src="../../components/metadata/ConnWebSocket.js"></script>
+<script src="../../components/metadata/Connection.js"></script>
+<script src="../../components/metadata/LocalResource.js"></script>
+<script src="../../components/metadata/AuthManager.js"></script>
+<script src="../../components/metadata/GetDataUtils.js"></script>
+<script src="../../components/metadata/Utils.js"></script>
+<script src="../../components/metadata/GetData.js"></script>
+<script src="../../components/metadata/PostData.js"></script>
+<script src="../../components/metadata/LoaderControl.js"></script>
+<script src="../../components/metadata/BootstrapModal.js"></script>
+<script src="../../components/metadata/ListManager.js"></script>
+<script src="../../components/metadata/CssDefault.js"></script>
+<script src="../../components/metadata/TypedObject.js"></script>
+<script src="../../components/metadata/MetaPageState.js"></script>
+<script src="../../components/metadata/MetaModel.js"></script>
+<script src="../../components/metadata/HelpForm.js"></script>
+<script src="../../components/metadata/ModalLoaderControl.js"></script>
+<script src="../../components/metadata/MetaData.js"></script>
+<script src="../../components/metadata/MetaPage.js"></script>
+<script src="../../components/metadata/GridControl.js"></script>
+<script src="../../components/metadata/GridMultiSelectControl.js"></script>
+<script src="../../components/metadata/MultiSelectControl.js"></script>
+<script src="../../components/metadata/ComboManager.js"></script>
+<script src="../../components/metadata/MainToolBarManager.js"></script>
+<script src="../../components/metadata/CalendarControl.js"></script>
+
+<script>
+
+
+    function uploadFileLarge(TargetFile) {
+        // create array to store the buffer chunks
+        var FileChunk = [];
+        // the file object itself that we will work with
+        var file = TargetFile[0];
+        // set up other initial vars
+        var MaxFileSizeMB = 1;
+        var BufferChunkSize = MaxFileSizeMB * (1024 * 1024);
+        var ReadBuffer_Size = 1024;
+        var FileStreamPos = 0;
+        // set the initial chunk length
+        var EndPos = BufferChunkSize;
+        var Size = file.size;
+
+        // add to the FileChunk array until we get to the end of the file
+        while (FileStreamPos < Size) {
+            // "slice" the file from the starting position/offset, to  the required length
+            FileChunk.push(file.slice(FileStreamPos, EndPos));
+            FileStreamPos = EndPos; // jump by the amount read
+            EndPos = FileStreamPos + BufferChunkSize; // set next chunk length
+        }
+        // get total number of "files" we will be sending
+        var TotalParts = FileChunk.length;
+        var PartCount = 0;
+        // loop through, pulling the first item from the array each time and sending it
+        while (chunk = FileChunk.shift()) {
+            PartCount++;
+            // file name convention
+            var FilePartName = file.name + ".part_" + PartCount + "." + TotalParts;
+            // send the file
+            UploadFileChunk(chunk, FilePartName);
+        }
+    }
+
+    //The UploadFileChunk takes the part of the file handed by the previous method, and posts it to the Server in a similar manner to the C# example.
+     function UploadFileChunk(Chunk, FileName){
+        var FD = new FormData();
+        FD.append('file', Chunk, FileName);
+        $.ajax({
+            type: "POST",
+            url: 'http://localhost:54471/file/uploadlarge',
+            contentType: false,
+            processData: false,
+            data: FD
+        });
+    }
+
+    $(document).ready(function(){
+
+		appMeta.routing.setUrlPrefix("http://localhost:54471");
+        appMeta.basePath  = "../../";
+
+        $('#txtUploadFile').on('change', function (e) {
+            var files = e.target.files;
+            if (files.length > 0) {
+                if (window.FormData !== undefined) {
+                    var data = new FormData();
+                    _.forEach(files, function (file, index) {
+                        data.append("file" + index, file);
+                    });
+
+                    $.ajax({
+                        type: "POST",
+                        url: 'http://localhost:54471/file/upload',
+                        contentType: false,
+                        processData: false,
+                        data: data,
+                        success: function(result) {
+                            console.log(result);
+                        },
+                        error: function (xhr, status, p3, p4){
+                            var err = "Error " + " " + status + " " + p3 + " " + p4;
+                            if (xhr.responseText && xhr.responseText[0] == "{")
+                                err = JSON.parse(xhr.responseText).message;
+                            console.log(err);
+                        }
+                    });
+                } else {
+                    alert("This browser doesn't support HTML5 file uploads!");
+                }
+            }
+        });
+
+        $('#btnDownloadFile').on('click', function (e) {
+            // ---> 1o metodo ok, anche con auth!
+            var token = appMeta.connection.getAuthToken();
+            var myInit = { method: 'GET',
+                headers : {'Authorization':  "Bearer " + token}};
+            fetch('http://localhost:54471/file/download?idattach=1', myInit).then( function (response) {
+                return response.blob();
+            }).then(function(myBlob) {
+                    var fileURL = window.URL.createObjectURL(myBlob);
+                    var fileName = "aaa.jpg";
+                    var a = document.createElement("a");
+                    document.body.appendChild(a);
+                    a.style = "display: none";
+                    console.log(fileURL);
+                    a.href = fileURL;
+                    a.download = fileName;
+                    a.click();
+            });
+            return;
+
+            // --->2o metodo ok!
+            var ajax = new XMLHttpRequest();
+            ajax.open("GET",'http://localhost:54471/file/download?idattach=1',true);
+            ajax.onreadystatechange = function(){
+                if(this.readyState == 4) {
+                    if(this.status == 200) {
+                        var blob = new Blob([this.response], {type: "application/octet-stream"});
+                        var fileURL = window.URL.createObjectURL(blob); //"http://localhost:54471/Uploads/aaa.pdf" ;//
+                        var fileName = "aaa.pdf";
+                        var a = document.createElement("a");
+                        document.body.appendChild(a);
+                        a.style = "display: none";
+                        console.log(fileURL);
+                        a.href = fileURL;
+                        a.download = fileName;
+                        a.click();
+                    } else if(this.responseText != "") {
+                        console.log(this.responseText);
+                    }
+                } else if(this.readyState == 2) {
+                    if(this.status == 200) {
+                        this.responseType = "blob";
+                    } else {
+                        this.responseType = "text";
+                    }
+                }
+            };
+            ajax.send(null);
+
+        });
+
+        $('#btnUploadLarge').click(function () {
+            uploadFileLarge($('#uploadFileLarge')[0].files);
+                }
+        )
+    });
+
+
+</script>
+<div style="border: solid 1px">
+    <input type="file" name="uploadFile" id="txtUploadFile" multiple />
+</div>
+<div style="border: solid 1px">
+   <!-- <button id="btnDownloadFile" type="button"  class="btn btn-primary p-2 mt-2"> Download filename.extension </button> -->
+    <a href="#" id="btnDownloadFile">Download filename.xls</a>
+</div>
+<hr>
+<h3> Metodo per large file</h3>
+<input type="file" id="uploadFileLarge" name="file" />  <a class="btn btn-primary" href="#" id="btnUploadLarge">Upload large file</a>
+</body>
+</html>

@@ -16,7 +16,7 @@
      * @public
      * @description SYNC
      * Given a json representation of the DataSet/DataTable returns a javascript object
-     * @param {Json string} json
+     * @param {string} json
      * @returns {object} an object (DataTable or DataSet)
      */
     getDataUtils.getJsObjectFromJson = function (json) {

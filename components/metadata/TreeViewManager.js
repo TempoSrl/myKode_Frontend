@@ -172,7 +172,7 @@
 
                 self.timeoutId = setTimeout(function () {
                     self.selectNodeEv(data.node, true);
-                }, appMeta.dbClickTimeout);
+                }, appMeta.currApp.dbClickTimeout);
 
 
             });
@@ -1363,7 +1363,7 @@
 
         /**
          *
-         * @param {jsTreeNode} node
+         * @param {TreeNode} node
          */
         cascadeDelete:function (node) {
             var self = this;
@@ -1389,7 +1389,7 @@
 
         /**
          *
-         * @param  {jsTreeNode} node
+         * @param  {TreeNode} node
          * @returns {boolean}
          */
         isRoot:function (node) {
@@ -1400,7 +1400,7 @@
 
         /**
          *
-         * @param  {jsTreeNode} node
+         * @param  {TreeNode} node
          * @returns {boolean}
          */
         isLeaf:function (node) {
@@ -1408,7 +1408,7 @@
         },
 
         /**
-         * @param  {jsTreeNode} node
+         * @param  {TreeNode} node
          * @returns {boolean}
          */
         hasDummyChild:function (node) {
@@ -1428,7 +1428,7 @@
         /**
          *
          * @param id
-         * @returns {jsTreeNode}
+         * @returns {TreeNode}
          */
         getNodeById:function (id) {
             if (id === undefined || id === null) return null;
@@ -1436,7 +1436,7 @@
         }
     };
 
-    window.appMeta.CustomControl("tree", TreeViewManager);
+    appMeta.CustomControl("tree", TreeViewManager);
     appMeta.TreeViewManager = TreeViewManager;
 
 

@@ -232,7 +232,7 @@
          * @description SYNC
          * Returns the deferred "def" with true, meaning caller has to redo the post to server
          * @param {FormProcedureMessage} that
-         * @returns {Deferred(true)}
+         * @returns {Deferred<true>)}
          */
         ignoreAndSave:function (that) {
             that.closeWindowModal();

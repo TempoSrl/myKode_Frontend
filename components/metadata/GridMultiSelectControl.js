@@ -13,7 +13,7 @@
      * @constructor GridMultiSelectControl
      * @description
      * Initializes the html grid control for the multiselection
-     * @param {html node} parent
+     * @param {element} parent
      * @param {DataTable} dt
      * @param {HelpForm} helpForm
      */

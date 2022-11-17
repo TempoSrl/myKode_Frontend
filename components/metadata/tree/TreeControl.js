@@ -532,7 +532,7 @@
 
             self.timeoutId = setTimeout(function () {
                self.selectNodeEv(data.node, true);
-            }, appMeta.dbClickTimeout);
+            }, appMeta.currApp.dbClickTimeout);
 
 
          });

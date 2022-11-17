@@ -1,0 +1,188 @@
+<html>
+<head>
+    <title>Test e2e</title>
+    <link href="../app/styles/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="../app/styles/app.css" rel="stylesheet" type="text/css">
+    <script src="../../bower_components/jstree/dist/themes/default/style.min.css"></script>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default/style.min.css" />
+</head>
+<body>
+<script defer src="../../bower_components/font-awesome/svg-with-js/js/fontawesome-all.min.js"></script>
+<script src="../../bower_components/jquery/dist/jquery.js"></script>
+<script src="../../bower_components/lodash/lodash.js"></script>
+<script src="../../bower_components/observe-js/src/observe.js"></script>
+<script src="../../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+<script src="../../bower_components/jsDataSet/src/jsDataSet.js"></script>
+<script src="../../bower_components/jstree/dist/jstree.js"></script>
+<script src="../app/styles/bootstrap/js/bootstrap.js"></script>
+<script src="../../components/metadata/MetaApp.js"></script>
+<script src="../../components/metadata/Config.js"></script>
+<script src="../../components/metadata/Logger.js"></script>
+<script src="../../components/metadata/Security.js"></script>
+<script src="../../components/metadata/Routing.js"></script>
+<script src="../../components/metadata/ConnWebService.js"></script>
+<script src="../../components/metadata/ConnWebSocket.js"></script>
+<script src="../../components/metadata/Connection.js"></script>
+<script src="../../components/metadata/LocalResource.js"></script>
+<script src="../../components/metadata/EventManager.js"></script>
+<script src="../../components/metadata/LoaderControl.js"></script>
+<script src="../../components/metadata/GetDataUtils.js"></script>
+<script src="../../components/metadata/MetaModel.js"></script>
+<script src="../../components/metadata/GetData.js"></script>
+<script src="../../components/metadata/PostData.js"></script>
+<script src="../../components/metadata/BootstrapModal.js"></script>
+<script src="../../components/metadata/TreeNode.js"></script>
+<script src="../../components/metadata/TreeNode_Dispatcher.js"></script>
+<script src="../../components/metadata/TreeViewManager.js"></script>
+<script src="../../components/metadata/ListManager.js"></script>
+<script src="../../components/metadata/CssDefault.js"></script>
+<script src="../../components/metadata/TypedObject.js"></script>
+<script src="../../components/metadata/MetaPageState.js"></script>
+<script src="../../components/metadata/HelpForm.js"></script>
+<script src="../../components/metadata/MetaData.js"></script>
+<script src="../../components/metadata/MetaPage.js"></script>
+<script src="../../components/metadata/GridControl.js"></script>
+<script src="../../components/metadata/ComboManager.js"></script>
+<script src="../../components/metadata/Utils.js"></script>
+<script>
+
+    appMeta.basePath = "../../";
+    var tvm, r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12, r13;
+
+    function loadTree(){
+        // ********************** creo dt di prova ************************************************
+        var ds = new jsDataSet.DataSet("temp");
+        var t = ds.newTable("table1");
+        // setto le prop delle colonne per t1
+        t.setDataColumn("id_table", "Decimal");
+        t.setDataColumn("parid_table", "Decimal");
+        t.setDataColumn("campo1", "String");
+        t.setDataColumn("campo2", "String");
+
+        /*
+         1
+         |--- c1
+         --- c2
+
+         2
+         |--- c3
+         |--- c4
+         --- c5
+         --- c6
+
+
+         */
+        // aggiungo  righe alla t
+         r1 = { "id_table": 1, "parid_table":1, "campo1": "f1", "campo2": "c1" };
+         r2 = { "id_table": 2, "parid_table":1, "campo1": "f2", "campo2": "c2" };
+         r3 = { "id_table": 3, "parid_table":2, "campo1": "f3", "campo2": "c3" };
+         r4 = { "id_table": 4, "parid_table":2, "campo1": "f4", "campo2": "c4" };
+         r5 = { "id_table": 5, "parid_table":2, "campo1": "f5", "campo2": "c5" };
+         r6 = { "id_table": 6, "parid_table":2, "campo1": "f6", "campo2": "c6" };
+         r7 = { "id_table": 7, "parid_table":3, "campo1": "f7", "campo2": "c7" };
+         r8 = { "id_table": 8, "parid_table":3, "campo1": "f8", "campo2": "c8" };
+         r9 = { "id_table": 9, "parid_table":3, "campo1": "f9", "campo2": "c9" };
+         r10 = { "id_table": 10, "parid_table":3, "campo1": "f10", "campo2": "c10" };
+         r11 = { "id_table": 11, "parid_table":3, "campo1": "f11", "campo2": "c11" };
+         r12 = { "id_table": 1, "parid_table":12, "campo1": "f12", "campo2": "c12" };
+         r13 = { "id_table": 2, "parid_table":13, "campo1": "f13", "campo2": "c13" };
+
+        // aggiungo le righe con il ciclo for. utilizzando eval()
+        for(var i = 1; i<=13;i++ ){
+            t.add(eval('r'+i));
+        }
+
+        t.key("id_table");
+        t.tableForReading("table1");
+
+        // aggiungo relazione. table 2 è collegata a table 1 tramite la colonna c_name
+        ds.newRelation("r1", "table1", ["id_table"], "table1", ["parid_table"]);
+        // ************* fine config dt treeTable di test ***************************************
+
+        // configura var ausilairie, lo state serve in helpForm, il qaule è passato nel costruttore di treeViewManger
+        var s = new appMeta.MetaPageState();
+        s.DS = ds;
+        // il meta è invocato per chiamare la describeTree
+        var m = new appMeta.MetaData('table1');
+        s.meta  = m;
+        appMeta.addMeta('table1', m );
+        var helpForm = new appMeta.HelpForm(s, "table1", "#metaroot");
+
+        // *********** node dispatcher mock ******************************************************
+        function nodeDispatcherDerived() {
+            this.name = 'nodeDispatcherDerived';
+        }
+
+        nodeDispatcherDerived.prototype = _.extend(
+                new appMeta.TreeNode_Dispatcher(),
+                {
+                    constructor: nodeDispatcherDerived,
+
+                    /**
+                     *
+                     * @param parentRow
+                     * @param childRow
+                     * @returns {*|TreeNode}
+                     */
+                    getNode:function (parentRow, childRow) {
+
+                        var node = new appMeta.TreeNode(childRow);
+
+                        var text = childRow["id_table"] + " - " + childRow["parid_table"]+ " - " + childRow["campo1"] + " - " + childRow["campo2"];
+                        // crea l'oogetto che rappresenta il nodo nel jstree
+                        node.text = text;
+
+                        return node;
+                    },
+
+                    superClass: appMeta.TreeNode_Dispatcher
+                });
+        var nodeDispatcher = new nodeDispatcherDerived();
+        // ******************** fine mock node dispatcher    ****************************************
+
+
+        // override della funz describeTree, mi faccio tornare quello che serve, cioè il filtro root e il dispatcher
+        s.meta.describeTree = function () {
+            var d = $.Deferred();
+
+            return  d.resolve({nodeDispatcher:nodeDispatcher,  rootCondition:q.like("campo1", "%f")});
+        };
+
+        // instanzio il manger
+        var q = window.jsDataQuery;
+        tvm = new appMeta.TreeViewManager($("#tree"), helpForm, t);
+
+
+        // eseguo la fill
+        tvm.fillNodes()
+
+    }
+
+    function selNode() {
+        tvm.selectNode(r6);
+    }
+
+    function  changeIcon() {
+        var n = tvm.selectNode(r6);
+        tvm.tree.jstree("set_icon", n, 'fas fa-spinner fa-spin');
+    }
+
+</script>
+<div class="container" id="metaroot">
+    <h2>Test jsTree</h2>
+    <button onclick=loadTree()>Carica tree di test3</button>
+    <br>
+    <button onclick=selNode()>seleziona nodo r6</button>
+    <br>
+    <button onclick=changeIcon()>cambia icona nodo sel</button>
+    <br>
+    <button><i class="fas fa-folder" style="color:brown"></i>btn test icon</button>
+    <button><i class="fas fa-spinner" style="color:brown"></i>btn test icon</button>
+    <div id="tree">
+
+    </div>
+
+</div>
+
+</body>
+</html>

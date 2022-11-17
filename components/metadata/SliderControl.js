@@ -10,7 +10,7 @@
 
     /**
      *
-     * @param {html node} el
+     * @param {element} el
      * @param {HelpForm} helpForm
      * @param {DataTable} table
      * @param {DataTable} primaryTable

@@ -94,7 +94,7 @@
          * @description ASYNC
          * Shows the bootstrap modal
          * @param {MetaPage} page
-         * @param {html element} parent. the html node where the modal will be added
+         * @param {element} parent. the html node where the modal will be added
          * @retunrs {Deferred} a promise, that will be resolved in the close() event
          */
         show: function (page, parent) {

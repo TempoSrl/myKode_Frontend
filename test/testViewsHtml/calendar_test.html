@@ -1,0 +1,129 @@
+<html>
+<head>
+    <title>Test e2e</title>
+    <link  href="../../VisualMDLW/styles/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link  href="../../VisualMDLW/styles/app.css" rel="stylesheet" type="text/css">
+    <link rel="stylesheet" href="../../bower_components/jquery-ui/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="../../bower_components/fullcalendar/dist/fullcalendar.min.css">
+    <link rel="stylesheet" href="../../bower_components/fullcalendar/dist/fullcalendar.print.min.css" media="print">
+    <script defer src="../../VisualMDLW/styles/fontawesome/fontawesome-all.js"></script>
+
+</head>
+<body>
+<script src="../../bower_components/jquery/dist/jquery.js"></script>
+<script src="../../bower_components/lodash/lodash.js"></script>
+<script src="../../bower_components/observe-js/src/observe.js"></script>
+<script src="../../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+<script src="../../bower_components/jsDataSet/src/jsDataSet.js"></script>
+<script src="../app/styles/bootstrap/js/bootstrap.js"></script>
+<script src="../../bower_components/moment/min/moment.min.js"></script>
+<script src="../../bower_components/fullcalendar/dist/fullcalendar.min.js"></script>
+<script src="../../bower_components/fullcalendar/dist/locale-all.js"></script>
+<script src="../../components/metadata/MetaApp.js"></script>
+<script src="../../components/metadata/Config.js"></script>
+<script src="../../components/metadata/ConfigDev.js"></script>
+<script src="../../components/metadata/Logger.js"></script>
+<script src="../../components/metadata/Routing.js"></script>
+<script src="../../components/metadata/EventManager.js"></script>
+<script src="../../components/metadata/ConnWebService.js"></script>
+<script src="../../components/metadata/ConnWebSocket.js"></script>
+<script src="../../components/metadata/Connection.js"></script>
+<script src="../../components/metadata/LocalResource.js"></script>
+<script src="../../components/metadata/AuthManager.js"></script>
+<script src="../../components/metadata/GetDataUtils.js"></script>
+<script src="../../components/metadata/Utils.js"></script>
+<script src="../../components/metadata/GetData.js"></script>
+<script src="../../components/metadata/PostData.js"></script>
+<script src="../../components/metadata/LoaderControl.js"></script>
+<script src="../../components/metadata/BootstrapModal.js"></script>
+<script src="../../components/metadata/ListManager.js"></script>
+<script src="../../components/metadata/CssDefault.js"></script>
+<script src="../../components/metadata/TypedObject.js"></script>
+<script src="../../components/metadata/MetaPageState.js"></script>
+<script src="../../components/metadata/MetaModel.js"></script>
+<script src="../../components/metadata/HelpForm.js"></script>
+<script src="../../components/metadata/ModalLoaderControl.js"></script>
+<script src="../../components/metadata/MetaData.js"></script>
+<script src="../../components/metadata/MetaPage.js"></script>
+<script src="../../components/metadata/GridControl.js"></script>
+<script src="../../components/metadata/GridMultiSelectControl.js"></script>
+<script src="../../components/metadata/MultiSelectControl.js"></script>
+<script src="../../components/metadata/ComboManager.js"></script>
+<script src="../../components/metadata/MainToolBarManager.js"></script>
+<script src="../../components/metadata/CalendarControl.js"></script>
+
+<script>
+
+    $(document).ready(function(){
+
+		appMeta.routing.setUrlPrefix("http://localhost:54471");
+        appMeta.basePath  = "../../";
+
+        // costrusico ogetto stato e ds
+        var state = new appMeta.MetaPageState();
+        var ds = new jsDataSet.DataSet("temp");
+        var tableName = "table1";
+        var t1 = ds.newTable(tableName);
+        // setto le prop delle colonne per t1
+        t1.setDataColumn("idreg", "Int32");
+        t1.setDataColumn("startdate", "DateTime");
+        t1.setDataColumn("title", "String");
+
+        t1.columns["idreg"].caption = "IdReg";
+        t1.columns["startdate"].caption = "startdate";
+        t1.columns["title"].caption = "title";
+
+        t1.key("idreg");
+
+        var objrow0 = {idreg: "0", title: 'evento 0', startdate:new Date('2019', '1', '24', '12', '45')};
+        var objrow1 = {idreg: "1", title: 'evento 1', startdate:new Date("2019-02-25")};
+        var objrow2 = {idreg: "2", title: 'evento 2', startdate:new Date("2019-02-14")};
+        var objrow3 = {idreg: "3", title: 'evento 3', startdate:new Date("2019-02-11")};
+        var objrow4 = {idreg: "4", title: 'evento 4', startdate:new Date("2019-02-01")};
+        var objrow5 = {idreg: "5", title: 'evento 5', startdate:new Date("2019-03-31")};
+        t1.add(objrow0);
+        t1.add(objrow1);
+        t1.add(objrow2);
+        t1.add(objrow3);
+        t1.add(objrow4);
+        t1.add(objrow5);
+
+        state.DS = ds;
+        var meta = new appMeta.MetaData();
+        state.meta = meta;
+        var metapage = new appMeta.MetaPage(tableName, 'def', false);
+        metapage.state = state;
+        var helpForm = new  window.appMeta.HelpForm(state, tableName, "#rootelement");
+        metapage.helpForm  = helpForm;
+
+        // mock funzione asyn describeColumns()
+        appMeta.MetaData.prototype.describeColumns = function() {
+            return new $.Deferred().resolve();
+        };
+
+        var calendar = null;
+       /* appMeta.authManager.login(appMeta.configDev.userName, appMeta.configDev.password)
+                .then(function (res) {
+                    helpForm.preScanControls();
+                    calendar = $("#mycalendar").data("customController");
+                    calendar.fillControl();
+        })*/
+
+        // legge i cusotm control
+        helpForm.preScanControls();
+        // recupero oggetto cusotm control
+        calendar = $("#mycalendar").data("customController");
+        // invoco la fill
+        calendar.fillControl();
+        metapage.hideWaitingIndicator();
+
+    });
+
+
+</script>
+<div id='rootelement'>
+    <div id='mycalendar' data-custom-control="calendar" data-tag="table1.listtype.edittype" data-mdlstartcolumnname="startdate" data-mdltitlecolumnname="title" style="padding:200px">
+    </div>
+</div>
+</body>
+</html>

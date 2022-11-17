@@ -201,7 +201,7 @@
             return def;
         },
 
-    }
+    };
     
     appMeta.common = new Common();
     

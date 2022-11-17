@@ -436,10 +436,10 @@
 
     }
 
-}((typeof jsDataQuery === 'undefined') ? require('./jsDataQuery') : jsDataQuery,
+}((typeof appMeta === 'undefined') ? require('./jsDataQuery') : jsDataQuery,
     (typeof appMeta === 'undefined') ? require('./Logger').logger : appMeta.logger,
     (typeof appMeta === 'undefined') ? require('./Logger').logTypeEnum : appMeta.logTypeEnum,
-    (typeof jsDataSet === 'undefined') ? require('./jsDataSet') : jsDataSet,
+    (typeof appMeta === 'undefined') ? require('./jsDataSet') : jsDataSet,
     (typeof _ === 'undefined') ? require('lodash') : _
 ));
 

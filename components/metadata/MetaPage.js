@@ -570,7 +570,7 @@
             this.helpForm.lastValidText("");
             this.state.setSearchState();
             this.drawState = appMeta.DrawStates.clearing;
-            metaModel.allowAllClear(this.state.DS);
+            // metaModel.allowAllClear(this.state.DS);
             metaModel.clearEntity(this.state.DS);
             const primaryDataTable = this.getPrimaryDataTable();
             this.helpForm.lastSelected(primaryDataTable, null);
@@ -1070,7 +1070,7 @@
             const def = Deferred('freshToBar');
             if (!this.inited && !this.isList) return def.resolve(false);
 
-            const tb = appMeta.getToolBarManager();
+            const tb = appMeta.currApp.getToolBarManager();
             if (!tb) return def.resolve(false).promise();
             // assegno la metaPage corrente
             tb.setMetaPage(this);
@@ -1326,7 +1326,7 @@
             let res;
             const self = this;
             if (this.isEmpty()) {
-                res =  appMeta.returnToCaller()
+                res =  appMeta.currApp.returnToCaller()
                     .then(function () {
                         // risolvo il deferredResult rimasto aperto dopo l'activate
                         self.deferredResult.resolve(false);
@@ -1339,7 +1339,7 @@
             res =  this.warnUnsaved()
                 .then(function(res) {
                     if (res) {
-                        return appMeta.returnToCaller()
+                        return appMeta.currApp.returnToCaller()
                             .then(function () {
                                 self.deferredResult.resolve(false);
                                 return def.resolve(true);
@@ -1435,7 +1435,7 @@
                                 }
 
                                 self.helpForm.lastSelected(self.getPrimaryDataTable(), sel);
-                                return appMeta.returnToCaller()
+                                return appMeta.currApp.returnToCaller()
                                     .then(function() {
                                         // risolve il deferred aperto nella activate()
                                         self.deferredResult.resolve(true);
@@ -1509,7 +1509,7 @@
             this.helpForm.lastSelected(this.getPrimaryDataTable(), null);
             if (this.state.callerState) this.state.callerState.calledPageSelectedRow = null;
 
-            metaModel.allowAllClear(this.state.DS);
+            // metaModel.allowAllClear(this.state.DS);
 
             const res = this.eventManager.trigger(appMeta.EventEnum.startClearMainRowEvent, self, "treeSetSearch")
             .then(function (){
@@ -2183,7 +2183,7 @@
 
                             // potrebbe essere chiamato da un child, in quel caso torna un dialogResult e torno al chiamante
                             if (result && self.detailPage) {
-                                return appMeta.returnToCaller()
+                                return appMeta.currApp.returnToCaller()
                                     .then(function() {
                                         self.deferredResult.resolve(result);
                                     });
@@ -2272,7 +2272,7 @@
                                     return true; // serve per uscire da questa then interna e andare sulla then dell' _if(res)
                                 }
 
-                                metaModel.allowAllClear(self.state.DS);
+                                // metaModel.allowAllClear(self.state.DS);
                                 if (!last){
                                     //It was a successfully delete
                                     self.helpForm.lastSelected(self.getPrimaryDataTable(), null);
@@ -3254,7 +3254,7 @@
                     self.currOperation = currOperation.none;
 
                     // Deve fare qualcosa di simile a quel che c'è in btnMainSave (return to caller, DeferredResult.resolve(false) )
-                    return appMeta.returnToCaller()
+                    return appMeta.currApp.returnToCaller()
                     .then(function (){
                         def.resolve(null);
                         self.deferredResult.resolve(false);
@@ -3503,7 +3503,7 @@
             const def = Deferred("edit");
 
             return def
-                .from(appMeta.callPage(metaName, editType, wantsRow))
+                .from(appMeta.currApp.callPage(metaName, editType, wantsRow))
                 .promise();
         },
 

@@ -6,6 +6,225 @@
 (function () {
             "use strict";
 
+    /**
+     * Namespace for myKocde application
+     * @constructor
+     */
+    function AppMeta(){
+        this.allMeta = {};
+
+        /**
+         * @summary All user defined custom control manager
+         */
+        this.customControls = {};
+
+        /**
+         * @summary All user defined custom container control manager
+         */
+        this.customContainers = {};
+
+        /**
+         * Path to files in the web application
+         */
+        this.basePath = '';
+
+        this.dbClickTimeout = 200;
+
+        /**
+         * @summary List of all html pages of the application
+         */
+        this.htmlPages = [
+            //{tableName:null,editType:null,html:null}
+        ];
+
+        /**
+         * @summary List of all metaPages of the application
+         */
+        this.metaPages = [
+            //{tableName:null,editType:null,MetaPage:null}
+        ];
+    }
+
+            AppMeta.prototype = {
+                constructor: AppMeta,
+                /**
+                 * @method addMeta
+                 * @public
+                 * @description SYNC
+                 * Adds a metadata to the application. This should be called from the defining javascript
+                 * @param {string} tableName
+                 * @param {MetaData} meta
+                 */
+                addMeta: function (tableName, meta) {
+                    if (!this.allMeta[tableName]) {
+                        this.allMeta[tableName] = meta;
+                    }
+                },
+
+                /**
+                 * @method getMeta
+                 * @public
+                 * @description SYNC
+                 * Returns a singleton instance of MetaData for a specified "tableName"
+                 * @param {string} tableName
+                 * @returns {MetaData}
+                 */
+                getMeta: function (tableName) {
+                    var meta = this.allMeta[tableName];
+                    if (!meta) {
+                        meta = new this.MetaData(tableName);
+                    }
+                    meta.setLanguage(this.localResource.currLng);
+                    return meta;
+                },
+
+                /**
+                 * @method CustomControl
+                 * @public
+                 * @description SYNC
+                 * Gets/Sets the "control" for the "controlName". Saves it in the class variable "customControls"
+                 * @param {string} controlName
+                 * @param {CustomControl} control it can be GridControl, ComboControl
+                 * @returns {constructor|this}
+                 */
+                CustomControl:function(controlName, control) {
+                    if (control === undefined) {
+                        return this.customControls[controlName];
+                    }
+                    this.customControls[controlName] = control;
+                    return this.customControls[controlName];
+                },
+
+                /**
+                 * @method CustomContainer
+                 * @private
+                 * @description SYNC
+                 * Gets/Sets the "control" container for the "controlName". Saves it in the class variable "customContainers"
+                 * @param {string} controlName
+                 * @param {CustomControl} control
+                 * @returns {constructor|this}
+                 */
+                CustomContainer:function(controlName, control) {
+                    if (control === undefined) {
+                        return this.customContainers[controlName];
+                    }
+                    this.customContainers[controlName] = control;
+                    return this;
+                },
+
+                /**
+                 * @method getPage
+                 * @public
+                 * @description ASYNC
+                 * Loads and caches an html page from server and renders in rootElement of current page
+                 * @param {element} rootElement
+                 * @param {string} tableName
+                 * @param {string} editType
+                 * @returns {Deferred<string>)}
+                 */
+                getPage: function(rootElement, tableName, editType) {
+                    var res = this.Deferred("getPage");
+                    var page = _.find(this.htmlPages, { "tableName": tableName, "editType": editType });
+                    var self = this;
+                    if (page) {
+                        $(rootElement).html(page.html);
+                        return res.resolve(page.html).promise();
+                    }
+
+                    var htmlFileName = this.getMetaPagePath(tableName) + "/" + tableName + "_" + editType + ".html";
+                    $.get(htmlFileName)
+                    .done(
+                        function (data) {
+                            self.htmlPages.push({ tableName: tableName, editType: editType, html: data });
+                            $(rootElement).html(data);
+                            res.resolve(data);
+                        })
+                    .fail(
+                        function (err) {
+                            res.reject('Failed to load ' + htmlFileName + ' ' + JSON.stringify(err.responseText));
+                        });
+
+                    return res.promise();
+
+                },
+
+                /**
+                 * @method addMetaPage
+                 * @public
+                 * @description SYNC
+                 * Adds to the metaPage collection the "metaPage"
+                 * @param {string} tableName
+                 * @param {string} editType
+                 * @param {MetaPage} metaPage is the constructor of a metaPage
+                 */
+                addMetaPage: function (tableName, editType, metaPage) {
+                    let found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
+                    if (found) return;
+                    this.metaPages.push({ tableName: tableName, editType: editType, MetaPage: metaPage });
+                },
+
+
+                /**
+                 * @method getMetaPage
+                 * @public
+                 * @description ASYNC
+                 * Returns a deferred resolved with a new instance of a MetaPage
+                 * @param {string} tableName
+                 * @param {string} editType
+                 * @returns {Deferred<MetaPage>}
+                 */
+                getMetaPage: function(tableName, editType) {
+                    let res = this.Deferred("getMetaPage");
+                    let found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
+                    let self = this;
+
+                    if (found){
+                        let isDetail = found.MetaPage.prototype.detailPage;
+                        return res.resolve(new found.MetaPage(tableName, editType, isDetail)); //non aggiunge due volte la metaPage
+                    }
+
+                    let jsFileName = this.getMetaPagePath(tableName) + "/" + tableName + "_" + editType + ".js";
+
+                    $.getScript(jsFileName) // questo esegue il js caricato
+                    .done(
+                        function () { //mi attendo che il js caricato abbia effettuato la addMetaPage
+                            found = _.find(self.metaPages, { "tableName": tableName, "editType": editType });
+                            if (found) {
+                                let isDetail = found.MetaPage.prototype.detailPage;
+                                res.resolve(new found.MetaPage(tableName,editType, isDetail));
+                                return;
+                            }
+
+                            res.reject('Failed to load metaPage ' + jsFileName + ' edittype:' + editType + ". Compile wrong or missing file." );
+                        })
+                    .fail(
+                        function (err) {
+                            res.reject('Failed to load ' + jsFileName + ' edittype:' + editType + ". Compile wrong or missing file." );
+                        });
+
+                    return res.promise();
+
+                },
+                /**
+                 * @method getMetaPagePath
+                 * @public
+                 * @description SYNC
+                 * Returns the path are the MetaPages and html.
+                 * It mustn't end with "/"
+                 * Overridable
+                 * @param {string} tableName, represents the main table of the page which we have to find page.js and html
+                 * @returns {string} the path where to found metaPages and html
+                 */
+                getMetaPagePath:function (tableName) {
+                    let bpath = this.basePathMetadata ? this.basePathMetadata : this.basePath;
+                    return bpath  + tableName;
+                },
+            };
+
+            window.appMeta = new  AppMeta();
+
+            window.appMeta.currApp = undefined;
+
             /**
              * @constructor MetaApp
              * @description
@@ -14,7 +233,6 @@
             function MetaApp() {
                 "use strict";
                 this.init();
-
             }
 
             MetaApp.prototype = {
@@ -29,47 +247,13 @@
                     this.appvar = {};
                     this.q = window.jsDataQuery;
 
-                    this.dbClickTimeout = 200;
-
-                    /**
-                     * Path to files in the web application
-                     */
-                    this.basePath = '';
-
-                 
-
                     /**
                      * Current page displayed (the most nested called)
                      * @type MetaPage
                      */
                     this.currentMetaPage = null;
 
-                    this.allMeta = {};
-
-                    /**
-                     * @summary List of all metaPages of the application
-                     */
-                    this.metaPages = [
-                        //{tableName:null,editType:null,MetaPage:null}
-                    ];
-
-                    /**
-                     * @summary List of all html pages of the application
-                     */
-                    this.htmlPages = [
-                        //{tableName:null,editType:null,html:null}
-                    ];
-
-                  
-                    /**
-                     * @summary All user defined custom control manager
-                     */
-                    this.customControls = {};
-
-                    /**
-                     * @summary All user defined custom container control manager
-                     */
-                    this.customContainers = {};
+                    //this.allMeta = {};
 
                     this.rootElement = "";
                     
@@ -206,179 +390,17 @@
                     this.setTitle();
                 },
 
-                /**
-                 * @method CustomControl
-                 * @public
-                 * @description SYNC
-                 * Gets/Sets the "control" for the "controlName". Saves it in the class variable "customControls"
-                 * @param {string} controlName
-                 * @param {CustomControl} control it can be GridControl, ComboControl
-                 * @returns {constructor|this}
-                 */
-                CustomControl:function(controlName, control) {
-                    if (control === undefined) {
-                        return this.customControls[controlName];
-                    }
-                    this.customControls[controlName] = control;
-                    return this.customControls[controlName];
-                },
-
-                /**
-                 * @method CustomContainer
-                 * @private
-                 * @description SYNC
-                 * Gets/Sets the "control" container for the "controlName". Saves it in the class variable "customContainers"
-                 * @param {string} controlName
-                 * @param {CustomControl} control
-                 * @returns {constructor|this}
-                 */
-                CustomContainer:function(controlName, control) {
-                    if (control === undefined) {
-                        return this.customContainers[controlName];
-                    }
-                    this.customContainers[controlName] = control;
-                    return this;
-                },
-
-                /**
-                 * @method addMetaPage
-                 * @public
-                 * @description SYNC
-                 * Adds to the metaPage collection the "metaPage"
-                 * @param {string} tableName
-                 * @param {string} editType
-                 * @param {MetaPage} metaPage is the constructor of a metaPage
-                 */
-                addMetaPage: function (tableName, editType, metaPage) {
-                    var found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
-                    if (found) return;
-                    this.metaPages.push({ tableName: tableName, editType: editType, MetaPage: metaPage });
-                },
-
-                /**
-                 * @method getMetaDataPath
-                 * @public
-                 * @description SYNC
-                 * Returns the path are the MetaPages and html.
-                 * It mustn't end with "/"
-                 * Overridable
-                 * @param {string} tableName, represents the main table of the page which we have to find page.js and html
-                 * @returns {string} the path where to found metaPages and html
-                 */
-                getMetaDataPath:function (tableName) {
-                    var bpath = this.basePathMetadata ? this.basePathMetadata : this.basePath;
-                    return bpath  + tableName;
-                },
 
 
-                /**
-                 * @method getMetaPage
-                 * @public
-                 * @description ASYNC
-                 * Returns a deferred resolved with a new instance of a MetaPage
-                 * @param {string} tableName
-                 * @param {string} editType
-                 * @returns {Deferred(MetaPage)}
-                 */
-                getMetaPage: function(tableName, editType) {
-                    var res = this.Deferred("getMetaPage");
-                    var found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
-                    var self = this;
 
-                    if (found){
-                        var isDetail = found.MetaPage.prototype.detailPage;
-                        return res.resolve(new found.MetaPage(tableName, editType, isDetail)); //non aggiunge due volte la metaPage
-                    }
 
-                    var jsFileName = this.getMetaDataPath(tableName) + "/" + tableName + "_" + editType + ".js";
 
-                    $.getScript(jsFileName) // questo esegue il js caricato
-                        .done(
-                            function () { //mi attendo che il js caricato abbia effettuato la addMetaPage
-                                found = _.find(self.metaPages, { "tableName": tableName, "editType": editType });
-                                if (found) {
-                                    var isDetail = found.MetaPage.prototype.detailPage;
-                                    res.resolve(new found.MetaPage(tableName,editType, isDetail));
-                                    return;
-                                }
 
-                                res.reject('Failed to load metaPage ' + jsFileName + ' edittype:' + editType + ". Compile wrong or missing file." );
-                            })
-                        .fail(
-                            function (err) {
-                              res.reject('Failed to load ' + jsFileName + ' edittype:' + editType + ". Compile wrong or missing file." );
-                            });
 
-                    return res.promise();
 
-                },
 
-                /**
-                 * @method addMeta
-                 * @public
-                 * @description SYNC
-                 * Adds a metadata to the application. This should be called from the defining javascript
-                 * @param {string} tableName
-                 * @param {MetaData} meta
-                 */
-                addMeta: function (tableName, meta) {
-                    if (!this.allMeta[tableName]) {
-                        this.allMeta[tableName] = meta;
-                    }
-                },
 
-                /**
-                 * @method getMeta
-                 * @public
-                 * @description SYNC
-                 * Returns a singleton instance of MetaData for a specified "tableName"
-                 * @param {string} tableName
-                 * @returns {MetaData}
-                 */
-                getMeta: function (tableName) {
-                    var meta = this.allMeta[tableName];
-                    if (!meta) {
-                        meta = new this.MetaData(tableName);
-                    }
-                    meta.setLanguage(this.localResource.currLng);
-                    return meta;
-                },
 
-                /**
-                 * @method getPage
-                 * @public
-                 * @description SYNC
-                 * Loads and caches an html page from server and renders in rootElement of current page
-                 * @param {element} rootElement
-                 * @param {string} tableName
-                 * @param {string} editType
-                 * @returns {Deferred<html page>)}
-                 */
-                getPage: function(rootElement, tableName, editType) {
-                    var res = this.Deferred("getPage");
-                    var page = _.find(this.htmlPages, { "tableName": tableName, "editType": editType });
-                    var self = this;
-                    if (page) {
-                        $(rootElement).html(page.html);
-                        return res.resolve(page.html).promise();
-                    }
-
-                    var htmlFileName = this.getMetaDataPath(tableName) + "/" + tableName + "_" + editType + ".html";
-                    $.get(htmlFileName)
-                        .done(
-                            function (data) {
-                                self.htmlPages.push({ tableName: tableName, editType: editType, html: data });
-                                $(rootElement).html(data);
-                                res.resolve(data);
-                            })
-                        .fail(
-                            function (err) {
-                                res.reject('Failed to load ' + htmlFileName + ' ' + JSON.stringify(err.responseText));
-                            });
-
-                    return res.promise();
-
-                },
 
                 /**
                  * @method callPage
@@ -428,7 +450,7 @@
                             // esco se non posso chiudere la precedente, perchè magari ci sono modifiche e l'utente deve prima accettare
                             if (!canOpenPage) return;
 
-                            return self.getMetaPage(metaToCall, editType)
+                            return appMeta.getMetaPage(metaToCall, editType)
                                 .then(function(calledMetaPage) {
                                     createdPage = calledMetaPage;
                                     return calledMetaPage.init(); //returns an instance of metaPage (with meta and state and dataset)
@@ -441,7 +463,7 @@
                                         // aggiunge accorgimento grafico per far apparire la pag di dettaglio come un popup
                                         if (wantsRow) $(self.rootElement).addClass(appMeta.cssDefault.detailPage);
                                         if (!wantsRow) $(self.rootElement).removeClass(appMeta.cssDefault.detailPage);
-                                        return self.getPage(self.rootElement,
+                                        return appMeta.getPage(self.rootElement,
                                             calledMetaPage.primaryTableName,
                                             calledMetaPage.editType); //gets and render calledMetaPage html
                                     }))
@@ -483,7 +505,7 @@
                  * @returns {Deferred}
                  */
                 returnToCaller: function() {
-                    var def = this.Deferred("returnToCaller");
+                    var def = appMeta.Deferred("returnToCaller");
                     if (!this.currentMetaPage || !this.currentMetaPage.state) {
                         //there is no caller 
                         return def.reject('there is no caller page').promise();
@@ -576,8 +598,9 @@
                 }
 
             };
+            window.appMeta.MetaApp = MetaApp;
 
-            window.BaseMetaApp = MetaApp;
+
 }());
 
 

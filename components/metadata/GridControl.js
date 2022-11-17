@@ -875,7 +875,7 @@
                     .call(self, that);
                 //console.log("decreasing for Timeout");
                 Stabilizer.decreaseNesting("rowClickEv.timeout");
-            }, appMeta.dbClickTimeout);
+            }, appMeta.currApp.dbClickTimeout);
         },
 
         /**

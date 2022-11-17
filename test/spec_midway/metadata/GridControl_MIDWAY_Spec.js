@@ -22,7 +22,7 @@ describe("GridControl",
         beforeAll(function (){
             jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
             appMeta.basePath = "base/";
-            appMeta.initToolBarManager();
+            appMeta.currApp.initToolBarManager();
 
         });
 

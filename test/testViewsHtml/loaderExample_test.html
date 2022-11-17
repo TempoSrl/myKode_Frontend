@@ -1,0 +1,36 @@
+<html>
+<head>
+    <title>Test e2e</title>
+    <link  href="..\..\app\styles\bootstrap\css\bootstrap.css" rel="stylesheet" type="text/css">
+    <link  href="..\..\app\styles\app.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<script src="../../bower_components/jquery/dist/jquery.js"></script>
+<script src="../../bower_components/lodash/lodash.js"></script>
+<script src="../../bower_components/observe-js/src/observe.js"></script>
+<script src="../../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+<script src="../../bower_components/jsDataSet/src/jsDataSet.js"></script>
+<script src="../app/styles/bootstrap/js/bootstrap.js"></script>
+<script src="../../components/metadata/MetaApp.js"></script>
+<script src="../../components/metadata/Config.js"></script>
+<script src="../../components/metadata/Logger.js"></script>
+<script src="../../components/metadata/Utils.js"></script>
+<script src="../../components/metadata/EventManager.js"></script>
+<script src="../../components/metadata/LoaderControl.js"></script>
+
+
+<script>
+
+    $(document).ready(function(){
+        appMeta.basePath  = "../../";
+        var el = $("#rootelement");
+        var loader = new appMeta.LoaderControl(el, "example loader, wait for...");
+        loader.fillControl();
+    });
+
+</script>
+<div id='rootelement'>
+
+</div>
+</body>
+</html>

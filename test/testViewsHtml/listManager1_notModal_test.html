@@ -1,0 +1,82 @@
+<html>
+<head>
+    <title>Test e2e</title>
+    <link href="../app/styles/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link href="../app/styles/app.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<script src="../../bower_components/jquery/dist/jquery.js"></script>
+<script src="../../bower_components/lodash/lodash.js"></script>
+<script src="../../bower_components/observe-js/src/observe.js"></script>
+<script src="../../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+<script src="../../bower_components/jsDataSet/src/jsDataSet.js"></script>
+<script src="../app/styles/bootstrap/js/bootstrap.js"></script>
+<script src="../../components/metadata/MetaApp.js"></script>
+<script src="../../components/metadata/Config.js"></script>
+<script src="../../components/metadata/Logger.js"></script>
+<script src="../../components/metadata/Routing.js"></script>
+<script src="../../components/metadata/ConnWebService.js"></script>
+<script src="../../components/metadata/ConnWebSocket.js"></script>
+<script src="../../components/metadata/Connection.js"></script>
+<script src="../../components/metadata/LocalResource.js"></script>
+<script src="../../components/metadata/EventManager.js"></script>
+<script src="../../components/metadata/LoaderControl.js"></script>
+<script src="../../components/metadata/GetDataUtils.js"></script>
+<script src="../../components/metadata/GetData.js"></script>
+<script src="../../components/metadata/PostData.js"></script>
+<script src="../../components/metadata/BootstrapModal.js"></script>
+<script src="../../components/metadata/ListManager.js"></script>
+<script src="../../components/metadata/CssDefault.js"></script>
+<script src="../../components/metadata/TypedObject.js"></script>
+<script src="../../components/metadata/MetaPageState.js"></script>
+<script src="../../components/metadata/MetaModel.js"></script>
+<script src="../../components/metadata/HelpForm.js"></script>
+<script src="../../components/metadata/MetaData.js"></script>
+<script src="../../components/metadata/MetaPage.js"></script>
+<script src="../../components/metadata/GridControl.js"></script>
+<script src="../../components/metadata/ComboManager.js"></script>
+<script src="../../components/metadata/Utils.js"></script>
+<script src="../../components/utils/ConnMockServer.js"></script>
+<script>
+
+    appMeta.basePath = "../../";
+
+    // imposto mock del backend
+    appMeta.connection = new ConnMockServer();
+
+    function showModalListManager(){
+        var state = new window.appMeta.MetaPageState();
+        var ds = new jsDataSet.DataSet("temp");
+        ds.newTable("table1");
+        state.DS = ds;
+
+        var metapage = new appMeta.MetaPage('table1', 'def', false);
+        metapage.state = state;
+        var helpForm = new  window.appMeta.HelpForm(state, "table1", "#rootelement");
+        metapage.helpForm = helpForm;
+        var lm = new window.appMeta.ListManager("table1", null, false, $("#lm1"), metapage);
+        lm.show()
+                .then(function (res) {
+                    if (res){
+                        $("#txtArea1").append( " row selected: " + res["c_name"] + "," + res["c_dec"] + "," + res["c_citta"]);
+                    }else{
+                        $("#txtArea1").append( " row undefined " );
+                    }
+                    $("#txtArea1").append($("<BR>"));
+                });
+    }
+
+</script>
+<div class="container"><h2>Test ListManager</h2>
+    <div id="rootelement">
+        <button onclick="showModalListManager()" id="btn1">show list manager NOT MODAL</button>
+        <div id="lm1" ></div>
+    </div>
+
+<p id="txtArea1" >
+
+</p>
+</div>
+
+</body>
+</html>

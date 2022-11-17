@@ -10,7 +10,7 @@ describe('utilsNoClock',
                 beforeEach(function () {
                     // inizializzo per ogni test l'oggetto appMeta        
                     appMeta = window.appMeta;
-                    appMeta.init();
+                    appMeta.currApp.init();
                     appMeta.basePath = 'base/test/spec/';
 
                 });

@@ -448,7 +448,7 @@ describe('ListManager', function () {
                     tRegistryAddress.orderBy  = function (o) {
                         return "idreg";
                     };
-                    return $.Deferred().resolve(tRegistryAddress).promise();
+                    return $.Deferred().resolve(tRegistryAddress,1,100).promise();
                 };
 
                 var hf = new HelpForm(state, "registry", "#rootelement");
@@ -457,7 +457,12 @@ describe('ListManager', function () {
                 tRegistry.notEntityChild = $q.like($q.field("p_iva"), "0");
                 var lm =  new ListManager("registryaddress", "listType", null, true, $("#lm1"), mp, true, tRegistry);
                 lm.init();
-                lm.show();
+                lm.show()
+                .fail(err=>{
+                    expect(err).toBe(undefined);
+                    expect(true).toBe(false);
+                    done();
+                });
                 common.eventWaiter(mp, appMeta.EventEnum.showModalWindow)
                     .then(function () {
                         expect($("table:first").parent().parent().parent().hasClass("modal-body")).toBe(true);
@@ -469,7 +474,11 @@ describe('ListManager', function () {
                     }).then(function() {
                         expect($("table:first").length).toBe(0); // la modale è stata rimossa, quindi anche la griglia che vi era ospitata
                         done();
-                    });
+                    })
+                .fail(err=>{
+                    expect(err).toBe(undefined);
+                    done();
+                });
 
             }, 10000);
 

@@ -1,0 +1,110 @@
+<html>
+<head>
+    <title>Test e2e</title>
+    <link  href="../../VisualMDLW/styles/bootstrap/css/bootstrap.css" rel="stylesheet" type="text/css">
+    <link  href="../../VisualMDLW/styles/app.css" rel="stylesheet" type="text/css">
+    <script defer src="../../VisualMDLW/styles/fontawesome/fontawesome-all.js"></script>
+</head>
+<body>
+<script src="../../bower_components/jquery/dist/jquery.js"></script>
+<script src="../../bower_components/lodash/lodash.js"></script>
+<script src="../../bower_components/observe-js/src/observe.js"></script>
+<script src="../../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+<script src="../../bower_components/jsDataSet/src/jsDataSet.js"></script>
+<script src="../app/styles/bootstrap/js/bootstrap.js"></script>
+<script src="../../components/metadata/MetaApp.js"></script>
+<script src="../../components/metadata/Config.js"></script>
+<script src="../../components/metadata/ConfigDev.js"></script>
+<script src="../../components/metadata/Logger.js"></script>
+<script src="../../components/metadata/Routing.js"></script>
+<script src="../../components/metadata/EventManager.js"></script>
+<script src="../../components/metadata/ConnWebService.js"></script>
+<script src="../../components/metadata/ConnWebSocket.js"></script>
+<script src="../../components/metadata/Connection.js"></script>
+<script src="../../components/metadata/LocalResource.js"></script>
+<script src="../../components/metadata/AuthManager.js"></script>
+<script src="../../components/metadata/GetDataUtils.js"></script>
+<script src="../../components/metadata/Utils.js"></script>
+<script src="../../components/metadata/GetData.js"></script>
+<script src="../../components/metadata/PostData.js"></script>
+<script src="../../components/metadata/LoaderControl.js"></script>
+<script src="../../components/metadata/BootstrapModal.js"></script>
+<script src="../../components/metadata/ListManager.js"></script>
+<script src="../../components/metadata/CssDefault.js"></script>
+<script src="../../components/metadata/TypedObject.js"></script>
+<script src="../../components/metadata/MetaPageState.js"></script>
+<script src="../../components/metadata/MetaModel.js"></script>
+<script src="../../components/metadata/HelpForm.js"></script>
+<script src="../../components/metadata/ModalLoaderControl.js"></script>
+<script src="../../components/metadata/MetaData.js"></script>
+<script src="../../components/metadata/MetaPage.js"></script>
+<script src="../../components/metadata/GridControl.js"></script>
+<script src="../../components/metadata/GridMultiSelectControl.js"></script>
+<script src="../../components/metadata/MultiSelectControl.js"></script>
+<script src="../../components/metadata/ComboManager.js"></script>
+<script src="../../components/metadata/MainToolBarManager.js"></script>
+
+<script>
+
+    $(document).ready(function(){
+
+		appMeta.routing.setUrlPrefix("http://localhost:54471");
+        appMeta.basePath  = "../../";
+
+        // costrusico ogetto stato e ds
+        var state = new appMeta.MetaPageState();
+        var ds = new jsDataSet.DataSet("temp");
+        var tableName = "registry"
+        var t1 = ds.newTable(tableName);
+        // setto le prop delle colonne per t1
+        t1.setDataColumn("idreg", "Int32");
+        t1.setDataColumn("cu", "String");
+        t1.setDataColumn("gender", "String");
+
+        t1.columns["idreg"].caption = "IdReg";
+        t1.columns["cu"].caption = "Cu";
+        t1.columns["gender"].caption = "Gender";
+
+        t1.key("idreg");
+
+        state.DS = ds;
+
+        var meta = new appMeta.MetaData();
+        state.meta = meta;
+
+        var metapage = new appMeta.MetaPage(tableName, 'def', false);
+        metapage.state = state;
+
+        var helpForm = new  window.appMeta.HelpForm(state, tableName, "#rootelement");
+        metapage.helpForm  = helpForm;
+
+        var q = window.jsDataQuery;
+        var filter = q.and(q.eq(q.field("gender"),"F"), q.eq(q.field("cu"),"sa"));
+
+        var el = $("#rootelement");
+
+        // mock funzione asyn describeColumns()
+        appMeta.MetaData.prototype.describeColumns = function() {
+            return new $.Deferred().resolve();
+        };
+
+        appMeta.authManager.login(appMeta.configDev.userName, appMeta.configDev.password)
+                .then(function (res) {
+            var multiSelectControl = new appMeta.MultiSelectControl(el, metapage, t1, filter, "listingType");
+            multiSelectControl.fillControl()
+                    .then(function () {
+                metapage.hideWaitingIndicator();
+            })
+
+        })
+
+
+    });
+
+
+</script>
+<div id='rootelement'>
+
+</div>
+</body>
+</html>

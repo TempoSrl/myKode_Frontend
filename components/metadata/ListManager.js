@@ -316,13 +316,14 @@
                 res = self.loadCore(dataTablePaged, totPage, totRows);
             } else {
                 // passo qui, quando premo i pulsanti di navigazione della paginazione, quindi qui si ricalcola il dt
-                // oppure se eseguo un oridnamento sulla griglia e ci sono più pagine
+                // oppure se eseguo un ordinamento sulla griglia e ci sono più pagine
                 res = getData.getPagedTable(this.tableName, this.currentPageDisplayed, this.nRowPerPage, this.filter, this.listType, this.newSort)
                     .then(function(dtp, totp, totr) {
                         // Nel momento in cui torno la riga alla metapage viene fatta della logica sulla riga selezionata
                         // su relazioni etc... Quindi recupera dalla table la proprietà dataset, che in questo caso non avrebbe perchè
                         // getPagedTable() torna solo un datatable, e lo devo quindi associare al ds corrente della metapage
                         dtp.dataset = self.metaPage.state.DS;
+
                         return self.loadCore(dtp, totp, totr);
                     });
             }

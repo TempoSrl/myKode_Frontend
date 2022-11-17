@@ -1,0 +1,34 @@
+<script src="../../../bower_components/jquery/dist/jquery.js"></script>
+<script>
+
+    var currMainRoot;
+    function openDetail() {
+        currMainRoot = $("#metaRoot");
+        // 2. ottiene il parent del vecchio root
+        var parentNode = currMainRoot.parent();
+        //3. ottiene un newChild avente pari id dell'old, e stessi attributes dell'old, ma senza contenuto
+        var newChild = $("#metaRoot")[0].cloneNode(false);
+        // 4. esegue replace del contenuto
+        $(parentNode)[0].replaceChild(newChild,  currMainRoot[0])
+        var htmlDetail ='<h1>Detail Page</h1><button onclick="returnToMain()">return Main</button>';
+        // simulo ulteriore getPage()
+        $("#metaRoot").html(htmlDetail);
+    }
+
+    function returnToMain() {
+        var currentMetaPageRoot  =  $("#metaRoot");
+        // 2. ottiene il parent del vecchio root
+        var parentRoot = currentMetaPageRoot.parent();
+        // 4. esegue replace del contenuto del vecchio
+        $(parentRoot)[0].replaceChild(currMainRoot[0], currentMetaPageRoot[0]);
+    }
+
+
+</script>
+
+<div id="rootApp">
+    <div id="metaRoot" style="background-color: green">
+        <h1>Main Page</h1>
+        <button onclick="openDetail()">open Detail</button>
+    </div>
+</div>

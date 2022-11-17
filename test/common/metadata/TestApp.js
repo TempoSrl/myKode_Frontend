@@ -1,7 +1,7 @@
 (function () {
 
     // Deriva da MetaApp
-    var MetaApp = BaseMetaApp;
+    let MetaApp = window.appMeta.MetaApp;
 
     function TestApp() {
         MetaApp.apply(this, arguments);
@@ -12,11 +12,11 @@
         {
             constructor: TestApp,
             superClass: MetaApp.prototype,
-
-            getMetaDataPath: function (tableName) {
-                return this.superClass.getMetaDataPath.call(this, tableName);
-            }
-
         });
-    window.appMeta = new TestApp();
+
+    window.appMeta.callWebService = function (method, prms) {
+        return appMeta.currApp.callWebService(method,prms);
+    };
+
+    window.appMeta.currApp = new TestApp();
 }());

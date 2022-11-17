@@ -7,7 +7,7 @@ describe('MetaApp',
             jasmine.getFixtures().fixturesPath = 'base/test/spec/fixtures';
             // inizializzo per ogni test l'oggetto appMeta        
             appMeta = window.appMeta;
-            appMeta.init();
+            appMeta.currApp.init();
             appMeta.basePath = 'base/test/spec/';
             //console.log('beforeEach:');
             $("html").html('<head></head><body></body>');
@@ -24,9 +24,9 @@ describe('MetaApp',
                         expect(window.appMeta).toBeDefined();
                     });
 
-                it('window.appMeta is a MetaApp',
+                it('window.appMeta.currApp is a TestApp',
                     function() {
-                        expect(window.appMeta.constructor.name).toBe("TestApp");
+                        expect(window.appMeta.currApp.constructor.name).toBe("TestApp");
                     });
 
                 describe("addMeta/getMeta ",

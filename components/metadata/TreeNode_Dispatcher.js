@@ -27,7 +27,7 @@
          * To override. It builds the TreeNode starting from the info on the parentRow and childRow
          * @param {DataRow} parentRow
          * @param {DataRow} childRow
-         * @returns {Deferred(TreeNode)}
+         * @returns {Deferred<TreeNode>}
          */
         getNode:function (parentRow, childRow) {
             var def = Deferred("getNode");

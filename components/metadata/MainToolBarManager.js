@@ -14,7 +14,7 @@
      * @constructor MainToolBarManager
      * @description
      * Initializes the main toolbar of the application
-     * @param {Html node} rootElement
+     * @param {element} rootElement
      * @param {MetaPage} metaPage
      */
     function MainToolBarManager(rootElement, metaPage) {

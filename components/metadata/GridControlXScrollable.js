@@ -11,7 +11,7 @@
      * @constructor GridControl
      * @description
      * Initializes the html grid control
-     * @param {Html node} el
+     * @param {element} el
      * @param {HelpForm} helpForm
      * @param {DataTable} table. this is the table corresponding to the tableName configured in the tag at the position 0
      * (see function HelpForm.preScanCustomControl for the initialization)

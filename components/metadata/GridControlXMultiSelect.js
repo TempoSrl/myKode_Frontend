@@ -124,7 +124,7 @@
 
                         // sul mobile inserisco bottoncino su header per il grouping.
                         // non aggiungo se è la colonna notevole gruppo, e se è impostato che non deve essere visibile il grouping
-                        if ((appMeta.isMobile || self.forceBtnGroupOnHeader) && !c.isFirsGrouping && !this.excludeGroup) {
+                        if ((appMeta.currApp.isMobile || self.forceBtnGroupOnHeader) && !c.isFirsGrouping && !this.excludeGroup) {
                             var $groupIcon = $('<i class="fas fa-poll-h" style="color:grey; margin-left: 6px">');
                             var $span = $('<div style="padding:5px; float:right; cursor: pointer; display: contents">');
                             $span.on("click", _.partial(self.dropColumnEv, self, c));

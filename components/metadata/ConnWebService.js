@@ -88,7 +88,7 @@
          * The logic is managed from the caller
          * @param {ConnWebService} that
          * @param {Deferred} deferred
-         * @param {Json string} res. is the answser of the server
+         * @param {string} res. is the answer of the server
          * @returns {Deferred}
          */
         success:function (that, deferred, res) {

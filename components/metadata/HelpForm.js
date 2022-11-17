@@ -247,7 +247,7 @@
                 $("#" + dialogid).dialog({
                     modal: true,
                     autoResize:true,
-                    width: appMeta.getScreenWidth() * 0.85,
+                    width: appMeta.currApp.getScreenWidth() * 0.85,
                     title: 'Debug window',
                     open: function () {
                         // attacco html
@@ -425,7 +425,7 @@
                 if (unlinked) {
                     currTextBox.on("focus", _.partial(this.textBoxGotFocus, this));
                     // nel caso di 2 autochoose consecutive scatta la perdita di focus sulla seconda se premo tab sulla 1a.
-                    // e quindi scatta autochoose solo se premo tab  oppure click del mouse dell'utnete da 1 altra parte, non automaticamente
+                    // e quindi scatta autochoose solo se premo tab  oppure click del mouse dell'utente da 1 altra parte, non automaticamente
                     // quindi tolgo possibilità di ricevere focus tramite tab
                     currTextBox.attr('tabindex', '-1');
                     currTextBox.on("blur", _.partial(this.textBoxLostFocus, this ));
@@ -1656,7 +1656,7 @@
             let rFound = null;
             _.forEach(this.primaryTable.parentRelations(), function (rel) {
                 if (rel.parentTable === parentTable.name) {
-                    rfound = rel;
+                    rFound = rel;
                     return false;
                 }
             });
@@ -1951,10 +1951,9 @@
             colType = colType || $.data(el, "mdlColType");
 
             const sign = (parseInt(val) > 0);
-            if (!sign) val.value = - val.value;
+            if (!sign) val = -val;
             $(textBox).val(new TypedObject(colType, val).stringValue(null));
             this.setSignForValueSigned(el, sign);
-
         },
 
         /**
@@ -2127,7 +2126,10 @@
             if (!tag) return;
             const tagName = el.tagName.toUpperCase(); // INPUT/TABLE/SELECT...
             if (tagName === "BUTTON" ||
-                tagName === "SPAN") return; //avoids warning on not existing tables for buttons tag
+                tagName === "SPAN"||
+                tagName === "DIV"
+
+            ) return; //avoids warning on not existing tables for buttons tag
 
             let table = this.getTableName(tag);
 
@@ -2372,7 +2374,7 @@
         iterateOverCustomTag: function (task, optParam) {
             let allCtrlPromise = [];
             $(this.rootElement + " [data-custom-control] ")
-                .each(function(index, el) {
+                .each(function(_, el) {
                     const ctrl = $(el).data("customController");
                     if (!ctrl) return;
                     if (!(task in ctrl)) return;

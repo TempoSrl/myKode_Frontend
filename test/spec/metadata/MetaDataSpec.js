@@ -52,7 +52,7 @@ describe('MetaData', function () {
                     t.setDataColumn("Code", CType.int);
                     t.setDataColumn("Name", CType.string);
                     t.setDataColumn("City", CType.string);
-                    t.setDataColumn("Born", CType.Date);
+                    t.setDataColumn("Born", CType.date);
                     t.setDataColumn("Age", CType.int);
 
                     t.columns["Code"].allowDbNull = false;
@@ -82,7 +82,7 @@ describe('MetaData', function () {
                     meta.setLanguage("it");
 
                     meta.isValid(objrow1.getRow()).then(function (result) {
-                        expect(result).toBeNull()
+                        expect(result).toBeNull();
                     });
 
                     
@@ -98,6 +98,10 @@ describe('MetaData', function () {
                     meta.isValid(objrow3.getRow()).then(function (result) {
                         expect(result.errField).toBe("Born");
                         expect(result.errMsg).toContain(emptyFieldMsg); // data default vuota
+                    })
+                    .fail(err=>{
+                        expect(err).toBeUndefined();
+                        expect (true).toBe(false);
                     });
 
                     meta.isValid(objrow4.getRow()).then(function (result) {

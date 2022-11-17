@@ -16,7 +16,7 @@
      * @constructor GridControl
      * @description
      * Initializes the html grid control
-     * @param {Html node} el
+     * @param {element} el
      * @param {HelpForm} helpForm
      * @param {DataTable} table. this is the table corresponding to the tableName configured in the tag at the position 0
      * (see function HelpForm.preScanCustomControl for the initialization)
@@ -87,7 +87,7 @@
              * @description ASYNC
              * Open the page for childTable + childTableListType.
              * @param {GridControlXChild} that
-             * @param {ObjectRow} row
+             * @param {ObjectRow} rowChild
              * @param {Object} calcChildObj  = { tablename:String, edittype:String, columnlookup:String, columncalc:String}
              */
             addForChildcolumnsEv:function(that, rowChild, calcChildObj) {
@@ -215,7 +215,7 @@
                 var childRows = objRow.getRow().getChildInTable(calcChildObj.tablename);
 
                 //recupero l'ordinamento
-                var meta = appMeta.getMeta(appMeta.currentMetaPage.state.DS.tables[calcChildObj.tablename].myTableForReading);
+                var meta = appMeta.getMeta(appMeta.currApp.currentMetaPage.state.DS.tables[calcChildObj.tablename].myTableForReading);
                 var listType = (calcChildObj.listType || calcChildObj.edittype);
                 var sorting = meta.getSorting(listType);
                 if (sorting) {

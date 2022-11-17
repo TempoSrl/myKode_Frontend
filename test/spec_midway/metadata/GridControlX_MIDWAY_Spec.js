@@ -20,7 +20,7 @@ describe("GridControlX",
         // invoca la getToolBarManager per instanziare la toolbar, che poi sarà richiamata nei vari freshForm
         beforeAll(function () {
             appMeta.basePath = "base/";
-            appMeta.initToolBarManager();
+            appMeta.currApp.initToolBarManager();
           
         });
         

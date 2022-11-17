@@ -41,10 +41,15 @@
                 let currId = $(currTab).prop('id');
                 let selector = '.nav-link[href="#' + currId + '"]';
                 let selTab = document.querySelector(selector);
-                selTab.addEventListener('shown.bs.tab', function (event) {
-                     res.resolve(true);
-                });
-                $(selector).tab('show');
+                if (selTab) {
+                    selTab.addEventListener('shown.bs.tab', function (event) {
+                        res.resolve(true);
+                    });
+                    $(selector).tab('show');
+                }
+                else {
+                    res.resolve(true);
+                }
             }
             return res.promise();
         }

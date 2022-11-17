@@ -1,0 +1,82 @@
+<html>
+<head>
+    <title>Test e2e</title>
+    <link  href="..\..\app\styles\bootstrap\css\bootstrap.css" rel="stylesheet" type="text/css">
+    <link  href="..\..\app\styles\app.css" rel="stylesheet" type="text/css">
+    <script defer src="..\..\app\styles\fontawesome/fontawesome-all.js"></script>
+</head>
+<body>
+<script src="../../bower_components/jquery/dist/jquery.js"></script>
+<script src="../../bower_components/lodash/lodash.js"></script>
+<script src="../../bower_components/observe-js/src/observe.js"></script>
+<script src="../../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+<script src="../../bower_components/jsDataSet/src/jsDataSet.js"></script>
+<script src="../app/styles/bootstrap/js/bootstrap.js"></script>
+<script src="../../components/metadata/MetaApp.js"></script>
+<script src="../../components/metadata/Config.js"></script>
+<script src="../../components/metadata/ConfigDev.js"></script>
+<script src="../../components/metadata/Logger.js"></script>
+<script src="../../components/metadata/Routing.js"></script>
+<script src="../../components/metadata/EventManager.js"></script>
+<script src="../../components/metadata/DbProcedureMessage.js"></script>
+<script src="../../components/metadata/ConnWebService.js"></script>
+<script src="../../components/metadata/ConnWebSocket.js"></script>
+<script src="../../components/metadata/Connection.js"></script>
+<script src="../../components/metadata/LocalResource.js"></script>
+<script src="../../components/metadata/AuthManager.js"></script>
+<script src="../../components/metadata/GetDataUtils.js"></script>
+<script src="../../components/metadata/GetData.js"></script>
+<script src="../../components/metadata/PostData.js"></script>
+<script src="../../components/metadata/LoaderControl.js"></script>
+<script src="../../components/metadata/BootstrapModal.js"></script>
+<script src="../../components/metadata/FormProcedureMessages.js"></script>
+<script src="../../components/metadata/ListManager.js"></script>
+<script src="../../components/metadata/CssDefault.js"></script>
+<script src="../../components/metadata/TypedObject.js"></script>
+<script src="../../components/metadata/MetaPageState.js"></script>
+<script src="../../components/metadata/MetaModel.js"></script>
+<script src="../../components/metadata/HelpForm.js"></script>
+<script src="../../components/metadata/MetaData.js"></script>
+<script src="../../components/metadata/MetaPage.js"></script>
+<script src="../../components/metadata/GridControl.js"></script>
+<script src="../../components/metadata/GridMultiSelectControl.js"></script>
+<script src="../../components/metadata/MultiSelectControl.js"></script>
+<script src="../../components/metadata/ComboManager.js"></script>
+<script src="../../components/metadata/MainToolBarManager.js"></script>
+<script src="../../components/metadata/Utils.js"></script>
+<script>
+    var metapage = new appMeta.MetaPage('table1', 'table1_def.json', false);
+
+    $(document).ready(function(){
+
+        appMeta.routing.setUrlPrefix("http://localhost:54471");
+        appMeta.basePath  = "../../";
+
+        var state1 = new appMeta.MetaPageState();
+        metapage.state = state1;
+
+        var messages = [];
+
+        for (var i=0; i< 100; i++){
+            var m = new appMeta.DbProcedureMessage("id1", "LongMessage" + i ,"audit" + i , "errorType" + i, "tableName" + i,  true);
+            messages.push(m);
+        }
+
+        // mock funz saveDataSet()
+        appMeta.postData.saveDataSet = function () {
+            var def  = appMeta.Deferred("saveDataSet");
+            return def.resolve(null, messages, false, true).promise();
+        };
+
+    });
+
+    function showProcedureMessages() {
+        metapage.manageDoPostLoopMessaging();
+    }
+
+</script>
+<div id='metaRoot'>
+    <button onclick="showProcedureMessages()" id="btn1">Test mostra elenco errori</button>
+</div>
+</body>
+</html>

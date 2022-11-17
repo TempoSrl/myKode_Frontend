@@ -1412,8 +1412,8 @@
             $("#" + that.dialogConfAggrId).dialog({
                show: "slide", modal: true, autoOpen: true,
                title: localResource.configAggrTitle,
-               width: appMeta.getScreenWidth() * 0.85,
-               height: appMeta.getScreenHeight() * 0.7,
+               width: appMeta.currApp.getScreenWidth() * 0.85,
+               height: appMeta.currApp.getScreenHeight() * 0.7,
                close: _.partial(that.hideConfigAggr, that),
                position: { my: "center bottom", at: "center bottom" , of: window}
             });
@@ -2307,7 +2307,7 @@
             that.rowClick.call(self, that);
             //console.log("decreasing for Timeout");
             Stabilizer.decreaseNesting("rowClickEv.timeout");
-         }, appMeta.dbClickTimeout);
+         }, appMeta.currApp.dbClickTimeout);
       },
 
       /**
