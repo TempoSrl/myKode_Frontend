@@ -1,4 +1,5 @@
-/*global appMeta,_,$ */
+/*global appMeta,_,$,jsDataSet */
+
 /**
  * @module MetaPage
  * @description
@@ -367,6 +368,7 @@
          * @param {string} title , the title of the message box
          * @param {string} text , the message of the message box
          * @param {string[]} buttons, it's an array of string with the name of the buttons. they will represnt also the labels of the buttons
+         * @param {boolean} closeCommand
          * @result {Deferred(string)} the text of the buttons clicked, (when user will click it)
          */
         showMessage: function(title, text, buttons, closeCommand) {
@@ -622,7 +624,7 @@
 
         /**
          * @method getName
-         * @private
+         * @internal
          * @description SYNC
          * To override. sets the name of the page
          */
@@ -632,7 +634,7 @@
 
         /**
          * @method setTitle
-         * @private
+         * @internal
          * @description SYNC
          * Sets page title private variable
          * @param {string} title
@@ -1314,7 +1316,7 @@
 
         /**
          * @method cmdClose
-         * @private
+         * @internal
          * @description ASYNC
          * Close the page. It returns to the caller if there is a caller page
          * @returns Promise
@@ -3914,7 +3916,7 @@
 
         /**
          * @method init
-         * @private
+         * @internal
          * @description ASYNC
          * Instantiate all necessary data to make the page work, this must be called BEFORE setCallingPage
          * @returns {Deferred}
@@ -3941,7 +3943,7 @@
 
         /**
          * @method setCallingPage
-         * @private
+         * @internal
          * @description SYNC
          * Sets this page as calling page
          * @param {MetaPage} pageToCall
@@ -3958,7 +3960,7 @@
 
         /**
          * @method clearCalls
-         * @private
+         * @internal
          * @description SYNC
          */
         clearCalls: function() {
@@ -5081,7 +5083,7 @@
 
         /**
          * @method show
-         * @private
+         * @internal
          * @description ASYNC
          * @returns {Deferred}
          */

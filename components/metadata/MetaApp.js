@@ -1,3 +1,5 @@
+/*globals _,appMeta,$,alert */
+
 /**
  * @module MetaApp
  * @description
@@ -33,7 +35,7 @@
         /**
          * @summary List of all html pages of the application
          */
-        this.htmlPages = [
+        /* {tableName:null,editType:null,html:null}[] */ this.htmlPages = [
             //{tableName:null,editType:null,html:null}
         ];
 
@@ -70,7 +72,7 @@
                  * @returns {MetaData}
                  */
                 getMeta: function (tableName) {
-                    var meta = this.allMeta[tableName];
+                    let meta = this.allMeta[tableName];
                     if (!meta) {
                         meta = new this.MetaData(tableName);
                     }
@@ -120,18 +122,20 @@
                  * @param {element} rootElement
                  * @param {string} tableName
                  * @param {string} editType
-                 * @returns {Deferred<string>)}
+                 * @returns Promise<string>
                  */
                 getPage: function(rootElement, tableName, editType) {
-                    var res = this.Deferred("getPage");
-                    var page = _.find(this.htmlPages, { "tableName": tableName, "editType": editType });
-                    var self = this;
+                    let res = this.Deferred("getPage");
+                    /*{tableName:null,editType:null,html:null}*/
+                    let page = _.find(this.htmlPages, { "tableName": tableName, "editType": editType });
+
+                    let self = this;
                     if (page) {
                         $(rootElement).html(page.html);
                         return res.resolve(page.html).promise();
                     }
 
-                    var htmlFileName = this.getMetaPagePath(tableName) + "/" + tableName + "_" + editType + ".html";
+                    let htmlFileName = this.getMetaPagePath(tableName) + "/" + tableName + "_" + editType + ".html";
                     $.get(htmlFileName)
                     .done(
                         function (data) {
@@ -158,7 +162,9 @@
                  * @param {MetaPage} metaPage is the constructor of a metaPage
                  */
                 addMetaPage: function (tableName, editType, metaPage) {
+                    /*{tableName:null,editType:null,html:null}*/
                     let found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
+
                     if (found) return;
                     this.metaPages.push({ tableName: tableName, editType: editType, MetaPage: metaPage });
                 },
@@ -171,13 +177,14 @@
                  * Returns a deferred resolved with a new instance of a MetaPage
                  * @param {string} tableName
                  * @param {string} editType
-                 * @returns {Deferred<MetaPage>}
+                 * @returns Promise<MetaPage>
                  */
                 getMetaPage: function(tableName, editType) {
                     let res = this.Deferred("getMetaPage");
+                    /*{tableName:null,editType:null,html:null}*/
                     let found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
-                    let self = this;
 
+                    let self = this;
                     if (found){
                         let isDetail = found.MetaPage.prototype.detailPage;
                         return res.resolve(new found.MetaPage(tableName, editType, isDetail)); //non aggiunge due volte la metaPage
@@ -199,7 +206,7 @@
                         })
                     .fail(
                         function (err) {
-                            res.reject('Failed to load ' + jsFileName + ' edittype:' + editType + ". Compile wrong or missing file." );
+                            res.reject('Failed to load ' + jsFileName + ' edittype:' + editType + ". Compile wrong or missing file."+err );
                         });
 
                     return res.promise();
@@ -216,8 +223,8 @@
                  * @returns {string} the path where to found metaPages and html
                  */
                 getMetaPagePath:function (tableName) {
-                    let bpath = this.basePathMetadata ? this.basePathMetadata : this.basePath;
-                    return bpath  + tableName;
+                    let bPath = this.basePathMetadata ? this.basePathMetadata : this.basePath;
+                    return bPath  + tableName;
                 },
             };
 
@@ -231,7 +238,6 @@
              * Initializes a MetaApp
              */
             function MetaApp() {
-                "use strict";
                 this.init();
             }
 
@@ -264,52 +270,19 @@
                      * @type {Array}
                      */
                     this.pagesNameStack = [];
-                    
-                    // risolve eventuali problemi tra le ver di javascript nei vari browser
-                    this.fixBrowserCompatibilityIssues();
 
                     this.isMobile = this.checkIsMobile();
                 },
 
-                /**
-                 * @method fixBrowserCompatibilityIssues
-                 * @public
-                 * @description SYNC
-                 * Fixes problems on javascript
-                 */
-                fixBrowserCompatibilityIssues:function () {
-                  
-                    // N.B "PhantomJS non supporta String.prototype.startsWith" ridefinisco il metodo, così funziona anche quando lancio il test con karma
-                    // in particolare IE non lo supporta, chrome si
-                    if (!String.prototype.startsWith) {
-                        // ReSharper disable once NativeTypePrototypeExtending
-                        String.prototype.startsWith = function(str) {
-                            return !this.indexOf(str);
-                        };
-                    }
-                    
-                    // se non è definito endsWith lo estedno sul prototipo di String
-                    if (!String.prototype.endsWith) {
-                        String.prototype.endsWith = function(str) {
-                            return this.indexOf(str, this.length - str.length) !== -1;
-                        }
-                    }
-
-                    if (!String.prototype.contains) {
-                        String.prototype.contains = function (str) {
-                            return this.indexOf(str) !== -1;
-                        };
-                    }
-                },
-
                 checkIsMobile:function() {
                    try {
-                       if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent)
-                           || /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i.test(navigator.userAgent.substr(0,4))) {
+                       if(/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|ipad|iris|kindle|Android|Silk|lge |maemo|midp|mmp|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent) ||
+                            /1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw-(n|u)|c55\/|capi|ccwa|cdm-|cell|chtm|cldc|cmd-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc-s|devi|dica|dmob|do(c|p)o|ds(12|-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(-|_)|g1 u|g560|gene|gf-5|g-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd-(m|p|t)|hei-|hi(pt|ta)|hp( i|ip)|hs-c|ht(c(-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i-(20|go|ma)|i230|iac( |-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|-[a-w])|libw|lynx|m1-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|-([1-8]|c))|phil|pire|pl(ay|uc)|pn-2|po(ck|rt|se)|prox|psio|pt-g|qa-a|qc(07|12|21|32|60|-[2-7]|i-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h-|oo|p-)|sdk\/|se(c(-|0|1)|47|mc|nd|ri)|sgh-|shar|sie(-|m)|sk-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h-|v-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl-|tdg-|tel(i|m)|tim-|t-mo|to(pl|sh)|ts(70|m-|m3|m5)|tx-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas-|your|zeto|zte-/i.test(navigator.userAgent.substr(0,4))) {
                            return true;
                        }
-                   } finally {
-                        return false;
+                   }
+                   catch (_) {
+                       return false;
                    }
                 },
 
@@ -339,7 +312,7 @@
                  * @method forceClosePopupWindow
                  * @public
                  * @description SYNC
-                 * Force to close opened ui dialog
+                 * Force closing opened ui dialog
                  */
                 forceClosePopupDialog:function () {
                     if (this.currentMetaPage) {
@@ -365,7 +338,7 @@
                 setTitle:function () {
                     // sull'array inserisco/rimuovo man mano i nomi delle metapage tramite log a pila LIFO, l'ultimo inserito , primo ad essere rimosso
                     // concetto "briciole di pane"
-                    var title = this.pagesNameStack.join(" > ");
+                    let title = this.pagesNameStack.join(" > ");
                     if (this.toolBarManager)  {
                         this.toolBarManager.setTitle(title);
                     }
@@ -414,14 +387,14 @@
                  * @return  {Deferred}
                  */
                 callPage: function(metaToCall, editType, wantsRow) {
-                    var self = this;
-                    var createdPage;
+                    let self = this;
+                    let createdPage;
                     // salva il vecchio root node in una proprietà savedRoot di currentMetaPage ove esista
                     // se currentMetaPage è null non deve fare nulla e savedRoot rimane null
                     // ottiene il parent del vecchio root, rimuove il vecchio
                     // ottiene un newChild avente pari id dell'old, e stessi attributes dell'old, ma senza contenuto
                     // esegue una parent.replaceChild(newChild, savedRoot)
-                    var canOpenPage = true;
+                    let canOpenPage = true;
                     // se apro una nuova pagina principale, mi assicuro che io possa chiudere la precendente.
                     return appMeta.utils._if (this.currentMetaPage)
                         ._then(function(){
@@ -438,9 +411,9 @@
                                     // 1. salva il vecchio root node in una proprietà savedRoot di currentMetaPage ove esista
                                     self.currentMetaPage.savedRoot = $(self.rootElement);
                                     // 2. ottiene il parent del vecchio root
-                                    var parentRoot =  $(self.rootElement).parent();
+                                    let parentRoot =  $(self.rootElement).parent();
                                     //3. ottiene un newChild avente pari id dell'old, e stessi attributes dell'old, ma senza contenuto
-                                    var newChild = $(self.rootElement)[0].cloneNode(false);
+                                let newChild = $(self.rootElement)[0].cloneNode(false);
                                     // 4. esegue replace del contenuto
                                     $(parentRoot)[0].replaceChild(newChild, self.currentMetaPage.savedRoot[0]);
                                     return true;
@@ -456,10 +429,9 @@
                                     return calledMetaPage.init(); //returns an instance of metaPage (with meta and state and dataset)
                                 }, function (err) {
                                     appMeta.logger.log(appMeta.logTypeEnum.ERROR, err);
-                                    return;
                                 })
                                 .then(self.utils.skipRun(
-                                    function(calledMetaPage) {
+                                    function(/*MetaPage*/ calledMetaPage) {
                                         // aggiunge accorgimento grafico per far apparire la pag di dettaglio come un popup
                                         if (wantsRow) $(self.rootElement).addClass(appMeta.cssDefault.detailPage);
                                         if (!wantsRow) $(self.rootElement).removeClass(appMeta.cssDefault.detailPage);
@@ -467,7 +439,7 @@
                                             calledMetaPage.primaryTableName,
                                             calledMetaPage.editType); //gets and render calledMetaPage html
                                     }))
-                                .then(function(calledMetaPage) {
+                                .then(function(/*MetaPage*/ calledMetaPage) {
                                     if (self.currentMetaPage) {
                                         // DS è dataset della CALLING PAGE
                                         // currMetaData.ExtraParameter diventa calledMetaPage.state.extraParameters
@@ -487,7 +459,7 @@
                                     return createdPage.show();
                                 }).then(function () {
                                     self.pushPageName(createdPage.getName());
-                                    // torno il deferred della pagina appena aperta. Si risolverà nel mainsave nel caso di dettaglio di un edit di una riga del grid,
+                                    // Restituisco il deferred della pagina appena aperta. Si risolverà nel mainsave nel caso di dettaglio di un edit di una riga del grid,
                                     // o nel mainSelect nel caso di autoManage
                                     return createdPage.deferredResult;
                                 });
@@ -505,16 +477,16 @@
                  * @returns {Deferred}
                  */
                 returnToCaller: function() {
-                    var def = appMeta.Deferred("returnToCaller");
+                    let def = appMeta.Deferred("returnToCaller");
                     if (!this.currentMetaPage || !this.currentMetaPage.state) {
                         //there is no caller 
                         return def.reject('there is no caller page').promise();
                     }
 
                     // 1. currentRoot = root (è un node html) di currentMetaPage (metaPage)
-                    var currentMetaPageRoot = $(this.currentMetaPage.rootElement);
+                    let currentMetaPageRoot = $(this.currentMetaPage.rootElement);
                     // 2. parent = parent node di currentRoot
-                    var parentRoot = $(currentMetaPageRoot).parent();
+                    let parentRoot = $(currentMetaPageRoot).parent();
 
                     // rimuovo pag dal array dei nomi
                     this.popPageName();
@@ -528,14 +500,14 @@
                         return def.resolve(true); // torna alla mainpage
                     }
 
-                    var calledPageEntityChanged = this.currentMetaPage.entityChanged;
+                    let calledPageEntityChanged = this.currentMetaPage.entityChanged;
                     this.currentMetaPage = this.currentMetaPage.state.callerPage;
                     this.currentMetaPage.entityCalledChanged = calledPageEntityChanged;
                     this.currentMetaPage.clearCalls();
                     this.toolBarManager.setMetaPage(this.currentMetaPage); // set the currentMetaPage for the toolbar 
 
                     // 3. recupera savedRoot = prop. savedRoot di currentMetaPage attuale, che sarebbe la pag chiamante  
-                    var savedRoot = this.currentMetaPage.savedRoot;
+                    let savedRoot = this.currentMetaPage.savedRoot;
 
                     // 4. esegue replace del contenuto
                     $(parentRoot)[0].replaceChild(savedRoot[0], currentMetaPageRoot[0]);
@@ -569,10 +541,10 @@
                  * @param {Object} prms pair of key:value.
                  */
                 callWebService:function (method, prms) {
-                    var def = appMeta.Deferred('callWebService');
+                    let def = appMeta.Deferred('callWebService');
 
                     // osserva se il metodo è stato censito e registrato
-                    var objRouting  = appMeta.routing.getMethod(method);
+                    let objRouting  = appMeta.routing.getMethod(method);
                     if (!objRouting){
                         alert("method " + method + " not registered for this app. Add the configuration on Routing class calling " +
                             "routing.builderConnObj('method, 'GET/POST', 'my controller path', false, true);");
@@ -582,7 +554,7 @@
                     appMeta.logger.log( appMeta.logTypeEnum.INFO, "called web service " + method , objRouting);
 
                     // chiamata al web service
-                    var objConn = {
+                    let objConn = {
                         method: method,
                         prm: prms
                     };
