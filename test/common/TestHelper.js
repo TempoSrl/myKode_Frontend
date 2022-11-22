@@ -51,11 +51,11 @@
 			setFixtures("<h3>My App Test</h3><div id='toolbar'></div><div id='metaRoot'></div>");
 			$("body").append('<link rel="stylesheet" href="base/test/app/styles/bootstrap/css/bootstrap.css" />');
 			$("body").append('<link rel="stylesheet" href="base/test/app/styles/app.css" />');
-			appMeta.toolBarManager = null;
-			appMeta.initToolBarManager();
+			appMeta.currApp.toolBarManager = null;
+			appMeta.currApp.initToolBarManager();
 			// rebase del path poichè i file necessari per il test, in particolare la MetAPage derivata sta sotto base/test/spec_e2e_app/registry
 			appMeta.basePath = 'base/test/spec_e2e_app/' + pathRelativeOfTest + '/';
-			appMeta.rootElement = "#metaRoot";
+			appMeta.currApp.rootElement = "#metaRoot";
 			appMeta.metaPages = []; // rinizializzo array di MetaPage e Html, altrimenti ad ogni test non posso usare stesso tableName ed EditType, prenderebbe steso .js e .html 
 			appMeta.htmlPages = [];
 			appMeta.globalEventManager = new appMeta.EventManager();
@@ -102,10 +102,10 @@
 			$("body").append('<link rel="stylesheet" href="base/components/styles/jquery.toast.css" />');
 			$("body").append('<link rel="stylesheet" href="base/components/styles/select2.min.css" />');
 			// Configurazioni generali
-			appMeta.rootElement = "#metaRoot";
+			appMeta.currApp.rootElement = "#metaRoot";
 			// ad ogni test rinizializzo la toolbar
-			appMeta.toolBarManager = null;
-			appMeta.start();
+			appMeta.currApp.toolBarManager = null;
+			appMeta.currApp.start();
 		},
 
         /**
@@ -183,7 +183,7 @@
          */
 		testMetaPageInitialization: function (metaPage, tableName, editType) {
 
-			expect(appMeta.currentMetaPage).toBeDefined();
+			expect(appMeta.currApp.currentMetaPage).toBeDefined();
 
 			// verifico Stato e DataSet presente
 			expect(metaPage.state).toBeDefined();
@@ -1003,7 +1003,7 @@
 						chainFill = chainFill.then(function () {
 							return this.waitPageLoaded(appMeta.EventEnum.showPage);
 						});
-						appMeta.callPage(tablename, edittype, false);
+						appMeta.currApp.callPage(tablename, edittype, false);
 						break;
 
 					case controlTypeEnum.buttonInsert:

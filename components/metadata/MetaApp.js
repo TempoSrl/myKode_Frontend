@@ -363,18 +363,6 @@
                     this.setTitle();
                 },
 
-
-
-
-
-
-
-
-
-
-
-
-
                 /**
                  * @method callPage
                  * @public
@@ -430,7 +418,7 @@
                                 }, function (err) {
                                     appMeta.logger.log(appMeta.logTypeEnum.ERROR, err);
                                 })
-                                .then(self.utils.skipRun(
+                                .then(appMeta.utils.skipRun(
                                     function(/*MetaPage*/ calledMetaPage) {
                                         // aggiunge accorgimento grafico per far apparire la pag di dettaglio come un popup
                                         if (wantsRow) $(self.rootElement).addClass(appMeta.cssDefault.detailPage);
@@ -504,7 +492,7 @@
                     this.currentMetaPage = this.currentMetaPage.state.callerPage;
                     this.currentMetaPage.entityCalledChanged = calledPageEntityChanged;
                     this.currentMetaPage.clearCalls();
-                    this.toolBarManager.setMetaPage(this.currentMetaPage); // set the currentMetaPage for the toolbar 
+                    this.toolBarManager.setMetaPage(this.currentMetaPage); // set the currentMetaPage for the toolbar
 
                     // 3. recupera savedRoot = prop. savedRoot di currentMetaPage attuale, che sarebbe la pag chiamante  
                     let savedRoot = this.currentMetaPage.savedRoot;

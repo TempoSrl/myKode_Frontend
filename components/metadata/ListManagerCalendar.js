@@ -65,8 +65,8 @@
             $(this.rootElement).append(this.currentRootElement);
             var self = this;
             $("#"+this.dialogNotmodalId).dialog({ autoOpen: false,
-                width: appMeta.getScreenWidth() * 0.9,
-                height: appMeta.getScreenHeight() * 0.8,
+                width: appMeta.currApp.getScreenWidth() * 0.9,
+                height: appMeta.currApp.getScreenHeight() * 0.8,
                 close: _.partial(self.hideControl, self),
                 position: { my: "center bottom", at: "center bottom" }
             });

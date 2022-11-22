@@ -109,8 +109,8 @@
                     // localizza eventuali custom control con localizzazione custom
                     this.localizeCustomControls(lng);
 
-                    if (appMeta.toolBarManager) {
-                        appMeta.toolBarManager.localize();
+                    if (appMeta.currApp.toolBarManager) {
+                        appMeta.currApp.toolBarManager.localize();
                     }
                 }
                 else {
@@ -134,7 +134,7 @@
             if (typeof appMeta === undefined || typeof  $ === undefined){
                 return;
             }
-            $(appMeta.rootElement + " [data-custom-control] ")
+            $(appMeta.currApp.rootElement + " [data-custom-control] ")
                 .each(function(index, el) {
                     let ctrl = $(el).data("customController");
                     if (!ctrl) return;

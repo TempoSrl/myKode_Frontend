@@ -1,6 +1,6 @@
 {
 	"name": "mykode_frontend",
-	"version": "1.0.007",
+	"version": "1.0.008",
 	"description": "MyKode frontend",
 	"main": "app/main.js",
 	"scripts": {

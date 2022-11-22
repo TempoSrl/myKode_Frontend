@@ -44,7 +44,7 @@ fdescribe('App1_E2E', function() {
                                 testHelper.clickButtonByTag('mainclose');
                                 return s;
                             }).then(function () {
-                                expect(appMeta.currentMetaPage).toBeNull();
+                                expect(appMeta.currApp.currentMetaPage).toBeNull();
                                 done();
                             });
 

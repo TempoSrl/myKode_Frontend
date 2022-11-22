@@ -27,7 +27,7 @@ describe('HelpForm e2e', function () {
         appMeta.basePath = "base/";
         jasmine.getFixtures().fixturesPath = 'base/test/spec/fixtures';
         conn = appMeta.connection;
-        appMeta.initToolBarManager();
+        appMeta.currApp.initToolBarManager();
 
         // mock funzione asyn describeColumns()
         appMeta.MetaData.prototype.describeColumns = function() {
@@ -664,8 +664,8 @@ describe('HelpForm e2e', function () {
                         var filter = null;
 
                         // TODO conf su appMeta. capire chi li deve fare
-                        appMeta.currentMetaPage = metapage;
-                        appMeta.rootElement = "#metaRoot";
+                        appMeta.currApp.currentMetaPage = metapage;
+                        appMeta.currApp.rootElement = "#metaRoot";
 
                         metapage.registerFilter($("#automanage1"), filter);
 

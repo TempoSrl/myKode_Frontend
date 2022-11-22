@@ -1198,8 +1198,8 @@
          * during prescan adds an emty rect
          */
         buildEmptyRect:function () {
-            /*var w = appMeta.getScreenWidth() * 0.3;
-            var h = appMeta.getScreenHeight() * 0.2;
+            /*var w = appMeta.currApp.getScreenWidth() * 0.3;
+            var h = appMeta.currApp.getScreenHeight() * 0.2;
             var id = $(this.el).attr('id') + "empty";
             if (this.emptyElement) return;
             this.emptyElement = $('<br><div id =' + id + ' style="background-color: lightgrey; border: 1px solid grey; width: '+ w + 'px; height: ' + h + 'px"></div>');

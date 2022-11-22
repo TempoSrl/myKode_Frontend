@@ -46,13 +46,13 @@
                      return s;
                   }).then(function () {
                      countExpect++;
-                     expect(appMeta.currentMetaPage).toBeNull();
+                      expect(appMeta.currApp.currentMetaPage).toBeNull();
                      expect(countExpect).toBe(totExpect);
                      return def.resolve();
                   });
 
                // Apro la pagina
-               appMeta.callPage(tablename, edittype, false);
+               appMeta.currApp.callPage(tablename, edittype, false);
 
             }, timeout);
 
@@ -230,8 +230,8 @@
                      return s8;
                   }).then(function () {
                      countExpect++;
-                     if (prmChecks.currentMetaPage) expect(appMeta.currentMetaPage).not.toBeNull();
-                     if (!prmChecks.currentMetaPage) expect(appMeta.currentMetaPage).toBeNull();
+                      if (prmChecks.currentMetaPage) expect(appMeta.currApp.currentMetaPage).not.toBeNull();
+                      if (!prmChecks.currentMetaPage) expect(appMeta.currApp.currentMetaPage).toBeNull();
 
                      testHelper.testHtmlNodeByTagExists(arrayInput, false);
                      expect(countExpect).toBe(totExpect);
@@ -475,12 +475,12 @@
                // Esegue reset del filtro firstSearchFilter
                // intercetto il emtodo della classe base afterLink
                appMeta.MetaEasyPage.prototype.afterLink = function (e) {
-                  appMeta.currentMetaPage.firstSearchFilter = null;
-                  return appMeta.MetaPage.prototype.afterLink.call(appMeta.currentMetaPage);
+                   appMeta.currApp.currentMetaPage.firstSearchFilter = null;
+                   return appMeta.MetaPage.prototype.afterLink.call(appMeta.currApp.currentMetaPage);
                };
                // ** fine mod PAGINE CHE PARTONO IN RICERCA
 
-               appMeta.callPage(tablename, edittype, wantsRow);
+                appMeta.currApp.callPage(tablename, edittype, wantsRow);
 
             }, timeout);
 
@@ -523,12 +523,12 @@
                    // Esegue reset del filtro firstSearchFilter
                    // intercetto il emtodo della classe base afterLink
                    appMeta.MetaEasyPage.prototype.afterLink = function (e) {
-                       appMeta.currentMetaPage.firstSearchFilter = null;
-                       return appMeta.MetaPage.prototype.afterLink.call(appMeta.currentMetaPage);
+                       appMeta.currApp.currentMetaPage.firstSearchFilter = null;
+                       return appMeta.MetaPage.prototype.afterLink.call(appMeta.currApp.currentMetaPage);
                    };
                    // ** fine mod PAGINE CHE PARTONO IN RICERCA
 
-                   appMeta.callPage(tablename, edittype, wantsRow);
+                   appMeta.currApp.callPage(tablename, edittype, wantsRow);
 
                }, timeout);
 
@@ -623,8 +623,8 @@
                return s8;
            }).then(function () {
                countExpect++;
-               if (prmChecks.currentMetaPage) expect(appMeta.currentMetaPage).not.toBeNull();
-               if (!prmChecks.currentMetaPage) expect(appMeta.currentMetaPage).toBeNull();
+               if (prmChecks.currentMetaPage) expect(appMeta.currApp.currentMetaPage).not.toBeNull();
+               if (!prmChecks.currentMetaPage) expect(appMeta.currApp.currentMetaPage).toBeNull();
 
                testHelper.testHtmlNodeByTagExists(arrayInput, false);
                //expect(countExpect).toBe(totExpect);
@@ -689,7 +689,7 @@
 
                            s2.then(function () {
                               countExpect++;
-                              expect(appMeta.currentMetaPage).toBeNull();
+                               expect(appMeta.currApp.currentMetaPage).toBeNull();
                               testHelper.testHtmlNodeByTagExists(arrayInput, false);
                               expect(countExpect).toBe(totExpect);
                               return def.resolve();
@@ -703,7 +703,7 @@
 
                //  1.  Apro la pagina
                testHelper.log("Apro pagina");
-               appMeta.callPage(tablename, edittype, false);
+                appMeta.currApp.callPage(tablename, edittype, false);
 
             }, timeout);
 
@@ -741,7 +741,7 @@
          Object.assign(mpCaller.state.currentRow, callPrm);
 
          // assegno alla currentMetaPage la apgina appena creata
-         appMeta.currentMetaPage = mpCaller;
+          appMeta.currApp.currentMetaPage = mpCaller;
          callPrm = callPrm || {};
          return this.testMetaPageCase1(tablename, edittype, arrayInput, {
             currentMetaPage: true,
@@ -750,7 +750,7 @@
             // forzo reset della currentMetaPage nel caso il test lasci una currentMetaPage papà
             // aperta. Capita ad esempio nei testa case testMetaPage_pageCallerButton()
             // cioè per pagine chaimate tramite un "manage" e che quindi hanno simulata una currMetaPage
-            appMeta.currentMetaPage = null;
+             appMeta.currApp.currentMetaPage = null;
             return true;
          })
       },
@@ -793,7 +793,7 @@
 
                //  1.  Apro la pagina
                testHelper.log("Apro pagina");
-               appMeta.callPage(tablename, edittype, false);
+                appMeta.currApp.callPage(tablename, edittype, false);
 
             }, timeout);
 
@@ -981,7 +981,7 @@
                                                                                                             testHelper.clickButtonByTag('mainclose');
                                                                                                             s2.then(function () {
                                                                                                                countExpect++;
-                                                                                                               expect(appMeta.currentMetaPage).toBeNull();
+                                                                                                                expect(appMeta.currApp.currentMetaPage).toBeNull();
                                                                                                                testHelper.testHtmlNodeByTagExists(arrayInput, false);
                                                                                                                expect(countExpect).toBe(totExpect);
                                                                                                                testHelper.log("Test FINE");
@@ -1052,7 +1052,7 @@
 
                //  1.  Apro la pagina
                testHelper.log("Apro pagina");
-               appMeta.callPage(tablename, edittype, false);
+                appMeta.currApp.callPage(tablename, edittype, false);
 
             }, timeout);
 
@@ -1106,7 +1106,7 @@
                         metaPage.firereg_btn_id(metaPage)
                            .then(function () {
                               countExpect++;
-                              expect(appMeta.currentMetaPage).toBeNull();
+                               expect(appMeta.currApp.currentMetaPage).toBeNull();
                               testHelper.log("Termine test testCasePage_registry_instmuser_custom");
                               testHelper.testHtmlNodeByTagExists(arrayInput, false);
                               expect(countExpect).toBe(totExpect);
@@ -1119,7 +1119,7 @@
 
          //  1.  Apro la pagina
          testHelper.log("Apro pagina");
-         appMeta.callPage(tablename, edittype, false);
+          appMeta.currApp.callPage(tablename, edittype, false);
 
 
          return def.promise();
@@ -1392,7 +1392,7 @@
                                              countExpect++;
                                              testHelper.testHtmlNodeByTagExists(arrayInput, false);
                                              expect(countExpect).toBe(totExpect);
-                                             expect(appMeta.currentMetaPage).toBeNull();
+                                              expect(appMeta.currApp.currentMetaPage).toBeNull();
                                              return def.resolve();
                                           });
 
@@ -1423,7 +1423,7 @@
 
                //  1.  Apro la pagina
                var wantsRow = prmChecks ? !!prmChecks.currentMetaPage : false;
-               appMeta.callPage(tablename, edittype, wantsRow);
+                appMeta.currApp.callPage(tablename, edittype, wantsRow);
             }, timeout);
 
          return def.promise();
@@ -1473,7 +1473,7 @@
                         metaPage.firereg_btn_id(metaPage)
                            .then(function () {
                               countExpect++;
-                              expect(appMeta.currentMetaPage).toBeNull();
+                               expect(appMeta.currApp.currentMetaPage).toBeNull();
                               testHelper.log("Termine test testCasePage_registry_user_custom");
                               testHelper.testHtmlNodeByTagExists(arrayInput, false);
                               expect(countExpect).toBe(totExpect);
@@ -1486,7 +1486,7 @@
 
          //  1.  Apro la pagina
          testHelper.log("Apro pagina");
-         appMeta.callPage(tablename, edittype, false);
+          appMeta.currApp.callPage(tablename, edittype, false);
 
 
          return def.promise();
@@ -1617,7 +1617,7 @@
                      return s;
                   }).then(function () {
                      countExpect++;
-                     expect(appMeta.currentMetaPage).toBeNull();
+                      expect(appMeta.currApp.currentMetaPage).toBeNull();
                      expect(countExpect).toBe(4);
                      // RIAPRO PAGINA
                      // Evento di attesa pagina caricata
@@ -1634,19 +1634,19 @@
                            return s;
                         }).then(function () {
                            countExpect++;
-                           expect(appMeta.currentMetaPage).toBeNull();
+                            expect(appMeta.currApp.currentMetaPage).toBeNull();
                            expect(countExpect).toBe(totExpect);
                            return def.resolve();
                         });
 
                      // FASE 2: Apro la pagina per verificare il dato inserito in fase 1
                      testHelper.log("Riapro Pagina");
-                     appMeta.callPage(tablename, edittype, false);
+                      appMeta.currApp.callPage(tablename, edittype, false);
 
                   });
 
                // FASE 1: Apro la pagina la 1a volta per inserire il nuovo dato
-               appMeta.callPage(tablename, edittype, false);
+                appMeta.currApp.callPage(tablename, edittype, false);
 
             }, timeout);
 
@@ -1696,7 +1696,7 @@
                                  return s;
                               }).then(function () {
                                  countExpect++;
-                                 expect(appMeta.currentMetaPage).toBeNull();
+                                  expect(appMeta.currApp.currentMetaPage).toBeNull();
                                  expect(countExpect).toBe(5);
                                  // RIAPRO PAGINA
                                  // Evento di attesa pagina caricata
@@ -1716,17 +1716,17 @@
                                              return s;
                                           }).then(function () {
                                              countExpect++;
-                                             expect(appMeta.currentMetaPage).toBeNull();
+                                              expect(appMeta.currApp.currentMetaPage).toBeNull();
                                              expect(countExpect).toBe(totExpect);
                                              return def.resolve();
                                           });
 
                                        // se apre elenco con i risultati di ricerca clicco sul primo
-                                       if (appMeta.currentMetaPage.listManagerSearch != null &&
-                                          appMeta.currentMetaPage.listManagerSearch.gridControl != null) {
-                                          var trs = $(appMeta.currentMetaPage.listManagerSearch.gridControl.mytable).find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr)");
+                                        if (appMeta.currApp.currentMetaPage.listManagerSearch != null &&
+                                            appMeta.currApp.currentMetaPage.listManagerSearch.gridControl != null) {
+                                            var trs = $(appMeta.currApp.currentMetaPage.listManagerSearch.gridControl.mytable).find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr)");
                                           if (trs.length > 0) {
-                                             $(appMeta.currentMetaPage.listManagerSearch.gridControl.mytable).find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr):eq(0)").dblclick();
+                                              $(appMeta.currApp.currentMetaPage.listManagerSearch.gridControl.mytable).find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr):eq(0)").dblclick();
                                           }
                                        } else {
                                           metaPage.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, null, "selectRow")
@@ -1735,7 +1735,7 @@
 
                                  // FASE 2: Apro la pagina per verificare il dato inserito in fase 1
                                  testHelper.log("Riapro Pagina");
-                                 appMeta.callPage(tablename, edittype, false);
+                                  appMeta.currApp.callPage(tablename, edittype, false);
                               });
 
                            testHelper.clickButtonByTag('mainsave');
@@ -1743,11 +1743,11 @@
                         });
 
                      // se apre elenco con i risultati di ricerca clicco sul primo
-                     if (appMeta.currentMetaPage.listManagerSearch != null &&
-                        appMeta.currentMetaPage.listManagerSearch.gridControl != null) {
-                        var trs = $(appMeta.currentMetaPage.listManagerSearch.gridControl.mytable).find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr)");
+                      if (appMeta.currApp.currentMetaPage.listManagerSearch != null &&
+                          appMeta.currApp.currentMetaPage.listManagerSearch.gridControl != null) {
+                          var trs = $(appMeta.currApp.currentMetaPage.listManagerSearch.gridControl.mytable).find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr)");
                         if (trs.length > 0) {
-                           $(appMeta.currentMetaPage.listManagerSearch.gridControl.mytable).find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr):eq(0)").dblclick();
+                            $(appMeta.currApp.currentMetaPage.listManagerSearch.gridControl.mytable).find("tr:not(:has(>th)):not([data-mdlgrouped]):not(.table-in-cell-tr):eq(0)").dblclick();
                         }
                      } else {
                         mp1.eventManager.trigger(appMeta.EventEnum.stopMainRowSelectionEvent, null, "selectRow")
@@ -1756,7 +1756,7 @@
                   });
 
                // FASE 1: Apro la pagina la 1a volta per inserire il nuovo dato
-               appMeta.callPage(tablename, edittype, false);
+                appMeta.currApp.callPage(tablename, edittype, false);
 
             }, timeout);
 

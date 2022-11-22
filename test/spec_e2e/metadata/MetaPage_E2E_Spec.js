@@ -604,7 +604,7 @@ describe('MetaPage e2e', function () {
                             s.meta  = new appMeta.MetaData('registry');
                             metapage.state = s;
                             metapage.listTop = 0;
-                            appMeta.initToolBarManager();
+                            appMeta.currApp.initToolBarManager();
 
                             appMeta.basePath = 'base/test/spec_midway/';
 
@@ -694,7 +694,7 @@ describe('MetaPage e2e', function () {
                             $("head").append('<link rel="stylesheet" href="/styles/bootstrap/css/bootstrap.css" />');
                             $("head").append('<link rel="stylesheet" href="/styles/app.css" />');
 
-                            appMeta.initToolBarManager();
+                            appMeta.currApp.initToolBarManager();
 
                             $("html").append(mainwin);
 
