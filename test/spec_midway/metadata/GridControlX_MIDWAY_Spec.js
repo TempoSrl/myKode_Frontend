@@ -235,7 +235,7 @@ describe("GridControlX",
                      // ho selezionato la 2a riga, quindi il currentIndex è 1, poichè parte da zero
                     expect(grid2.currentRow).toBe(objrow1);
                     expect(metapage.editGridRow).toHaveBeenCalled();
-                    expect(metapage.rowSelect).not.toHaveBeenCalled();
+                    expect(metapage.rowSelect).toHaveBeenCalled();
                     metapage.editGridRow =  originEditGridRow;
                     metapage.rowSelect =  originRowSelect;
 

@@ -459,7 +459,7 @@ describe("GridControl",
             var bmodal = new BootstrapModal(localResource.alert, localResource.changesUnsaved, [localResource.ok, localResource.cancel], localResource.cancel);
 
             var s = stabilize();
-            common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+            common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
             .then(function (){
                 expect($(".modal").length).toBe(1);
                 $(bmodal.currModal).find("button")[1].click(); // click sul bottone ok, 2 è annulla, 0 closeCommand
@@ -482,7 +482,7 @@ describe("GridControl",
                     localResource.cancel);
 
                 var s = stabilize();
-                common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                 .then(function (){
                     expect($(".modal").length).toBe(1);
                     $(bmodal.currModal).find("button")[0].click();
@@ -502,7 +502,7 @@ describe("GridControl",
             var bmodal = new BootstrapModal(localResource.alert, localResource.changesUnsaved, [localResource.ok, localResource.cancel], localResource.cancel, detailsString);
 
             var s = stabilize();
-            common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+            common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
             .then(function (){
                 expect($(".modal").length).toBe(1);
                 expect($($(bmodal.currModal).find("button")[0]).text()).toBe("×");
@@ -525,7 +525,7 @@ describe("GridControl",
             var detailsString = 'string of detail';
             var bmodal = new BootstrapModal(localResource.alert, localResource.changesUnsaved, [localResource.ok, localResource.cancel], localResource.cancel, detailsString);
             var s = stabilize();
-            common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+            common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
             .then(function (){
                 expect($(".modal").length).toBe(1);
                 expect($($(bmodal.currModal).find("button")[0]).text()).toBe("×");

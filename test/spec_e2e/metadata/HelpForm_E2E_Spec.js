@@ -100,7 +100,7 @@ describe('HelpForm e2e', function () {
 
 
                                             // con questa configurazione mi aspetto apra la modale con la lista di opzioni da scegliere
-                                            common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                            common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                                 .then(function() {
 
                                                     appMeta.getData.getPagedTable  = originGetPagedTable;
@@ -175,7 +175,7 @@ describe('HelpForm e2e', function () {
                                     $("#txtBox1").val(common.pIvatoSearch);
 
                                     // con questa configurazione mi aspetto apra la modale con la lista di opzioni da scegliere
-                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                         .then(function() {
 
                                             appMeta.getData.getPagedTable  = originGetPagedTable;
@@ -253,7 +253,7 @@ describe('HelpForm e2e', function () {
                                     $("#txtBox1").val(valueNotExisting);
 
                                     // con questa configurazione mi aspetto apra la modale con la lista di opzioni da scegliere
-                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                         .then(function() {
                                             appMeta.getData.getPagedTable  = originGetPagedTable;
                                             expect($(".modal").length).toBe(2); // modale della init
@@ -398,13 +398,13 @@ describe('HelpForm e2e', function () {
                                     $("#txtBox1").val(valueExisting);
 
                                     // con questa configurazione mi aspetto apra la modale con messaggio opportuno, poichè riga detached
-                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                         .then(function() {
 
                                             expect($(".modal").length).toBe(1);
                                             expect($(".modal .modal-body").text()).toContain("Ci sono modifiche ai dati non salvate. Si desidera perdere le modifiche?")
 
-                                            common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                            common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                                 .then(function() {
 
                                                     expect($(".modal").length).toBe(1);
@@ -689,7 +689,7 @@ describe('HelpForm e2e', function () {
                                     // cambio del testo all'interno della text che è una piva
                                     $("#txtBox1").val(common.pIvatoSearch);
 
-                                    /* common.eventWaiter(metapage, appMeta.EventEnum.metaPageActivate)
+                                    /* common.pageEventWaiter(metapage, appMeta.EventEnum.metaPageActivate)
                                      .then(function () {
                                      // expect($("button").parent().hasClass("modal-body")).toBe(true); // griglia dati ospitata sulla modale
 

@@ -502,7 +502,7 @@ describe('MetaPage e2e', function () {
                                                     // con questa configurazione, viene mostrata il listManager in modale,
                                                     // poichè nella select one richiamata (self.listTop !== 0 || filterLocked) entra ma poi result viene > 1
                                                     // quindi va in modale con la lista. al doppio click dovrebbe selezionare e scatenare gli eventi in cascata
-                                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                                         .then(function() {
                                                             appMeta.getData.getPagedTable  = originGetPagedTable;
                                                             expect($("table:first").find("tr").length).toBeGreaterThan(0); // grid dati 11 righe. 1 header + 10 dati

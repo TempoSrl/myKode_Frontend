@@ -157,7 +157,6 @@ module.exports = function(config) {
             files.push(appDIR + '/metadata/menuweb/menuweb_tree.js');
             files.push(appDIR + '/metadata/attivform/attivform_default.js');
             files.push(appDIR + '/metadata/progetto/progetto_seg.js');
-            files.push(appDIR + '/metadata/registry/registry_user.js');
             files.push(appDIR + '/metadata/didprogori/didprogori_default.js');
             break;
 		case appEnum.VISUALMDLW:
@@ -233,7 +232,7 @@ module.exports = function(config) {
             '/data/': 'http://185.56.8.51:8085/data/',
             '/static/': 'http://185.56.8.51:8085/static/',
             '/file/': 'http://185.56.8.51:8085/file/',*/
-            '/styles/': '/base/test/app/styles'
+            '/styles/': '/base/test/app/styles/'
         },
 
         //https://www.npmjs.com/package/karma-jasmine

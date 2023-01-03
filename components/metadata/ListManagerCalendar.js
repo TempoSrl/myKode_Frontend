@@ -21,7 +21,7 @@
      * @param {string} listType
      * @param {jsDataQuery} filter
      * @param {boolean} isModal
-     * @param {Html node} rootElement
+     * @param {element} rootElement
      * @param {MetaPage} metaPage
      * @param {boolean} filterLocked true if filter can't be changed during row selection
      * @param {DataTable} toMerge. It contains the Rows to "merge" with those found in DB
@@ -332,7 +332,7 @@
             var res = self.calendarControl.fillControl()
                 .then(function() {
                     // aggiungo eventi
-                    self.calendarControl.addEvents(self, self, false);
+                    self.calendarControl.addEvents(self, self);
 
                     // nascondo loader, una volta caricati i dati
                     self.loader.hideControl();

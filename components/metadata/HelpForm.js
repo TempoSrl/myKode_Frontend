@@ -116,13 +116,14 @@
          * Loops over the html elements and adds the events handler
          * @method addEvents
          * @param {MetaPage} metaPage
+         * @return Promise
          */
         addEvents: function (metaPage) {
             this.metaPage = metaPage;
             $(this.rootElement).off("click"); // rimuovo e poi rimetto. perchè ad ogni apertura il root element è lo stesso per ogni pagina
             $(this.rootElement).on("click", _.partial(this.showDebugDialog, this.metaPage, this));
-            this.iterateOverTag("tag", "addEvent");
-            this.iterateOverCustomTag("addEvents", metaPage);
+            return this.iterateOverTag("tag", "addEvent")
+                .then(()=>{return this.iterateOverCustomTag("addEvents", metaPage);});
         },
 
 
@@ -285,12 +286,16 @@
          * Adds to the page, the events necessary to enable framework enhancements.
          * For example it manages the format of the data in the input text, when it receives the focus or loses the focus
          * @param {node} el
+         * @return Promise
          */
         addEvent: function(el) {
             const controller = $(el).data("customController");
-            if (controller) return;
+            if (controller) {
+                return;
+            }
 
             const eltag = $(el).data("tag");
+
             const ctype = this.getCtypeTagFromElTag(eltag);
             const tagName = el.tagName;
             switch (tagName.toUpperCase()) {
@@ -358,6 +363,7 @@
                 case "TABLE":
                     break;
                 case "BUTTON":
+
                     this.setButtonHandler(el, eltag);
                     break;
             }
@@ -1014,7 +1020,6 @@
          * @param {HelpForm} that
          */
         enterNumTextBox: function(that) {
-            // console.log("enterNumTextBox from ",$(this).data("tag"));
             if ($(this).prop("disabled")) return;
             if ($(this).prop("readonly")) return;
             let val = $(this).val();
@@ -1490,8 +1495,9 @@
             if (!datatable) return def.resolve();
 
 
-            // il caso "GridControl" o "TreeViewMaanger" o derivati non esegue calcolo del value, poichè non necessita di un value, inoltre il tag è differente
-            // quindi nel caso grid si creerebbero casi inconsisteni
+            // il caso "GridControl" o "TreeViewMaanger" o derivati non esegue calcolo del value,
+            //  poiché non necessita di un value, inoltre il tag è differente
+            // quindi nel caso grid si creerebbero casi inconsistenti
             const ctrl = $(el).data("customController");
             const isStandardFill = ctrl ? ctrl.isStandardFill : true;
 
@@ -2245,7 +2251,9 @@
         preScanCustomControl: function(el) {
             const ctrlName = $(el).data("customControl");
             const CustomController = app.CustomControl(ctrlName);
-            if (!CustomController) return;
+            if (!CustomController) {
+                return;
+            }
 
             // recupero tableName dal tag
             const tag = $(el).data("tag");
@@ -2292,7 +2300,7 @@
          * @public
          * @description ASYNC
          * Instantiates all customController for any html elements that requires it
-         * @returns {Deferred}
+         * @returns Promise
          */
         preScanControls: function () {
             return this.iterateOverTag("tag", "preScanControl")
@@ -2314,18 +2322,17 @@
         iterateOverTag: function(tag, task, optParam) {
             let self = this;
             let allCtrlPromise = [];
-            // console.log("iterating over tag doing ",task);
             $(this.rootElement)
                 .find(" [data-" + tag + "]")
-                .each(function () {
+                .each(function () { //"this" is the html element
                     if ($(this).parents("[data-custom-control]").length > 0) return true;
 
                     if ($(this).parents("[data-value-signed]").length > 0) return true;
 
-                    allCtrlPromise.push(self[task](this, optParam)); //"this" is the html element
+                    allCtrlPromise.push(self[task](this, optParam));
                 });
 
-            return Deferred("iterateOverTag").from($.when.apply($,allCtrlPromise));
+            return Deferred("iterateOverTag").from($.when.apply($,allCtrlPromise)).promise();
         },
 
         /**
@@ -2404,7 +2411,10 @@
             let tag = this.getStandardTag(eltag); // recupero il tag, serve per prendere tabella e colonna
             let table = this.getTableName(tag); // this.getField(tag, 0);
             if (!table) return;
-            if (!this.DS.tables[table]) return;
+            if (!this.DS.tables[table]){
+                if (table !== "AutoChoose") console.log("table "+table+" not found")
+                return;
+            }
 
             // checkboxlist per ora
             if (ctrl && ctrl.isCustomGetcontrol) return ctrl.getControl();

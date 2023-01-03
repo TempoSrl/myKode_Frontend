@@ -35,7 +35,7 @@
                expect(res).toBe(true);
                countExpect++;
                // Evento di attesa pagina caricata
-               testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+               testHelper.waitEvent(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
                      countExpect++;
                      // TEST GENERICO DA INVOCARE per testare inizializzzione di qualsiasi MetaPage
@@ -110,7 +110,7 @@
                      // 3. premo bottone di "salva"
                      testHelper.log("Premo Salva");
                      // Messaggio conferma per la cancellazione. premo ok
-                     common.eventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
+                     common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
                         testHelper.log("Tento di Premere ignora e salva");
                         if ($(".modal-footer .procedureMessage_btn_ignoreandsave").length) {
                            testHelper.log("Premuto ignora e salva");
@@ -152,7 +152,7 @@
                      // 3. premo bottone di "salva"
                      testHelper.log("Ripremo Premo Salva su oggetto appena riletto");
                      // Messaggio conferma per la cancellazione. premo ok
-                     common.eventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
+                     common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
                         testHelper.log("Tento di Premere ignora e salva");
                         if ($(".modal-footer .procedureMessage_btn_ignoreandsave").length) {
                            testHelper.log("Premuto ignora e salva");
@@ -180,7 +180,7 @@
 
                        var s6 = stabilizeToCurrent();
                        // Messaggio conferma per la cancellazione. premo ok
-                       common.eventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
+                       common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
                            countExpect++;
                            $(".modal").find("button")[1].click();
                        });
@@ -212,7 +212,7 @@
                      testHelper.log("Rieffettuo la ricerca");
                      testHelper.clickButtonByTag('maindosearch');
                      // Premo ok sul msgbox di riga non trovata
-                     common.eventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
+                     common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
                         countExpect++;
                         testHelper.log("Premuto \"ok riga non trovata\"");
                         $(".modal").find("button")[0].click();
@@ -289,14 +289,14 @@
                     }
 
                     // si è aperta la sub page quindi vado in ricorsione.
-                    testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+                    testHelper.waitEvent(appMeta.EventEnum.showPage)
                         .then(function (metaPageDetail) {
                             // si è aperta la mp di livello k.
                             var pathTNameEdittypeNavigated = paths[index + 1];
                              navigateSubPage(metaPageDetail, treeInfo, paths, index + 1)
                                 .then(function () {
                                     // al ritorno premo su salva, cioè ok.
-                                    common.eventWaiter(metaPageCurrent, appMeta.EventEnum.editClick)
+                                    common.pageEventWaiter(metaPageCurrent, appMeta.EventEnum.editClick)
                                         .then(function () {
                                             // ckeck sui due nodi sul tree TODO
                                             testHelper.log("torno su chiamante da dettaglio del treecustom: " + metaPageDetail.primaryTableName + '-' + metaPageDetail.editType);
@@ -323,7 +323,7 @@
                     ctrl.currentRow = dttree.rows[0];
 
                     // attendo che si apra il dettaglio
-                    testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+                    testHelper.waitEvent(appMeta.EventEnum.showPage)
                         .then(function (metaPageDetail) {
                             // recupero tablename ed edittype dal tag della griglia
                             var detailTableName = treeInfo.tname;
@@ -356,7 +356,7 @@
                                 return testHelper.insertValueNodeByTagAsync(arrayInputDetail, metaPageDetail.helpForm, false)
                             }).then(function () {
                                 // attendo la fine del tasto di add sulla metaPage chiamante
-                                common.eventWaiter(metaPageCurrent, appMeta.EventEnum.insertClick)
+                                common.pageEventWaiter(metaPageCurrent, appMeta.EventEnum.insertClick)
                                     .then(function () {
                                         // ckeck sui due nodi sul tree TODO
 
@@ -388,7 +388,7 @@
                        // 3. premo bottone di "salva"
                        testHelper.log("Ripremo Premo Salva perchè ho popolato la subpage del treecustom " + treeInfo.tname );
                        // Messaggio conferma per la cancellazione. premo ok
-                       common.eventWaiter(metaPageMain, appMeta.EventEnum.showModalWindow).then(function () {
+                       common.pageEventWaiter(metaPageMain, appMeta.EventEnum.showModalWindow).then(function () {
                            testHelper.log("Tento di Premere ignora e salva");
                            if ($(".modal-footer .procedureMessage_btn_ignoreandsave").length) {
                                testHelper.log("Premuto ignora e salva");
@@ -453,7 +453,7 @@
                countExpect++;
 
                // Evento di attesa pagina caricata
-               testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+               testHelper.waitEvent(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
                       // forzo esistenza bottone insert, per quelle pagine che ce l'hanno disabilitato
                      metaPage.canInsert = true;
@@ -505,7 +505,7 @@
                    countExpect++;
 
                    // Evento di attesa pagina caricata
-                   testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+                   testHelper.waitEvent(appMeta.EventEnum.showPage)
                        .then(function (metaPage) {
                            countExpect++;
                            return self.coreTestMetaPageCaseTree1(metaPage, tablename, edittype, arrayInput, prmChecks);
@@ -563,7 +563,7 @@
            // se parto con un test in cui c'è una curretnMetaPage allora i campi potrebbero essere popolati
            // TODO dovrebbe esserci il dettaglio del nodo root
 
-           common.eventGlobalWaiter(metaPage, appMeta.EventEnum.buttonClickEnd)
+           common.eventGlobalWaiter(metaPage, appMeta.EventEnum.commandEnd)
                .then(function () {
                    countExpect++;
                    // verifico i valori di default che ho nel vettore di configurazione.
@@ -577,7 +577,7 @@
                    // 3. premo bottone di "salva"
                    testHelper.log("Premo Salva pag principale tree");
                    // Messaggio conferma per la cancellazione. premo ok
-                   common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
+                   common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
                        testHelper.log("Tento di Premere ignora e salva");
                        if ($(".modal-footer .procedureMessage_btn_ignoreandsave").length) {
                            testHelper.log("Premuto ignora e salva");
@@ -592,7 +592,7 @@
                    testHelper.clickButtonByTag('mainsave');
                    return s3;
            }).then(function () {
-               // TODO vedere veriifca nodo del tree
+               // TODO vedere verifica nodo del tree
                expect(dttree.rows.length).toBe(rowsCount + 1);
                // verifico che i campi siano quelli inseriti
                testHelper.testHtmlNodeByTagFilledValue(arrayInput, metaPage, true);
@@ -601,7 +601,7 @@
 
                var s6 = stabilizeToCurrent();
                // Messaggio conferma per la cancellazione. premo ok
-               common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
+               common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
                    countExpect++;
                    $(".modal").find("button")[1].click();
                });
@@ -661,7 +661,7 @@
                countExpect++;
 
                // Evento di attesa pagina caricata
-               testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+               testHelper.waitEvent(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
                      countExpect++;
                      // TEST GENERICO DA INVOCARE per testare inizializzzione di qualsiasi MetaPage
@@ -677,7 +677,7 @@
                            countExpect++;
 
                            // 4. dopo il close attendo messaggio di warning, poichè ho una riga in insert . premo ok
-                           common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
+                           common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
                               countExpect++;
                               $(".modal").find("button")[1].click();
                            });
@@ -778,7 +778,7 @@
                countExpect++;
 
                // Evento di attesa pagina caricata
-               testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+               testHelper.waitEvent(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
                      countExpect++;
                      // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
@@ -836,7 +836,7 @@
                expect(res).toBe(true);
                countExpect++;
                // Evento di attesa pagina caricata
-               testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+               testHelper.waitEvent(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
                      countExpect++;
                      // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
@@ -866,7 +866,7 @@
                                     expect($(".procedureMessage_grid").length).toBe(0);
 
                                     // Messaggio conferma per la copia. premo "conferma"
-                                    common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
+                                    common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
                                        countExpect++;
                                        $(".modal").find("button")[1].click();
                                     });
@@ -917,7 +917,7 @@
                                                                      testHelper.testHtmlNodeByTagFilledValue(arrayInput, metaPage);
 
                                                                      // Messaggio conferma per la cancellazione. premo ok
-                                                                     common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
+                                                                     common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
                                                                         countExpect++;
                                                                         $(".modal").find("button")[1].click();
                                                                      });
@@ -943,20 +943,20 @@
                                                                                     .then(function () {
 
                                                                                        // Attendo la ricerca
-                                                                                       common.eventGlobalWaiter(metaPage, appMeta.EventEnum.buttonClickEnd)
+                                                                                       common.eventGlobalWaiter(metaPage, appMeta.EventEnum.commandEnd)
                                                                                           .then(function () {
                                                                                              countExpect++;
                                                                                              // verifico che i campi siano quelli inseriti
                                                                                              testHelper.testHtmlNodeByTagFilledValue(arrayInput, metaPage);
 
                                                                                              // Messaggio conferma per la cancellazione. premo ok
-                                                                                             common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
+                                                                                             common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
                                                                                                 countExpect++;
                                                                                                 $(".modal").find("button")[1].click();
                                                                                              });
 
                                                                                              // Attendo la cancellazione del record appena inserito, dopo pressione del tasto ok sulla messagebox
-                                                                                             common.eventGlobalWaiter(metaPage, appMeta.EventEnum.buttonClickEnd)
+                                                                                             common.eventGlobalWaiter(metaPage, appMeta.EventEnum.commandEnd)
                                                                                                 .then(function () {
                                                                                                    countExpect++;
                                                                                                    // testo campi vuoti dopo bottone vai alla ricerca
@@ -967,13 +967,13 @@
                                                                                                    testHelper.insertValueNodeByTagAsync(arrayInput, metaPage.helpForm, true).then(function () {
 
                                                                                                       // Premo ok sul msgbox di riga non trovata
-                                                                                                      common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
+                                                                                                      common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
                                                                                                          countExpect++;
                                                                                                          $(".modal").find("button")[0].click();
                                                                                                       });
 
                                                                                                       // attendo pressione ok su msgbox di avviso riga non trovata
-                                                                                                      common.eventGlobalWaiter(metaPage, appMeta.EventEnum.buttonClickEnd)
+                                                                                                      common.eventGlobalWaiter(metaPage, appMeta.EventEnum.commandEnd)
                                                                                                          .then(function () {
 
                                                                                                             var s2 = stabilize();
@@ -1079,7 +1079,7 @@
          // N.B non richiede Login. Lavora con connessione anonima
 
          // Evento di attesa pagina caricata
-         testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+         testHelper.waitEvent(appMeta.EventEnum.showPage)
             .then(function (metaPage) {
                countExpect++;
                // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
@@ -1204,7 +1204,7 @@
                expect(res).toBe(true);
                countExpect++;
                // Evento di attesa pagina caricata
-               testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+               testHelper.waitEvent(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
                      mpDidProg = metaPage;
                      countExpect++;
@@ -1248,7 +1248,7 @@
                                  testHelper.log("Premo apertura entità " + childEntityName + " tramite bottoni");
 
                                  // metto in attesa della'pertura della pagina figlia ("curriculum")
-                                 testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+                                 testHelper.waitEvent(appMeta.EventEnum.showPage)
                                     .then(function (metaPageCurr1) {
                                        countExpect++;
                                        //5. Apro pagina figlia ("curriculum") con vettore di configurazione
@@ -1308,7 +1308,7 @@
                                              testHelper.testHtmlNodeByTagFilledValue(arrayInput, mpDidProg);
                                              var s6 = stabilizeToCurrent();
                                              // Messaggio conferma per la cancellazione. premo ok
-                                             common.eventWaiter(mpDidProg, appMeta.EventEnum.showModalWindow).then(function () {
+                                             common.pageEventWaiter(mpDidProg, appMeta.EventEnum.showModalWindow).then(function () {
                                                 countExpect++;
                                                 $(".modal").find("button")[1].click();
                                              });
@@ -1330,7 +1330,7 @@
                                              testHelper.log("Rieffettuo la ricerca su " + tablename);
                                              testHelper.clickButtonByTag('maindosearch');
                                              // Premo ok sul msgbox di riga non trovata
-                                             common.eventWaiter(mpDidProg, appMeta.EventEnum.showModalWindow).then(function () {
+                                             common.pageEventWaiter(mpDidProg, appMeta.EventEnum.showModalWindow).then(function () {
                                                 countExpect++;
                                                 $(".modal").find("button")[0].click();
                                              });
@@ -1446,7 +1446,7 @@
          // N.B non richiede Login. Lavora con connessione anonima
 
          // Evento di attesa pagina caricata
-         testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+         testHelper.waitEvent(appMeta.EventEnum.showPage)
             .then(function (metaPage) {
                countExpect++;
                // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
@@ -1599,7 +1599,7 @@
                expect(res).toBe(true);
                countExpect++;
                // Evento di attesa pagina caricata
-               testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+               testHelper.waitEvent(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
                      countExpect++;
                      // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
@@ -1621,7 +1621,7 @@
                      expect(countExpect).toBe(4);
                      // RIAPRO PAGINA
                      // Evento di attesa pagina caricata
-                     testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+                     testHelper.waitEvent(appMeta.EventEnum.showPage)
                         .then(function (metaPage) {
                            countExpect++;
                            // TEST GENERICO DA INVOCARE per testare inizializzzione di qualsiasi MetaPage
@@ -1671,14 +1671,14 @@
                expect(res).toBe(true);
                countExpect++;
                // Evento di attesa pagina caricata
-               testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+               testHelper.waitEvent(appMeta.EventEnum.showPage)
                   .then(function (metaPage) {
                      mp1 = metaPage;
                      countExpect++;
                      // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
                      testHelper.testMetaPageInitialization(metaPage, tablename, edittype);
 
-                     common.eventWaiter(metaPage, appMeta.EventEnum.stopMainRowSelectionEvent)
+                     common.pageEventWaiter(metaPage, appMeta.EventEnum.stopMainRowSelectionEvent)
                         .then(function () {
                            // eseguo modifica
                            customArray.push({ tag: 'affidamento.prog?affidamentodocview.affidamento_prog', value: "Programma data " + new Date().getTime(), type: controlTypeEnum.textarea });
@@ -1700,9 +1700,9 @@
                                  expect(countExpect).toBe(5);
                                  // RIAPRO PAGINA
                                  // Evento di attesa pagina caricata
-                                 testHelper.waitPageLoaded(appMeta.EventEnum.showPage)
+                                 testHelper.waitEvent(appMeta.EventEnum.showPage)
                                     .then(function (metaPage) {
-                                       common.eventWaiter(metaPage, appMeta.EventEnum.stopMainRowSelectionEvent)
+                                       common.pageEventWaiter(metaPage, appMeta.EventEnum.stopMainRowSelectionEvent)
                                           .then(function () {
 
                                              countExpect++;

@@ -50,10 +50,10 @@
          * @method canSelect
          * @public
          * @description SYNC
-         * @returns {Deferred(boolean)}
+         * @returns Promise<boolean>
          */
         canSelect:function () {
-            return Deferred("TreeNode-canSelect").resolve(true);
+            return Deferred("TreeNode-canSelect").resolve(true).promise();
         },
 
         /**
@@ -66,7 +66,8 @@
         rowExists:function(){
             if (!this.dataRow) return false;
             if (!this.dataRow.getRow) return false;
-            if (this.dataRow.getRow().state === dataRowState.deleted || this.dataRow.getRow().state === dataRowState.detached ) return false;
+            if (this.dataRow.getRow().state === dataRowState.deleted ||
+                this.dataRow.getRow().state === dataRowState.detached ) return false;
             return true;
          },
         

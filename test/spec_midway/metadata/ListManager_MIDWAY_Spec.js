@@ -192,7 +192,7 @@ describe('ListManager', function () {
                         }
                         var s = stabilizeToCurrent();
                         $footerTable.find("tr").find("td:last > button").click(); // clicco ">>"
-                        //return  common.eventWaiter(metapage, appMeta.EventEnum.listCreated);
+                        //return  common.pageEventWaiter(metapage, appMeta.EventEnum.listCreated);
                         return s;
                     })
                     .then(function () {
@@ -266,13 +266,14 @@ describe('ListManager', function () {
                 var lm =  new ListManager("table1", "listType", null, true, $("#lm1"), metapage);
                 lm.init();
                 lm.show();
-                common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                     .then(function() {
                         expect($("table:first").find("tr").length).toBe(11); // grid dati 11 righe. 1 header + 10 dati
                         expect($("table:first").parent().parent().parent().hasClass("modal-body")).toBe(true); // griglia dati ospitata sulla modale
                         var s = stabilize();
                         lm.gridControl.isEditBtnVisible = true;
-                        $("table:first").find("tr").eq(2).dblclick(); // doppio click su una riga. La modale si deve chiudere. così chiudo anche tutti i deferred
+                        // doppio click su una riga. La modale si deve chiudere. Così chiudo anche tutti i deferred
+                        $("table:first").find("tr").eq(2).dblclick();
                         return s;
                     }).then(function() {
                         expect($("table:first").length).toBe(0); // la modale è stata rimossa, quindi anche la griglia che vi era ospitata
@@ -336,7 +337,7 @@ describe('ListManager', function () {
                     .then(function () {
                         expect($("table:first").length).toBe(1); // prima del chiudi verifico presenza della tabella
                         expect($(lm.currentRootElement).find("button:first").text()).toBe("<<"); // mi asoetto ci sia bottone chiudi
-                        var wait = common.eventWaiter(metapage, appMeta.EventEnum.listManagerHideControl);
+                        var wait = common.pageEventWaiter(metapage, appMeta.EventEnum.listManagerHideControl);
                         lm.closeEl.click(); // premo su bottone chiudi
                         return wait;
                     })
@@ -352,12 +353,12 @@ describe('ListManager', function () {
                 var lm =  new ListManager("table1", "listType", null, true, $("#lm1"), metapage);
                 lm.init();
                 lm.show();
-                common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                     .then(function () {
                         expect($("table:first").find("tr").length).toBe(11); // grid dati 11 righe. 1 header + 10 dati
                         expect($("table:first").parent().parent().parent().hasClass("modal-body")).toBe(true); // griglia dati ospitata sulla modale
 
-                        var wait =  common.eventWaiter(metapage, appMeta.EventEnum.listManagerHideControl);
+                        var wait =  common.pageEventWaiter(metapage, appMeta.EventEnum.listManagerHideControl);
                         $(lm.currentRootElement).find("button:first").click(); // premo su bottone chiudi
                         return wait;
                     })
@@ -373,7 +374,7 @@ describe('ListManager', function () {
                 lm.init();
                 lm.show();
 
-                common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                     .then(function() {
                         expect($("table:first").parent().parent().parent().hasClass("modal-body"))
                             .toBe(true); // griglia dati ospitata sulla modale
@@ -396,7 +397,7 @@ describe('ListManager', function () {
                 var lm =  new ListManager("table1", "listType", null, true, $("#lm1"), metapage);
                 lm.init();
                 lm.show(); // mostra il listManager in versione modale, attendo quindi nell'evento che sia visualzzata e posso effettuare le operazioni
-                common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                     .then(function() {
                         expect($("table:first").parent().parent().parent().hasClass("modal-body")).toBe(true); // griglia dati ospitata sulla modale
                         var s = stabilizeToCurrent();
@@ -463,7 +464,7 @@ describe('ListManager', function () {
                     expect(true).toBe(false);
                     done();
                 });
-                common.eventWaiter(mp, appMeta.EventEnum.showModalWindow)
+                common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow)
                     .then(function () {
                         expect($("table:first").parent().parent().parent().hasClass("modal-body")).toBe(true);
                         expect($("table:first").find("tr").length).toBeGreaterThan(0);

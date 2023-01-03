@@ -449,7 +449,7 @@
          * @method InitializeJsTree
          * @private
          * @description ASYNC
-         * Loading of jstree is not syncronous, so the it launches the first init and returns a deferred.
+         * Loading of jstree is not syncronous, so it launches the first init and returns a deferred.
          * It sets to true the global class var "inited" to store that loading is done
          */
         initializeJsTree:function () {
@@ -570,7 +570,6 @@
 
                                     // se passo null come 1o prm aggiunge in testa all'albero. oppure potrei passare "#"
                                     self.addNode(null, newNode);
-
                                     allfillChildsNodeDeferred.push(self.fillChildsNode(newNode, newNode.dataRow));
                                 });
 
@@ -642,6 +641,7 @@
             parentNode.toExplore = false;
 
             var self = this;
+
             var childList = parentRow.getRow().getChildRows(this.autoChildRelation.name);
 
             // le createnode sono asyncrone dentro un ciclo, metto in array e risolvo in when()

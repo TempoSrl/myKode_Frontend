@@ -459,7 +459,7 @@
 
 
         /**
-         * changes current row to make it's current values equal to another one. Deleted rows becomes modified
+         * changes current row to make its current values equal to another one. Deleted rows becomes modified
          * compared to patchTo, this also removes values that are not present in other row
          * @method makeEqualTo
          * @param {object} o
@@ -2175,6 +2175,7 @@
                 autoIncrementInfo = this.autoIncrementColumns[field],
                 selector = autoIncrementInfo.getSelector(r),
                 startSearch;
+
             if (autoIncrementInfo.isNumber) {
                 evaluatedMax = this.cachedMaxSubstring(field, 0, 0, selector) + 1;
             }

@@ -103,11 +103,11 @@ describe('PostData', function () {
                 };
 
                 var inputMessages = [];
-                common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                     .then(function () {
                         expect(inputMessages.length).toBe(0);// messaggi 
                         
-                        common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                        common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                             .then(function () {
                                 expect($(".modal .modal-body")).toBeDefined();
                                 expect($(".procedureMessage_grid > table > tr").length).toBe(3); // 1 header + 2 rows

@@ -2610,7 +2610,8 @@
         else {
             freeExports.jsDataQuery = q;
         }
-    } else {
+    }
+    if (root) {
         // Export for a browser or Rhino.
         root.jsDataQuery = q;
     }

@@ -1107,12 +1107,27 @@
                 filename = self.getFileNameFromContentDisposition(response.headers.get('content-disposition'));
                 return response.text();
             }).then(function (htmlText) {
-                    // dato html rimpiazzo i palceholders
-                    var mytextReplaced = self.replacePlaceHolders(htmlText);
-                    // var b = new Blob([mytextRepalced], { type: 'application/pdf' });
-                    var printWindow = window.open();
-                    printWindow.document.write(mytextReplaced);
-                    printWindow.document.close();
+                // dato html rimpiazzo i palceholders
+                var mytextReplaced = self.replacePlaceHolders(htmlText);
+                let url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(mytextReplaced),
+                fileName = 'stampa.doc',
+                downloadLink = document.createElement("a");
+                
+                downloadLink.style.visibility = 'hidden';
+                document.body.appendChild(downloadLink);
+
+                downloadLink.href = url;
+                downloadLink.download = fileName;
+                downloadLink.click();
+
+                downloadLink.parentElement.removeChild(downloadLink);
+
+
+// Vecchio codice per apertura scheda con stampa
+                    // var printWindow = window.open();
+                    // printWindow.document.write(mytextReplaced);
+                    // printWindow.document.close();
+// Vecchio codice per apertura scheda con stampa                    
 
                   /*  var myBlob = new Blob([mytextReplaced], { type: 'application/pdf' })
                     var fileURL = window.URL.createObjectURL(myBlob);

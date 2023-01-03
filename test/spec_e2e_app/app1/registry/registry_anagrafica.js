@@ -4,7 +4,6 @@
     function metaPage_registry() {
         MetaPage.apply(this, arguments);
         this.name = 'metaPage_registry';
-         
         // *****************************************************************************************************
         // ****************************** TEST FILE FROM_LIST_AUTOCHOOSE****************************************
         // *****************************************************************************************************
@@ -18,6 +17,7 @@
             case 3:
                 // 3 test imposta ricerca: dopo activate, metto testo nelle text, premo imposta ricerca-> deve sbianchettare tutto. Poi digito id 1040471
                 // premo "search" -> la forma deve popolarsi con i dati della riga
+
             case 5:
                 // 5. dopo activate  , digita 2 su idreg. Tutti i campi, tra cui piva e i reference vengono popolati
                 this.startFilter = q.or(q.eq('idreg',1) , q.eq('idreg',2), q.eq('idreg',6), q.eq('idreg',4)); 

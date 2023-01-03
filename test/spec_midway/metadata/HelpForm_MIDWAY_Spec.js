@@ -825,7 +825,7 @@ describe("helpForm midway",
                                     expect($("#combo3").val()).toBe("1");
                                     // mi dovrebbe mostrare la messageBox, poichè la 3riga di datasource è in stato added io premo tasto chiusura
                                     var s = stabilize();
-                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                     .then(function (){
                                         $(".modal").find("button")[0].click();
                                     });
@@ -837,7 +837,7 @@ describe("helpForm midway",
                                     expect(datasource.rows.length).toBe(3); // non ho permesso la discard dei cambiamenti, quindi il ds con la riga cambiata ,ancora ce l'ha
                                     var s = stabilize();
                                     // mi dovrebbe mostrare la messageBox, Stavolta premo su ok, quindi sulla combo appare il valore 3. inoltre facendo la discard dei dati, perdo la riga added sul datasource
-                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                     .then(function (){
                                         $(".modal").find("button")[1].click();
                                     });
@@ -853,7 +853,7 @@ describe("helpForm midway",
                                     datasource.rows[0].getRow().state = jsDataSet.dataRowState.added;
 
                                     var s = stabilize();
-                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                     .then(function (){
                                         $(".modal").find("button")[2].click();
                                     });
@@ -866,7 +866,7 @@ describe("helpForm midway",
 
                                     var s = stabilize();
                                     // mi dovrebbe mostrare la messageBox, Stavolta premo su ok, quindi sulla combo appare il valore 1. inoltre facendo la discard dei dati, perdo la riga added sul datasource
-                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                     .then(function (){
                                         $(".modal").find("button")[1].click(); //premo ok, quindi faccio la discard dei dati
                                     });
@@ -1066,7 +1066,7 @@ describe("helpForm midway",
                                     expect($("#grid2").find("tr").find("td").eq(0).text()).toBe("key1");
                                     expect($("#grid2").find("tr").find("td").eq(1).text()).toBe("f3");
                                     var s = stabilize();
-                                    common.eventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
                                     .then(function (){
                                         expect($(".modal").length).toBe(1); // c'è una messagebox
                                         $(".modal").find("button")[0].click();
@@ -1234,7 +1234,7 @@ describe("helpForm midway",
                         helpForm.addEvents(metapage);
 
 
-                        common.eventWaiter(metapage, appMeta.EventEnum.insertClick)
+                        common.pageEventWaiter(metapage, appMeta.EventEnum.insertClick)
                         .then(function (){
                             // vedo solo se la console non torna errori
                             expect(true).toBe(true);
@@ -1242,14 +1242,14 @@ describe("helpForm midway",
                         $("#btn1").click();
 
 
-                        common.eventWaiter(metapage, appMeta.EventEnum.editClick)
+                        common.pageEventWaiter(metapage, appMeta.EventEnum.editClick)
                         .then(function (){
                             // vedo solo se la console non torna errori
                             expect(true).toBe(true);
                         });
                         $("#btn2").click();
 
-                        common.eventWaiter(metapage, appMeta.EventEnum.deleteClick)
+                        common.pageEventWaiter(metapage, appMeta.EventEnum.deleteClick)
                         .then(function (){
                             // vedo solo se la console non torna errori
                             expect(true).toBe(true);
@@ -1378,7 +1378,7 @@ describe("helpForm midway",
                             metapage.choose = function (command, filter, origin){
                                 return Deferred().resolve(true).promise();
                             };
-                            common.eventWaiter(helpForm.metaPage, appMeta.EventEnum.textBoxGotFocus)
+                            common.pageEventWaiter(helpForm.metaPage, appMeta.EventEnum.textBoxGotFocus)
                             .then(function (){
                                 expect(helpForm.lastValidText()).toBe("txtBox1#ric");
 

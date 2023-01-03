@@ -17,6 +17,5 @@
     window.appMeta.callWebService = function (method, prms) {
         return appMeta.currApp.callWebService(method,prms);
     };
-
     window.appMeta.currApp = new TestApp();
 }());

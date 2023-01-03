@@ -107,7 +107,7 @@
          * @method register
          * @public
          * @description SYNC
-         * Adds a listener to the event. Id adds ea new Delegate object to the subscribers collection
+         * Adds a listener to the event. It adds a new Delegate object to the subscribers collection
          * @param {function} callBack
          * @param {object} context
          */
@@ -211,7 +211,9 @@
             // recupera la lista dei sottoscrittori a questo evento type
             let event = this.events[type];
             if (!event) return Deferred().resolve(true);
-            //console.log("trigger arguments sliced:", Array.prototype.slice.call(arguments,2));
+            let sendName = sender? sender.name:null;
+            //logger.log(logtypeEnum.INFO,"trigger "+type+" of sender:"+sendName+" arguments sliced:", Array.prototype.slice.call(arguments,2))
+
             return event.trigger(sender, Array.prototype.slice.call(arguments, 2));
         }
 
@@ -350,7 +352,7 @@
          **/
         increaseNesting: function(eventName) {
             this.nesting++;
-            logger.log(logtypeEnum.INFO, "increasing nesting", eventName, this.nesting);
+            //logger.log(logtypeEnum.INFO, "increasing nesting", eventName, this.nesting);
             this.evManager.trigger("increase", this, eventName);
         },
 
@@ -362,7 +364,7 @@
          */
         decreaseNesting: function(eventName) {
             this.nesting--;
-            logger.log(logtypeEnum.INFO, "decreaseNesting ", eventName, this.nesting);
+            //logger.log(logtypeEnum.INFO, "decreaseNesting ", eventName, this.nesting);
             if (!this.evManager) console.log("this.evManager is null");
             this.evManager.trigger("decrease", this, eventName);
             if (this.nesting === 0) {
@@ -392,23 +394,24 @@
          */
         stabilize: function(dontWaitForInstability) {
             if (this.nesting === 0 && dontWaitForInstability) {
-                logger.log(logtypeEnum.INFO, "stabilize invoked: immediately stabilized");
+                //logger.log(logtypeEnum.INFO, "stabilize invoked: immediately stabilized");
                 return Deferred().resolve();
             }
-            logger.log(logtypeEnum.INFO, this.nesting > 0 ? "stabilize invoked:  actually unstable:" + this.nesting : "stabilize invoked:  waiting for unstable");
+            //logger.log(logtypeEnum.INFO, this.nesting > 0 ? "stabilize invoked:  actually unstable:" + this.nesting : "stabilize invoked:  waiting for unstable");
             var listener = new DeferredListener(this);
             return listener.result;
         },
 
         /**
-         * Wait for unstability and then for stability
+         * Wait for instability and then for stability
+         * @param {int} stillOpen
          * @returns {Deferred}
          */
-        stabilizeToCurrent: function() {
+        stabilizeToCurrent: function(stillOpen) {
             //console.log(this.nesting > 0 ? "stabilize invoked:  actually unstable:" + this.nesting : "stabilize invoked:  waiting for unstable");
-            let listener = new DeferredListener(this, this.nesting);
+            stillOpen = stillOpen|0;
+            let listener = new DeferredListener(this, this.nesting-stillOpen);
             return listener.result;
-
         }
     };
 
@@ -445,7 +448,7 @@
                 this.stabilizer.evManager.unsubscribe("decrease", this.decrease, this);
                 this.stabilizer.evManager.unsubscribe("increase", this.increase, this);
                 this.result.resolve();
-                logger.log(logtypeEnum.INFO, "stabilized was done");
+                //logger.log(logtypeEnum.INFO, "stabilized was done");
             }
         },
 

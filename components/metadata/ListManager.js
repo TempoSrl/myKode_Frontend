@@ -46,7 +46,7 @@
 
         this.lastTableRequested = null;
 
-        // var ausiliarie per costruire i bottoni del footer
+        // variabili ausiliarie per costruire i bottoni del footer
         this.totpages = 0;
         this.currentPageDisplayed = 1;
         this.numberOfPagesInFooter = appMeta.config.listManager_numberOfPagesInFooter;
@@ -63,17 +63,18 @@
         /**
          *
          */
-        positionInPage:function() {
+        locateNotModal:function() {
             this.dialogNotmodalId = "dialog" + utils.getUniqueId();
             // l'elenco occuperà metà dell'altezza
-            this.currentRootElement = $('<div class="searchzoneList" id="' + this.dialogNotmodalId + '">'); // in alternativa aggiungi pure classe container di bootstrap, centra il tutto container
+            // in alternativa aggiungi pure classe container di bootstrap, centra il tutto container
+            this.currentRootElement = $('<div class="searchzoneList" id="' + this.dialogNotmodalId + '">');
             // aggiungo label per il titolo, dove mostro il num di righe totali + paginazione
-            var $lblTile = $("<label class='risultati' id='" + this.dialogNotmodalId + "_title'>");
+            let $lblTile = $("<label class='risultati' id='" + this.dialogNotmodalId + "_title'>");
             $(this.currentRootElement).append($lblTile);
 
             // aggiungo bottone per la chiusura
-            var $closeIcon = $('<i class="fa fa-window-close">');
-            var $span = $('<div class="searchClose">');
+            let $closeIcon = $('<i class="fa fa-window-close">');
+            let $span = $('<div class="searchClose">');
             $span.append($closeIcon);
             $span.on("click", _.partial(this.hideControl, this));
             this.closeEl = $span;
@@ -86,11 +87,11 @@
         /**
          *
          */
-        positionModal:function() {
+        locateModal:function() {
             this.myModalUnivoqueId = "#mymodal" + utils.getUniqueId();
             this.defModal = Deferred("ListManager-modal");
-            this.currentRootElement = $('<div class="listManagerContainer">'); // in alternativa aggiungi pure classe "container" di bootstrap, centra il tutto container
-
+            // in alternativa aggiungi pure classe "container" di bootstrap, centra il tutto container
+            this.currentRootElement = $('<div class="listManagerContainer">');
             $(this.rootElement).append(this.currentRootElement);
         },
 
@@ -106,9 +107,9 @@
          *
          */
         init:function() {
-            if (this.isModal) this.positionModal();
-            if (!this.isModal) this.positionInPage();
-            // a seconda se modale o non appendo i vari html ad un nuovo root. così non serve if dopo.
+            if (this.isModal) this.locateModal();
+            if (!this.isModal) this.locateNotModal();
+            // A seconda se modale o non appendo i vari html a un nuovo root. Così non serve if dopo.
             this.myRootListManger = $("<div data-tag='" + this.tableName + "." + this.listType + "' class='autoChooseDataTag'>");
             // aggiungo al mio root corrente il div dinamico con la griglia e il footer.
             $(this.currentRootElement).append(this.myRootListManger);
@@ -119,7 +120,7 @@
          * A seguito di un cambio di sort riesegue la query paginata
          */
         sortPaginationChange:function(newSort) {
-            var def = Deferred('doPaginatedNewSort');
+            let def = Deferred('doPaginatedNewSort');
             this.newSort = newSort;
             if (this.totpages > 1) {
                 return this.createList()
@@ -138,12 +139,11 @@
          * @param {DataTable} [dataTablePaged]
          * @param {int} [totPage]
          * @param {int} [totRows]
-         * @returns {Deferred}
+         * @returns Promise
          */
         show: function (dataTablePaged, totPage, totRows) {
             let self = this;
             let def = Deferred("show-ListManager");
-
             let res = self.createList(dataTablePaged, totPage, totRows)
                 .then(function () {
                     self.hideWaitingIndicator();
@@ -181,9 +181,9 @@
             // la new width non può uscire dallo schermo
             if (newcontint > screenW) newcontint = screenW - 50;
             // left attuale metà schermo meno metà della content bianca, posizionata al centro
-            var actualeft = (screenW - currwcont)/ 2;
+            let actualeft = (screenW - currwcont)/ 2;
             // calcolo qaunto devo spostare a sx il content bianco
-            var widthAdded = newcontint - currwcont;
+            let widthAdded = newcontint - currwcont;
 
             // fisso altezza in base allo schermo
             let h = ($(window).height() - 100).toString() + "px";
@@ -224,7 +224,8 @@
          * @returns {string}
          */
         getModalHtml:function () {
-            let modalHtml = "<div class='modal'  id=" + this.myModalUnivoqueId.substr(1) + " tabindex='-1' role='dialog' data-backdrop='static' data-keyboard='false'" +
+            return "<div class='modal'  id=" + this.myModalUnivoqueId.substr(1) +
+                " tabindex='-1' role='dialog' data-backdrop='static' data-keyboard='false'" +
                 " style='display:none;'>" +
                 "<div class='modal-dialog modal-lg'>" +
                 "<div class='modal-content'  >" +
@@ -239,14 +240,13 @@
                 "</div>" +
                 "</div>";
 
-            return modalHtml;
         },
 
         /**
          * @method buildModal
          * @private
          * @description SYNC
-         * Builds the modal control. Ataches also the event to the controls
+         * Builds the modal control. Also attaches the event to the controls
          * @returns {boolean}
          */
         buildModal:function () {
@@ -261,10 +261,10 @@
                 .on("click", this.closeModalBtnEv);
             $(this.myModalUnivoqueId  + ' .modal-footer').append($(this.myfooter));
             $(this.myModalUnivoqueId).modal('show');
-            if (this.metaPage.eventManager) return this.metaPage.eventManager.trigger(appMeta.EventEnum.showModalWindow, this, "buildModal");
-
+            if (this.metaPage.eventManager) {
+                return this.metaPage.eventManager.trigger(appMeta.EventEnum.showModalWindow, this, "buildModal");
+            }
             return true;
-
         },
 
 
@@ -278,10 +278,13 @@
          */
         hideControl:function (that) {
             if (that.currentRootElement){
-                if (that.isModal) $(this.myModalUnivoqueId).modal('hide'); // inovoco hide così rimuove lo sofndo non cliccabile
+                // invoco hide così rimuove lo sfondo non cliccabile
+                if (that.isModal) $(this.myModalUnivoqueId).modal('hide');
                 that.currentRootElement.remove();
             }
-            if (that.metaPage.eventManager) that.metaPage.eventManager.trigger(appMeta.EventEnum.listManagerHideControl, that, "hideControl");
+            if (that.metaPage.eventManager){
+                that.metaPage.eventManager.trigger(appMeta.EventEnum.listManagerHideControl, that, "hideControl");
+            }
         },
 
         /**
@@ -291,8 +294,9 @@
          * Called by the button close of the modal
          */
         closeModalBtnEv:function () {
-            var that = $(this).data("mdlModalWin");
-            that.closeListManager(); // non passo nulla, poichè nella modale se chiudo con il close non deve comunicare nulla al chiamante.
+            let that = $(this).data("mdlModalWin");
+            // non passo nulla, poiché nella modale se chiudo con il close non deve comunicare nulla al chiamante.
+            that.closeListManager();
         },
 
         /**
@@ -303,7 +307,7 @@
          * @param {DataTable} dataTablePaged
          * @param {int} totPage
          * @param {int} totRows
-         * @returns {Deferred}
+         * @returns Promise
          */
         createList: function(dataTablePaged, totPage, totRows) {
             let self = this;
@@ -311,19 +315,22 @@
             // mostro il loader
             this.loader.showControl();
             let res;
-            // la prima volta le passa metaPage sullo show  qaundo chiama l'elenco poichè già ha fatto la query e non la rifaccio
+            // la prima volta le passa metaPage sullo show quando chiama l'elenco
+            //  poiché già ha fatto la query e non la rifaccio
             if (dataTablePaged) {
                 res = self.loadCore(dataTablePaged, totPage, totRows);
-            } else {
+            }
+            else {
                 // passo qui, quando premo i pulsanti di navigazione della paginazione, quindi qui si ricalcola il dt
                 // oppure se eseguo un ordinamento sulla griglia e ci sono più pagine
-                res = getData.getPagedTable(this.tableName, this.currentPageDisplayed, this.nRowPerPage, this.filter, this.listType, this.newSort)
+                res = getData.getPagedTable(this.tableName, this.currentPageDisplayed,
+                                this.nRowPerPage, this.filter, this.listType, this.newSort)
                     .then(function(dtp, totp, totr) {
-                        // Nel momento in cui torno la riga alla metapage viene fatta della logica sulla riga selezionata
-                        // su relazioni etc... Quindi recupera dalla table la proprietà dataset, che in questo caso non avrebbe perchè
-                        // getPagedTable() torna solo un datatable, e lo devo quindi associare al ds corrente della metapage
+                        // Nel momento in cui torno la riga alla metapage viene fatta della logica sulla riga
+                        //  selezionata su relazioni etc... Quindi recupera dalla table la proprietà dataset,
+                        //  che in questo caso non avrebbe perché getPagedTable() torna solo un datatable,
+                        //  e lo devo quindi associare al ds corrente della metapage
                         dtp.dataset = self.metaPage.state.DS;
-
                         return self.loadCore(dtp, totp, totr);
                     });
             }
@@ -343,14 +350,14 @@
         },
 
         /**
-         * Given the dataTablePaged fills th grid
+         * Given the dataTablePaged fills the grid
          * @method loadCore
          * @private
          * @description ASYNC
          * @param {DataTable} dataTablePaged
          * @param {int} totPage
          * @param {int} totRows
-         * @returns {Deferred}
+         * @returns Promise
          */
         loadCore:function (dataTablePaged, totPage, totRows) {
             let self = this;
@@ -358,8 +365,12 @@
             self.totpages = totPage;
             //Calcolo titolo dinamicamente. Utilizzato nel caso modale usualmente
             self.title =  self.getTitle() + " - " + self.getNumberOfRowOnTot(totRows);
-            if (!self.isModal) $("#" +  this.dialogNotmodalId + "_title").text(self.getNumberOfRowOnTot(totRows));
-            if ( $(self.myModalUnivoqueId  + ' .modal-title').length) $(this.myModalUnivoqueId  + ' .modal-title').text(self.title);
+            if (!self.isModal) {
+                $("#" +  this.dialogNotmodalId + "_title").text(self.getNumberOfRowOnTot(totRows));
+            }
+            if ( $(self.myModalUnivoqueId  + ' .modal-title').length) {
+                $(this.myModalUnivoqueId  + ' .modal-title').text(self.title);
+            }
             // "dataTablePaged" è il DataTable calcolato da getPagedTable()
             if (!dataTablePaged) return def.resolve(null);
             // salvo le proprietà delle colonne precedenti
@@ -384,9 +395,11 @@
                     return self.gridControl.fillControl();
                 }).then(function() {
                     // aggiungo eventi
-                    self.gridControl.addEvents(self, self, false);
+                    self.gridControl.addEvents(self, self); //era inutile chiamarlo con false, non faceva nulla in quel caso
                     // popolo il footer con i bottoni di navigazione
-                    if (self.showFooter) self.buildFooter();
+                    if (self.showFooter) {
+                        self.buildFooter();
+                    }
                     // nascondo loader, una volta caricati i dati
                     self.loader.hideControl();
                     return true;
@@ -404,8 +417,8 @@
          */
         getNumberOfRowOnTot:function (rowsShowed) {
             // se sono più del totale msotrato paginato mostro "xx di 100"
-            var from = (this.currentPageDisplayed - 1) * this.nRowPerPage;
-            var to = from + this.nRowPerPage;
+            let from = (this.currentPageDisplayed - 1) * this.nRowPerPage;
+            let to = from + this.nRowPerPage;
             if (to > rowsShowed) to = rowsShowed;
             let msgShow = rowsShowed.toString();
             if (rowsShowed > this.nRowPerPage) msgShow = locale.from + " " + from + " " + locale.to + " " + to + " " + locale.of + " " + rowsShowed;
@@ -510,8 +523,9 @@
             if (startIndex < 1) {
                 startIndex = 1;
             }
-            // mostro i bottoni delle pagine cliccabili. tranne quello della pag corrente, che sarà disabilitato
-            for(var pageIndex = startIndex; pageIndex <= upperLimit; pageIndex++) {
+
+            // Mostro i bottoni delle pagine cliccabili. Tranne quello della pag corrente, che sarà disabilitato
+            for(let pageIndex = startIndex; pageIndex <= upperLimit; pageIndex++) {
                 this.buildButtonFooter($tr,
                     pageIndex,
                     (pageIndex === this.currentPageDisplayed),
@@ -544,7 +558,7 @@
                     footer.append($(this.myfooter));
                 }
             } else {
-                var $fooDiv = $("<div>");
+                let $fooDiv = $("<div>");
                 $fooDiv.addClass(appMeta.cssDefault.listManagerFooterCont);
 
                 this.myfooter.appendTo($fooDiv);
@@ -562,14 +576,14 @@
          * @param {element} $tr tr html element where add the new td element
          * @param {string} txt the text of the button
          * @param {boolean} isDisabled
-         * @param {Function} partial the event attached to the button
+         * @param {Function} action the event attached to the button
          */
-        buildButtonFooter: function ($tr, txt, isDisabled, partial) {
+        buildButtonFooter: function ($tr, txt, isDisabled, action) {
             let $td = $("<td>");
             let $button = $('<button class="btn btn-secondary">');
             $button.text(txt);
             $button.prop("disabled", isDisabled);
-            $button.on("click", partial);
+            $button.on("click", action);
             $($button).appendTo($td);
             $td.appendTo($tr);
         },
@@ -580,7 +594,7 @@
          * @description ASYNC
          * Attached on click event on button >>" in the footer, to go ahead if possible of "numberOfPagesInFooter" pages
          * @param {ListManager} that
-         * @return  {Deferred}
+         * @return  {Promise}
          */
         showNextPages:function (that) {
             if (that.currentPageDisplayed + that.numberOfPagesInFooter > that.totpages) {
@@ -597,7 +611,7 @@
          * @description ASYNC
          * Attached on click event on button "<<" in the footer, to go down if possible of "numberOfPagesInFooter" pages
          * @param {ListManager} that
-         * @return  {Deferred}
+         * @return  {Promise}
          */
         showPreviousPages:function (that) {
             that.currentPageDisplayed -= that.numberOfPagesInFooter;
@@ -611,6 +625,7 @@
          * @description ASYNC
          * Attached on click event on button ">" in the footer, to go to the next page
          * @param {ListManager} that
+         * @returns Promise
          */
         goNextPage:function (that) {
             that.currentPageDisplayed  = that.currentPageDisplayed + 1;
@@ -625,7 +640,7 @@
          * Attached on click event on button "nPage" in the footer, to go at the page nPage
          * @param {ListManager} that
          * @param {number} nPage
-         * @return  {Deferred}
+         * @return  Promise
          */
         goToPage:function (that, nPage){
             that.currentPageDisplayed = nPage;
@@ -638,7 +653,7 @@
          * @description ASYNC
          * Attached on click event on button "<" in the footer, to go in the previous page
          * @param {ListManager} that
-         * @return  {Deferred}
+         * @return  Promise
          */
         goPreviousPage:function(that){
             if(that.currentPageDisplayed > 1)  that.currentPageDisplayed -= 1;
@@ -652,14 +667,14 @@
          * @method canSelect
          * @public
          * @description ASYNC
-         * Return a deferred boolena true if control can select a row
+         * Return a deferred boolean true if control can select a row
          * @param {DataTable} dataTable
          * @param {DataRow} row
-         * @returns {Deferred}
+         * @returns Promise
          */
         canSelect: function (dataTable, row) {
             //TODO richiamare il canSelect della MetaPage
-            var deferred = Deferred("canSelect");
+            let deferred = Deferred("canSelect");
             return deferred.resolve(true).promise();
         },
 
@@ -667,30 +682,33 @@
          * @method rowSelect
          * @public
          * @description ASYNC
-         * Dispatches a row select through listeners if the control is not modal, otherwise it resolve immediately the deferred
-         * @param {Html node} sender  object generating the event
+         * Dispatches a row select through listeners if the control is not modal,
+         *  otherwise it resolve immediately the deferred
+         * @param {element} sender  object generating the event
          * @param {DataTable} dataTable
          * @param {ObjectRow} row
-         * @returns {Deferred}
+         * @returns Promise
          */
         rowSelect: function (sender, dataTable, row) {
             if (this.isModal) {
-                // Nel caso modale, se il grid ospitato lancia un rowselect non deve fare nulla. Torno la deferred poichè l'interfaccia della rowSelect prevede torni un Deferred.
-                // Al click su una riga infatti viene invocato il click su grid, il grid chiama la setRow -> ed invoca la rowSelect sulla metPage chiamante,
-                // quindi in questo caso la metaPage è ListManager e proprio questo metodo rowSelect() ; lui deve quindi tornare una Deferred altrimenti va in errore.
+                // Nel caso modale, se il grid ospitato lancia un rowselect non deve fare nulla.
+                // Torno la deferred poiché l'interfaccia della rowSelect prevede torni un Deferred.
+                // Al click su una riga infatti viene invocato il click su grid,
+                // il grid chiama la setRow e invoca la rowSelect sulla metaPage chiamante,
+                // quindi in questo caso la metaPage è ListManager e proprio questo metodo rowSelect() ;
+                // lui deve quindi tornare una Deferred altrimenti va in errore.
 
                 // per il mobile la selezione avviene al singolo click
                 if (appMeta.isMobile) {
-                   this.closeAndResolveDeferred(row);
+                    this.closeAndResolveDeferred(row);
                 }
                 return Deferred("rowSelect").resolve();
             }
-            // qui invece viene invocato la rowSelct sulla MetaPage vera e propria e lei torna Deferred
-            // Di qua passa quando il listManager non è modale, ossia è associato ad un form elenco sulla tabella principale
+            // qui invece viene invocato la rowSelect sulla MetaPage vera e propria e lei torna Deferred
+            // Di qua passa quando il listManager non è modale, ossia è associato a un form elenco sulla tabella principale
             let dtRow = row ? (row.getRow ? row.getRow() : null) : null;
 
             let self = this;
-            // console.log("rowSelect " + appMeta.logger.getTimeMs());
             return this.metaPage.warnUnsaved()
                 .then(function (res) {
                     if (res) {
@@ -705,7 +723,8 @@
          * @method rowDblClick
          * @private
          * @description SYNC
-         * Handker for the dbClick event on the grid of listManager
+         * This was enabled for modal list, now it is not used anymore
+         * Handler for the dbClick event on the grid of listManager
          * @param {GridControl} sender
          * @param {DataTable} dataTable
          * @param {ObjectRow} row
@@ -725,19 +744,21 @@
          * @description SYNC
          * Hides/removes the control graphically and resolve the deferred with the row selected.
          * It distinguishes 2 cases:
-         * 1. modal resolve the "defModal" Deferred, instead
-         * 2. not modal call a selectRow on metapage
+         * 1. modal resolve the "defModal" Deferred with the selected row
+         * 2. not modal invoke selectRow on the Metapage
          * @param {DataTable} dataTable
          * @param {ObjectRow} row
+         * @return Promise
          */
         closeListManager:function (dataTable, row) {
             if (this.isModal) {
                 this.closeAndResolveDeferred(row);
-            } else {
+            }
+            else {
                 // alla chiusura se non è modale lancia la rowSelect su metaPage
                 // this.metaPage.rowSelect(null, dataTable, row);
-                var dtRow = row ? (row.getRow ? row.getRow() : null) : null;
-                var self = this;
+                let dtRow = row ? (row.getRow ? row.getRow() : null) : null;
+                let self = this;
                 return this.metaPage.warnUnsaved()
                     .then(function (res) {
                         if (res) {
@@ -767,6 +788,7 @@
             if (!this.gridControl) {
                 this.gridControl = new GridController(this.myRootListManger, this.metaPage.helpForm, dt, null, this.listType);
                 this.gridControl.init();
+                this.gridControl.doubleClickToExit=true;
             }
         }
         // *** END Methods MetaPage Interface  ***

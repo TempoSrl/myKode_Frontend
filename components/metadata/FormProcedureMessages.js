@@ -23,7 +23,7 @@
         this.metaPage = metaPage;
         this.rootElement = rootElement || document.body;
         this.messages = messages;
-        this.templateFileHtmlPath  = appMeta.basePath + appMeta.config.path_procedureMessagesTemplate;
+        this.templateFileHtmlPath  =  appMeta.config.path_procedureMessagesTemplate;
         this.columnNames = ["id", "description"];
         this.columnCaptions = [locale.prodMess_id, locale.prodMess_lonMsg];
 
@@ -47,7 +47,7 @@
          */
         fillControl:function () {
             // carico il template della Form
-            var htmlFileName =  this.templateFileHtmlPath;
+            var htmlFileName =  appMeta.basePath +this.templateFileHtmlPath;
             var self = this;
             $.get(htmlFileName)
                 .done(

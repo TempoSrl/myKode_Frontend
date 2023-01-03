@@ -12,7 +12,7 @@ module.exports = function(config) {
         usePolling: true,
 
         //dots  progress  junit  growl  coverage kjhtml spec
-        reporters: ['dots'],
+        reporters: ['progress'],
 
 
         // base path, that will be used to resolve files and exclude
@@ -33,12 +33,13 @@ module.exports = function(config) {
             'bower_components/jasmine-jquery/lib/jasmine-jquery.js',
             'components/metadata/jsDataSet.js',
             'bower_components/jstree/dist/jstree.js',
+            'components/utility/select2.min.js',
             'components/metadata/MetaApp.js',
             'components/metadata/Enum.js',
             'components/metadata/Config.js',
             'components/metadata/ConfigDev.js',
-            'components/i18n/*.js',
             'components/metadata/LocalResource.js',
+            'components/i18n/*.js',
             'components/metadata/Logger.js',
             'components/metadata/EventManager.js',
             'components/metadata/Routing.js',
@@ -51,12 +52,14 @@ module.exports = function(config) {
             'components/metadata/AuthManager.js',
             'components/metadata/TypedObject.js',
             'components/metadata/GetDataUtils.js',
+            'components/metadata/GetDataUtilsDotNet.js',
             'components/metadata/MetaModel.js',
             'components/metadata/GetData.js',
             'components/metadata/PostData.js',
             'components/metadata/LoaderControl.js',
             'components/metadata/ModalLoaderControl.js',
             'components/metadata/MetaData.js',
+            'components/metadata/CssDefault.js',
             'components/metadata/HelpForm.js',
             'components/metadata/MetaPageState.js',
             'components/metadata/TreeNode.js',
@@ -64,8 +67,8 @@ module.exports = function(config) {
             'components/metadata/TreeViewManager.js',
             'components/metadata/BootstrapModal.js',
             'components/metadata/ModalForm.js',
-            'components/metadata/CssDefault.js',
             'components/metadata/GridControlX.js',
+            'components/metadata/GridControl.js',
             'components/metadata/ListManager.js',
             'components/metadata/ListManagerCalendar.js',
             'components/metadata/MainToolBarManager.js',
@@ -74,32 +77,45 @@ module.exports = function(config) {
             'components/metadata/FormProcedureMessages.js',
             'components/metadata/GridMultiSelectControl.js',
             'components/metadata/MultiSelectControl.js',
+            'test/common/common.js',
+            'test/common/TestHelper.js',
+            'test/common/TestCase.js',
+            'test/common/metadata/TestApp.js',
             'test/common/*.js',
-            'test/spec/fixtures/*.html',    
+            'test/spec/fixtures/*.html',
             'components/template/*.html',
             'test/app/styles/app.css',
             'test/app/styles/bootstrap/css/bootstrap.css',
             'test/app/styles/bootstrap/js/bootstrap.js',
             'test/spec_e2e_app/metadata/*.js',
-            'test/spec_e2e_app/app3/registry/metaData_registry.js',
+            'test/spec_e2e_app/app3/registry/*.js',
+            'test/spec_e2e_app/app3/registryreference/*.js',
             'test/spec_e2e_app/app4/upb/Upb_TreeNode.js',
             'test/spec_e2e_app/app4/upb/Upb_TreeNode_Dispatcher.js',
             'test/spec_e2e_app/app4/upb/Upb_TreeViewManager.js',
             'test/spec_e2e_app/app4/upb/meta_upb.js',
             { pattern: 'test/spec_e2e_app/**/*.js', included: false, served: true },
-            { pattern: 'test/spec_e2e_app/**/*.html', included: false, served: true },
-            { pattern: 'test/spec_e2e_app/**/*.json', included: false, served: true },
+             { pattern: 'test/spec_e2e_app/**/*.html', included: false, served: true },
+             { pattern: 'test/spec_e2e_app/**/*.json', included: false, served: true },
         ],
 
         // list of files / patterns to exclude
         exclude: [
         ],
-        proxies: {
+        proxies: {            
+            '/base/test/spec_e2e_app/app1/components/template/': '/base/components/template/',
+            '/base/test/spec_e2e_app/app2/components/template/': '/base/components/template/',
+            '/base/test/spec_e2e_app/app3/components/template/': '/base/components/template/',
+            '/base/test/spec_e2e_app/app4/components/template/': '/base/components/template/',
+            // "/base/test/spec_e2e_app/app1/": 'http://localhost:54471/',
+            // "/base/test/spec_e2e_app/app2/": 'http://localhost:54471/',
+            // "/base/test/spec_e2e_app/app3/": 'http://localhost:54471/',
+            // "/base/test/spec_e2e_app/app4/": 'http://localhost:54471/',
             '/auth/': 'http://localhost:54471/auth/',
             '/data/': 'http://localhost:54471/data/',
             '/static/': 'http://localhost:54471/static/',
-            '/test/styles/bootstrap/css/': '/base/test/app/styles/bootstrap/css',
-            '/test/styles/': '/base/test/app/styles',
+            '/test/styles/bootstrap/css/': '/base/test/app/styles/bootstrap/css/',
+            '/test/styles/': '/base/test/app/styles/',
             '/test/jstest/': '/base/test/spec_midway/jstest/'
         },
 
@@ -118,12 +134,14 @@ module.exports = function(config) {
         // - PhantomJS
         // - IE (only Windows)
         browsers: [
-            'PhantomJS'
+            'Chrome' // 'ChromeHeadless' //
         ],
 
         // Which plugins to enable
         plugins: [
-            'karma-phantomjs-launcher', 'karma-jasmine', 'karma-jasmine-html-reporter', 'karma-chrome-launcher',
+            'karma-phantomjs-launcher', 'karma-jasmine',
+            'karma-jasmine-html-reporter',
+            'karma-chrome-launcher',
             'karma-junit-reporter',
             'karma-spec-reporter'
         ],

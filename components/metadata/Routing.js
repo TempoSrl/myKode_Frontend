@@ -73,8 +73,6 @@
      */
     function Routing() {
         "use strict";
-        // appMeta.basePath = "http://localhost:54471/";
-        appMeta.basePath = "/";
         this.services  = {};
         this.init();
         this.backendUrl = "";
@@ -116,8 +114,8 @@
         getMethod:function (method) {
             var ss = this.services[method];
             if (!ss) return ss;
-            var service = _.clone(ss)
-            service.url = this.backendUrl+service.url;
+            let service = _.clone(ss);
+            service.url = this.backendUrl+appMeta.serviceBasePath +service.url;
             return service;
         },
 
@@ -129,7 +127,7 @@
          * @param {object} service {method type, url, multipleResult} type can be GET/POST/DELETE, url is absolute url for example http://mysite/mypath/method
          */
         register:function(service){
-            this.services[service.method] = service
+            this.services[service.method] = service;
         },
 
         /**
@@ -150,7 +148,7 @@
             this.register(
                 { method: method,
                     type: type,
-                    url: appMeta.basePath + relativePath + "/" + method ,
+                    url:  relativePath + "/" + method ,
                     multipleResult:multipleResult,
                     auth: auth
                 });

@@ -192,7 +192,6 @@
                 var a = document.createElement("a");
                 document.body.appendChild(a);
                 a.style = "display: none";
-                console.log(fileURL);
                 a.href = fileURL;
                 a.download = filename;
                 a.click();

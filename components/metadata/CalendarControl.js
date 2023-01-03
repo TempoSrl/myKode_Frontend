@@ -640,9 +640,8 @@
          * @description ASYNC
          * @param {html node} el
          * @param {MetaPage} metaPage
-         * @param {boolean} subscribe
          */
-		addEvents: function (el, metaPage, subscribe) {
+		addEvents: function (el, metaPage) {
 			this.metaPage = metaPage;
 		},
 

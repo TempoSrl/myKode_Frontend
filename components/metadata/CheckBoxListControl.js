@@ -115,12 +115,10 @@
          * @method addEvents
          * @public
          * @description SYNC
-         * If "subscribe" subscribes the  ROW_SELECT event and invokes the callback "selectRowCallBack()"
          * @param {Html node} el
          * @param {MetaPage} metaPage
-         * @param {boolean} subscribe
          */
-        addEvents: function(el, metaPage, subscribe) {
+        addEvents: function(el, metaPage) {
             this.metaPage = metaPage;
         },
 

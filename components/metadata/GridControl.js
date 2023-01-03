@@ -17,7 +17,7 @@
      * @constructor GridControl
      * @description
      * Initializes the html grid control
-     * @param {Html node} el
+     * @param {element} el
      * @param {HelpForm} helpForm
      * @param {DataTable} table. this is the table corresponding to the tableName configured in the tag at the position 0
      * (see function HelpForm.preScanCustomControl for the initialization)
@@ -125,16 +125,14 @@
          * @method addEvents
          * @public
          * @description SYNC
-         * If "subscribe" subscribes the  ROW_SELECT event and invokes the callback "selectRowCallBack()"
-         * @param {Html node} el
+         * @param {element} el
          * @param {MetaPage} metaPage
          * @param {boolean} subscribe
          */
-        addEvents: function(el, metaPage, subscribe) {
-            subscribe = ( subscribe === undefined) ? true : subscribe;
+        addEvents: function(el, metaPage) {
             this.metaPage = metaPage;
             // this.addMyEvents(); aggiunti solo sulla addRow
-            if (metaPage && subscribe) {
+            if (metaPage) {// prima era  && subscribe
                 metaPage.eventManager.subscribe(appMeta.EventEnum.ROW_SELECT, this.selectRowCallBack, this);
             }
         },
@@ -144,7 +142,7 @@
          * @private
          * @description ASYNC
          * It is the callback triggered after a ROW_SELCT event on metapage. If the parameter table is the gridmaster it fill the grid, and select the row "row"
-         * @param {html node|object} sender
+         * @param {element|object} sender
          * @param {DataTable} table
          * @param {ObjectRow} row
          * @returns {Deferred}
@@ -858,22 +856,18 @@
          * @param {GridControl} that
          */
         rowClickEv: function (that) { //this è l'element
-            //console.log("rowClickEv");
             var self = this;
             // inserisco meccanismo con timeout per evitare che scatti CLICK + DBL_CLICK insieme
             if (this.timeoutId) {
                 clearTimeout(this.timeoutId);
                 this.timeoutId = null;
                 Stabilizer.decreaseNesting("rowClickEv.timeout");
-                //console.log("decreasing for Timeout");
             }
-            //console.log("increasing for Timeout");
             Stabilizer.increaseNesting("rowClickEv");
             this.timeoutId = setTimeout(function () {
                 self.timeoutId = null;
                 that.rowClick
                     .call(self, that);
-                //console.log("decreasing for Timeout");
                 Stabilizer.decreaseNesting("rowClickEv.timeout");
             }, appMeta.currApp.dbClickTimeout);
         },
@@ -890,7 +884,6 @@
             if (this.timeoutId) {
                 clearTimeout(this.timeoutId);
                 this.timeoutId = null;
-                //console.log("decreasing for Timeout");
                 Stabilizer.decreaseNesting("rowDblClickEv");
             }
 
@@ -946,7 +939,8 @@
          * @param {GridControl} that
          */
         rowDblClick:function (that) {
-            // chiamo il rowClick con il this che è il tr che cliccato, + il that che è il Gridcontrol. Poi invoco il rowDblClick su MetaPage
+            // chiamo il rowClick con il this che è il tr che cliccato, + il that che è il Gridcontrol.
+            // Poi invoco il rowDblClick su MetaPage
             var self = this;
 
             // distinguo ildoppio click s è o meno gestito come treeNavigator
@@ -964,7 +958,7 @@
                         .call(this, that)
                         .then(function() {
                             // solamente se è definito
-                            if (that.metaPage.rowDblClick && that.isEditBtnVisible) {
+                            if (that.metaPage.rowDblClick && that.isEditBtnVisible) { //prima era incondizionato
                                 var index = $(self).data("mdlRowIndex"); // self era il this ovvero , l'elemento cliccato
                                 var row = null;
                                 if (index || index === 0) row = that.gridRows[index];
@@ -983,7 +977,6 @@
          * @returns {Deferred}
          */
         navigatorClick:function (that) {
-            console.log("navigatorClick");
             var def = Deferred('navigatorClick');
             var treemanager = that.dataTable.treemanager;
             if (!treemanager) return def.resolve();
@@ -1000,7 +993,7 @@
                 .then(function () {
                     that.dataTable.parentnode = treemanager.getParent(treemanager.selectedNode());
                     that.setLastSelectedRowOnTree(treemanager.treeTable, rSel);   // N.B era that.helpForm.lastSelected(rSel.getRow().table, rSel); // la riga sul grid è una copia, non ha ilgetrow, prendo quella sul tree
-                    that.setIndex(index, false); // seleziono anche indce su griglia corrente come facevail click semplice
+                    that.setIndex(index, false); // seleziono anche indice su griglia corrente come facevail click semplice
                     that.metaPage.hideWaitingIndicator(waitingHandler);
                     return def.resolve();
             })
@@ -1035,7 +1028,6 @@
          * Navigates the tree and the grid childs. if it is a leaf it fires a mainSelect on the metaPage
          */
         navigatorDblClick:function () {
-            console.log("navigatorDblClick");
             var self = this;
             var def = Deferred('navigatorDblClick');
             var treemanager = this.dataTable.treemanager;
@@ -1171,8 +1163,9 @@
          * @returns {Deferred}
          */
         selectGridRowByRow:function (table, datarow, propagate) {
-            // passo la table su cui effettuare il confronto prendendo el chaivi, poichè
-            // tale datarow è attachata alla griglia, e potrebbe non avere la getRow, poichè nella costruzione ne faccio la clear
+            // passo la table su cui effettuare il confronto prendendo le chiavi, poichè
+            // tale datarow è attachata alla griglia, e potrebbe non avere la getRow,
+            //  poichè nella costruzione ne faccio la clear
             // sarà sempre quella del tree la riga che comanda
             var def = Deferred('selectGridRowByRow');
             // trova la riga nella collection
@@ -1232,7 +1225,7 @@
          * replaces some special character into html code. Used in html export
          * @param {string} s
          */
-        replaceSpecialCharatcters:function (s) {
+        replaceSpecialCharacters:function (s) {
             var html = s;
             var fReplcace = function (htmlprm, char, code){while (htmlprm.indexOf(char) != -1) htmlprm = htmlprm.replace(char, code); return htmlprm};
             html = fReplcace(html,'á', '&aacute;');
@@ -1261,7 +1254,7 @@
          */
         gridHtmlToExcel:function (that) {
 
-            var gridhtml = that.replaceSpecialCharatcters(that.mytable.html());
+            var gridhtml = that.replaceSpecialCharacters(that.mytable.html());
             //that.replaceSpecialCharatcters(gridhtml);
             var tab_text = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
             tab_text = tab_text + '<head><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet>';

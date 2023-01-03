@@ -38,7 +38,7 @@ describe("FormProcedureMessage",
             var metaPage = new appMeta.MetaPage('table', 'editType', true);
             formProcedureMessages = new appMeta.FormProcedureMessage($("#rootelement"), messages, true, metaPage);
 
-            common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
+            common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
                 .then(function () {
 
                     // test sull' html
@@ -65,7 +65,7 @@ describe("FormProcedureMessage",
             var metaPage = new appMeta.MetaPage('table', 'editType', true);
             formProcedureMessages = new appMeta.FormProcedureMessage($("#rootelement"), messages, true, metaPage);
 
-            common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
+            common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
                 .then(function () {
 
                     // test sull' html
@@ -95,7 +95,7 @@ describe("FormProcedureMessage",
             var metaPage = new appMeta.MetaPage('table', 'editType', true);
             formProcedureMessages = new appMeta.FormProcedureMessage($("#rootelement"), messages, false, metaPage);
 
-            common.eventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
+            common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
                 .then(function () {
                     // test sull' html
                     expect( $("table > tr").length).toBe(3); // header + 2 row

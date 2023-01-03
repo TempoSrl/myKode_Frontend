@@ -92,7 +92,8 @@
                         else {
                             // lancia l'evento così eventualmente la metapage può effettuare operazioni.
                             appMeta.globalEventManager.trigger(appMeta.EventEnum.ERROR_SERVER);
-                            let winModal = new appMeta.BootstrapModal(localResource.error, params[0], [appMeta.localResource.ok], appMeta.localResource.cancel, time + ": " + JSON.stringify(params));
+                            let winModal = new appMeta.BootstrapModal(localResource.error, params[0], [appMeta.localResource.ok],
+                                appMeta.localResource.cancel, time + ": " + JSON.stringify(params));
                             return winModal.show();
                         }
                     break;

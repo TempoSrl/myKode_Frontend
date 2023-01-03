@@ -1,4 +1,5 @@
 (function () {
+	let appMeta = window.appMeta;
 	var stabilizeToCurrent = appMeta.stabilizeToCurrent;
 	var common = appMeta.common;
 	var dataRowState = jsDataSet.dataRowState;
@@ -43,22 +44,28 @@
          * @param {string} pathRelativeOfTest string that indicates the relative path from spec_e2e_app/ for the specific MetaPage of the test
          */
 		initAppTests: function (pathRelativeOfTest) {
-
+			let TestApp=  appMeta.currApp.constructor;
+			//appMeta.currApp = new TestApp();
 			// inizializzo per ogni test l'oggetto appMeta
-			appMeta.basePath = 'base/';
+			appMeta.serviceBasePath = "/", // path relativo dove si trovano i servizi
+			appMeta.basePath = 'base/test/spec_e2e_app/' + pathRelativeOfTest + '/'; //qui si trovano le metapage
 
 			// inserisco html con il "metaRoot"
 			setFixtures("<h3>My App Test</h3><div id='toolbar'></div><div id='metaRoot'></div>");
 			$("body").append('<link rel="stylesheet" href="base/test/app/styles/bootstrap/css/bootstrap.css" />');
 			$("body").append('<link rel="stylesheet" href="base/test/app/styles/app.css" />');
+
 			appMeta.currApp.toolBarManager = null;
 			appMeta.currApp.initToolBarManager();
-			// rebase del path poichè i file necessari per il test, in particolare la MetAPage derivata sta sotto base/test/spec_e2e_app/registry
-			appMeta.basePath = 'base/test/spec_e2e_app/' + pathRelativeOfTest + '/';
+			// rebase del path poichè i file necessari per il test, in particolare la MetaPage derivata sta sotto base/test/spec_e2e_app/registry
 			appMeta.currApp.rootElement = "#metaRoot";
-			appMeta.metaPages = []; // rinizializzo array di MetaPage e Html, altrimenti ad ogni test non posso usare stesso tableName ed EditType, prenderebbe steso .js e .html 
+
+			// reinizializzo array di MetaPage e Html, altrimenti ad ogni test non posso usare stesso tableName ed EditType, prenderebbe steso .js e .html
+			appMeta.metaPages = [];
 			appMeta.htmlPages = [];
 			appMeta.globalEventManager = new appMeta.EventManager();
+			appMeta.localResource.setLanguage("it");
+			appMeta.logger.levelLog = appMeta.logTypeEnum.DEBUG;
 			// N.B non c'è bisogno passa per il proxy di Karma. (vedi nel Karma_e2e_app.conf.js
 			//appMeta.routing.setUrlPrefix("http://localhost:54471");
 		},
@@ -71,19 +78,22 @@
 			// inizializzo per ogni test l'oggetto appMeta
 			appMeta.appMain = {}; // inizializza oggetto appMain che in test non verrebbe tirato su
 
-			//nell'ambiete di Quality Assurance attivo il log al livello debug altrimento lascio quello di produzione ERROR
+			//nell'ambiente di Quality Assurance attivo il log al livello debug altrimento lascio quello di produzione ERROR
 			appMeta.logger.levelLog = appMeta.logTypeEnum.DEBUG;
 
 			// registra ws utilizzato in app_segreterie metaPage perfvalutazionepersonale_default
 			appMeta.routing.builderConnObj("calcolaComportamenti", 'POST', 'performance', false, true);
 
 			appMeta.basePath = 'base/';
+			appMeta.serviceBasePath = "/", // path relativo dove si trovano i servizi
+
 			appMeta.config.backendType = '.net';
 			appMeta.routing.backendUrl = "http://localhost:54471";
 			appMeta.config.env = appMeta.config.envEnum.QA;
 			// rebase del path poichè i file necessari per il test, in particolare la MetaPage derivata sta sotto base/<pathapp>
 			appMeta.basePathMetadata = 'base/' + appfolder + '/metadata/';
-			appMeta.config.path_maintoolBarTemplate = "components/userTemplate/mainToolBar_Template.html";
+			console.log("assigned basePathMetadata = "+appMeta.basePathMetadata);
+			appMeta.config.path_maintoolBarTemplate = "/components/userTemplate/mainToolBar_Template.html";
 			appMeta.config.defaultDecimalFormat = 'n';
 			appMeta.config.defaultDecimalPrecision = 2;
 			appMeta.config.dataContabileYear = (new Date()).getFullYear();
@@ -158,15 +168,15 @@
          * Subscribes an event triggered by the appMeta object. When the callback is invoked it unsubscribes the event and resolves the deferred.
          * Used in test case to wait the load of a metaPage
          * @param {string} eventName
-         * @returns {Deferred}
+         * @returns Promise
          */
-		waitPageLoaded: function (eventName) {
-			var def = $.Deferred();
-			var that = this;
-			var f = function () {
+		waitEvent: function (eventName) {
+			let def = $.Deferred();
+			let that = this;
+			let f = function (sender) {
 				appMeta.globalEventManager.unsubscribe(eventName, f, that);
-				// arguments[0] è il sender, ovvero la metaPage che ha lanciato l'evento
-				def.resolve(arguments[0]);
+				// sender è il sender, ovvero la metaPage che ha lanciato l'evento
+				def.resolve(sender);
 			};
 			appMeta.globalEventManager.subscribe(eventName, f, that);
 			return def;
@@ -182,7 +192,6 @@
          * @param {string} editType
          */
 		testMetaPageInitialization: function (metaPage, tableName, editType) {
-
 			expect(appMeta.currApp.currentMetaPage).toBeDefined();
 
 			// verifico Stato e DataSet presente
@@ -238,9 +247,13 @@
          * @description SYNC
          * Checks if the element with data-tag "tag" has a value
          * @param {string} tag
+		 * @param {string} htmlTagType
          */
-		htmlNodeByTagValueFilled: function (tag) {
-			expect($("input[data-tag='" + tag + "']").val()).not.toBe(""); // non vuoto
+		htmlNodeByTagValueFilled: function (tag,htmlTagType) {
+			if (!htmlTagType) htmlTagType = "input";
+			expect($(htmlTagType + "[data-tag='" + tag + "']").val()).not.toBe(""); // non vuoto
+
+			//expect($("input[data-tag='" + tag + "']").val()).not.toBe(""); // non vuoto
 		},
 
         /**
@@ -317,8 +330,8 @@
          * Invokes click() event on button element with data-tag attribute "tagCmd"
          * @param {string} tagCmd
          */
-		clickButtonByTag: function (tagCmd, detailLog) {
-			this.log("Comando invocato : " + tagCmd + " " + (!!detailLog ? detailLog : ""));
+		clickButtonByTag: function (tagCmd) {
+			//this.log("Comando invocato : " + tagCmd + " " + (!!detailLog ? detailLog : ""));
 			$("button[data-tag='" + tagCmd + "']")[0].click();
 		},
 
@@ -1001,7 +1014,7 @@
 					case controlTypeEnum.openPage:
 
 						chainFill = chainFill.then(function () {
-							return this.waitPageLoaded(appMeta.EventEnum.showPage);
+							return this.waitEvent(appMeta.EventEnum.showPage);
 						});
 						appMeta.currApp.callPage(tablename, edittype, false);
 						break;
@@ -1054,7 +1067,7 @@
 							var defSelect = $.Deferred();
 							self.log("Eseguo fill di select " + input.tag);
 							// attendo la fine del tasto di add sulla metaPage chiamante
-							common.eventWaiter(helpForm.metaPage, appMeta.EventEnum.afterComboChanged)
+							common.pageEventWaiter(helpForm.metaPage, appMeta.EventEnum.afterComboChanged)
 								.then(function () {
 									// afterRowSelect è stata invocata, gli eventi si sono svolti.vado avanti
 
@@ -1158,7 +1171,7 @@
 							}
 
 							// attendo che si apra il dettaglio
-							self.waitPageLoaded(appMeta.EventEnum.showPage)
+							self.waitEvent(appMeta.EventEnum.showPage)
 								.then(function (metaPageDetail) {
 									// recupero tablename ed edittype dal tag della griglia
 									var tagArray = tag.split(".");
@@ -1192,7 +1205,7 @@
 										return self.insertValueNodeByTagAsync(arrayInputDetail, metaPageDetail.helpForm, false)
 									}).then(function () {
 										// attendo la fine del tasto di add sulla metaPage chiamante
-										common.eventWaiter(helpForm.metaPage, appMeta.EventEnum.insertClick)
+										common.pageEventWaiter(helpForm.metaPage, appMeta.EventEnum.insertClick)
 											.then(function () {
 												// c'è la riga dei dati + header
 												var checkTr = "tr:not([data-mdlgrouped]):not(.table-in-cell-tr)";
@@ -1284,7 +1297,7 @@
 							if (!isInsertBtnVisible) return defFillCalendar.resolve();
 
 							// attendo che si apra il dettaglio
-							self.waitPageLoaded(appMeta.EventEnum.showPage)
+							self.waitEvent(appMeta.EventEnum.showPage)
 								.then(function (metaPageDetail) {
 									// recupero tablename ed edittype dal tag del calendario
 									var tagArray = tag.split(".");
@@ -1313,7 +1326,7 @@
 
 
 										// attendo la fine del tasto di add sulla metaPage chiamante
-										common.eventWaiter(helpForm.metaPage, appMeta.EventEnum.insertClick)
+										common.pageEventWaiter(helpForm.metaPage, appMeta.EventEnum.insertClick)
 											.then(function () {
 												// c'è la riga sul ds
 												var events = helpForm.metaPage.state.DS.tables[detailTableName].rows;

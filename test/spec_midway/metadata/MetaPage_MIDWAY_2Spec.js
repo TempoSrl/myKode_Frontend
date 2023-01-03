@@ -161,7 +161,7 @@ describe('MetaPage with Clock', function () {
                         expect($(".modal").length).toBe(0); // non c'è la messagebox di loading della metapage
                         
                         
-                        common.eventWaiter(mp, appMeta.EventEnum.showModalWindow)
+                        common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow)
                             .then(function () {
                                 expect($(".modal").length).toBe(1); // c'è una messagebox
                                 $(".modal").find("button")[0].click();
@@ -181,7 +181,7 @@ describe('MetaPage with Clock', function () {
                    
                     it( 'manageValidResults, 3 row: 1 ok  2 nok, shows one MessageBox', function (done) {
                         expect($(".modal").length).toBe(0); // non c'è più msgBox per loading metaPage nel costruttore
-                        common.eventWaiter(mp, appMeta.EventEnum.showModalWindow)
+                        common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow)
                             .then(function () {
                                 expect($(".modal").length).toBe(1); // c'è una messagebox
                                 $(".modal").find("button")[0].click();

@@ -87,8 +87,8 @@ module.exports = function(config) {
             { pattern: 'test/spec_midway/**/*.js', included: false, served: true },
             { pattern: 'test/spec_midway/**/*.json', included: false, served: true },
             { pattern: 'test/spec_e2e/**/*.js', included: false, served: true },
-            { pattern: 'test/spec_e2e/**/*.html', included: false, served: true },
-            { pattern: 'test/spec_e2e/**/*.json', included: false, served: true },
+            // { pattern: 'test/spec_e2e/**/*.html', included: false, served: true },
+            // { pattern: 'test/spec_e2e/**/*.json', included: false, served: true },
         ],
 
         // list of files / patterns to exclude
@@ -118,7 +118,7 @@ module.exports = function(config) {
         // - PhantomJS
         // - IE (only Windows)
         browsers: [
-            'Chrome'
+            'ChromeHeadless'
         ],
 
         // Which plugins to enable

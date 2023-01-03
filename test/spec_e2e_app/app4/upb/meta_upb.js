@@ -3,15 +3,15 @@
     var getData = window.appMeta.getData;
     var getDataUtils = window.appMeta.getDataUtils;
     var Deferred = window.appMeta.Deferred;
-    function meta_upb() {
+    function Meta_upb() {
         MetaData.apply(this, ["upb"]);
         this.name = 'meta_upb';
     }
 
-    meta_upb.prototype = _.extend(
+    Meta_upb.prototype = _.extend(
         new MetaData(),
         {
-            constructor: meta_upb,
+            constructor: Meta_upb,
 
             superClass: MetaData.prototype,
 
@@ -28,9 +28,9 @@
                 var def = Deferred("meta_upb-describeTree");
 
                 // lato server torna rootcondition e poi vedremo cosa altro
-                var resDef = getData.describeTree(table.name, listType)
+                var resDef = getData.describeTree(table, listType)
                 // N.B: ----> quando ritorno al treeview chiamante, torno le proprietà cusotm che si aspetta.
-                // il default si aspetta solo  "rootCondition"
+                // il default si aspetta solo "rootCondition"
                     .then(function (res) {
 
                         var maxDepth = res.maxDepth;
@@ -44,7 +44,7 @@
                         def.resolve({
                             rootCondition:rootCondition,
                             nodeDispatcher: nodedispatcher
-                        })
+                        });
                     });
 
                 return def.from(resDef).promise();
@@ -52,5 +52,5 @@
 
         });
 
-    window.appMeta.addMeta('upb', new meta_upb('upb'));
+    window.appMeta.addMeta('upb', new Meta_upb());
 }());

@@ -304,7 +304,6 @@
          * @returns {Deferred}
          */
         rowSelect: function(sender, t, r) {
-
             const self = this;
             let waitingHandler;
             const result = this.beforeRowSelect(t, r)
@@ -405,7 +404,7 @@
          */
         showMessageOk: function(msg) {
             // Fa apparire un messagebox di avviso con il testo
-            return Deferred("showMessageOk").from(
+            return Deferred("showMessageOk:"+msg).from(
                 this.showMessage(localResource.alert, msg, [localResource.ok])
                     .then(function(res) {
                         return (res === localResource.ok);
@@ -417,7 +416,7 @@
          * @internal
          * @description ASYNC
          * Displays a message and stop form closing if there are unsaved changes
-         * @returns {Promise}
+         * @returns Promise
          */
         warnUnsaved: function() {
             const currentRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
@@ -786,7 +785,7 @@
          * @private
          * @description ASYNC
          * Does specific activation operations basing on form type
-         * @returns Deferred
+         * @returns Promise
          */
         doActivation: function() {
             // Su MDL lo stato edit veniva settato qui: MetaData.Edit() -> MetaData.doEdit() -> MetaData.linkToForm() -> Formcontroller.doLink() (rr 256)
@@ -819,12 +818,13 @@
          * @method doActivation_NotEmptyList
          * @private
          * @description ASYNC
-         * @returns Deferred
+         * @returns Promise
          */
         doActivation_NotEmptyList: function() {
             const def = Deferred("doActivation_NotEmptyList");
             const self = this;
             let exitImmediately = false;
+
 
             this.setManager();
 
@@ -833,7 +833,7 @@
 
                 return utils._if(!self.helpForm.mainTableSelector)
                 ._then(function (){
-                    return self.showMessageOk(localResource.getFormNoMainTreeView(self.getName()))
+                     return self.showMessageOk(localResource.getFormNoMainTreeView(self.getName()))
                     .then(function (){
                         self.drawState = drawStates.done;
                         self.inited = true;
@@ -877,12 +877,13 @@
                 });
             })
             .then(function (){
-
                 if (exitImmediately){
                     return true;
                 }
 
-                // seleziono la prima. nel caso GRID ci pensa il controllo stesso dopo il load. sul tree lasdiamo come mdl, dovrei vedere le implicazioni e dove mettere la selezione al 1o caricamento neltree
+                // Seleziono la prima. Nel caso GRID ci pensa il controllo stesso dopo il load.
+                // Sul tree lasciamo come mdl, dovrei vedere le implicazioni e dove mettere
+                //  la selezione al 1o caricamento nel tree
                 if (self.isTree){
                     const pt = self.getPrimaryDataTable();
                     if (pt.rows.length > 0){
@@ -893,7 +894,7 @@
                 }
 
 
-                // In realtè qui andrebbe controllato se, nel caso di form lista non
+                // In realtà qui andrebbe controllato se, nel caso di form lista non
                 // tree (ossia grid), è stato effettivamente letto qualcosa.
                 // In tal caso il form dovrebbe andare in search e non in edit.
                 const lastSelected = self.helpForm.lastSelected(self.getPrimaryDataTable());
@@ -903,7 +904,6 @@
                 }
 
                 return self.callMethod(toOverrideEvent.afterActivation).then(function (){
-
                     self.firstFillForThisRow = true;
                     const dtRow = lastSelected ? lastSelected.getRow() : null;
                     return self.eventManager.trigger(appMeta.EventEnum.startMainRowSelectionEvent, dtRow, "doActivation_NotEmptyList")
@@ -1176,8 +1176,12 @@
                     return def.resolve(false);
                 // TODO return HasPrev();
                 case "showlast":
-                    if (!this.canShowLast) return def.resolve(false);
-                    if  (this.state.isSearchState())  return def.resolve(false);
+                    if (!this.canShowLast) {
+                        return def.resolve(false);
+                    }
+                    if  (this.state.isSearchState())  {
+                        return def.resolve(false);
+                    }
                     return def.resolve(true);
                 case "mainsave":
                     if (!this.canSave) return def.resolve(false);
@@ -1237,8 +1241,12 @@
          * @returns {Deferred}
          */
         doMainCommandClick:function (that, tag, filter) {
-            return that.doMainCommand(tag, filter)
-                .then(function () {
+            logger.log(logtypeEnum.INFO,"executing "+tag+" of "+that);
+            console.log("doMainCommandClick "+tag)
+            return that.doMainCommand(tag, filter).
+                then(function () {
+                    logger.log(logtypeEnum.INFO,"done with "+tag)
+                    console.log("raising buttonClickEnd of "+tag)
                     return  appMeta.globalEventManager.trigger(appMeta.EventEnum.buttonClickEnd, that, tag);
                 });
         },
@@ -1250,7 +1258,7 @@
          * Does a generic command based on the tag parameter
          * @param {string} tag
          * @param {jsDataQuery} [filter]
-         * @return {Deferred}
+         * @return Promise
          */
         doMainCommand: function(tag, filter) {
             const def = Deferred("doMainCommand: " + tag);
@@ -1392,7 +1400,8 @@
          * @method mainSelect
          * @private
          * @description ASYNC
-         * Do a "mainselect" command, i.e. the current primary table row is "choosen". It resolve also the deferredResult opened in the activate,
+         * Do a "mainselect" command, i.e. the current primary table row is "choosen". It resolve also the
+         *  deferredResult opened during the activation phase,
          * when returns to the caller
          * and returned to the caller Form
          * @returns {Deferred} deferred
@@ -1543,7 +1552,7 @@
          * @param {string} command
          * @param {string} tag
          * @param {jsDataQuery} [startFilter]
-         * @returns {Deferred}
+         * @returns Promise
          */
         cmdMainDoSearch:function (command, tag, startFilter) {
             const def = Deferred("cmdMainDoSearch");
@@ -1557,6 +1566,7 @@
             if (!startFilter) startFilter = this.startFilter;
             startFilter = this.helpForm.mergeFilters(startFilter, this.additionalSearchCondition);
 
+
             const waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_search);
 
             const res = utils._if((!this.isList) || this.isTree)
@@ -1568,7 +1578,6 @@
             })
             .then(function (data){
                 self.currOperation = currOperation.none;
-
                 self.hideWaitingIndicator(waitingHandler);
                 return data;
             });
@@ -1583,7 +1592,7 @@
          * @param {string} listType
          * @param {jsDataQuery} startFilter filter SQL filter to apply in data retrieving
          * @param {boolean} emptyList
-         * @returns {Promise<boolean>}
+         * @returns Promise<boolean>
          */
         searchRow: function(listType, startFilter, emptyList) {
 
@@ -1642,6 +1651,7 @@
             this.drawState = drawStates.clearing;
 
             metaModel.clearEntity(this.state.DS);
+
 
             const waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_page_update, true);
 
@@ -1739,6 +1749,7 @@
                     });
                 return def.from(res).promise();
             }
+
             //Se non c'è una riga corrente non chiama beforeFill/afterFill
             res = this.helpForm.fillControls(container)
                 .then( function () {
@@ -1764,6 +1775,7 @@
             if (!dataRow) return def.resolve();
 
             // metto attesa, effettua query per recuperare ventualmente il nuovo nodo
+
             const waitingHandler = self.showWaitingIndicator(localResource.modalLoader_wait_tree_updating);
 
             const primaryTable = this.getPrimaryDataTable();
@@ -1879,7 +1891,7 @@
                                 appMeta.localResource.cancel,
                                 msgNoRowFound).show(self)
                             .then(function (){
-                                self.hideWaitingIndicator();
+                                //self.hideWaitingIndicator();
                                 return def.resolve(null);
                             });
                         }
@@ -1894,7 +1906,7 @@
                             if (dataTablePaged.rows.length === 0){
                                 return def.resolve(null);
                             }
-                            self.hideWaitingIndicator();
+                            //self.hideWaitingIndicator();
                             return def.from(metaToConsider.checkSelectRow(dataTablePaged, dataTablePaged.rows[0].getRow()));
                         }
 
@@ -2062,14 +2074,14 @@
             ._else(function (){
                 let txtcreate = "";
 
-                if (dtRow.table.columns.cu){
+                if (dtRow && dtRow.table.columns.cu){
                     txtcreate = localResource.createdByUser(r.cu);
                 }
-                if (dtRow.table.columns.createuser){
+                if (dtRow && dtRow.table.columns.createuser){
                     txtcreate = localResource.createdByUser(r.createuser);
                 }
 
-                if (dtRow.table.columns.ct){
+                if (dtRow &&  dtRow.table.columns.ct){
                     if (txtcreate === ""){
                         txtcreate = localResource.createdOn(r.ct);
                     }
@@ -2077,7 +2089,7 @@
                         txtcreate += localResource.onlyOn(r.ct);
                     }
                 }
-                if (dtRow.table.columns.createtimestamp){
+                if (dtRow &&  dtRow.table.columns.createtimestamp){
                     if (txtcreate === ""){
                         txtcreate = localResource.createdOn(r.createtimestamp);
                     }
@@ -2142,7 +2154,10 @@
          * @returns {number} the handler of the modal. It is used on hideWaitIndicator to remove the message form the list
          */
         showWaitingIndicator:function (msg, isBar) {
-            return appMeta.modalLoaderControl.show(msg, isBar);
+            //logger.log(logType.DEBUG,"show waiting indicator:"+msg);
+            let number = appMeta.modalLoaderControl.show(msg, isBar);
+            //console.log("show waiting indicator:"+msg+"=> "+number);
+            return number;
         },
 
         /**
@@ -2154,6 +2169,8 @@
          * @param {number} handler. the handler of the modal to hide. in handler is undefined it force hide
          */
         hideWaitingIndicator:function (handler) {
+            //logger.log(logType.DEBUG, "hide waiting indicator n."+handler);
+            //console.log("hide waiting indicator n."+handler);
             appMeta.modalLoaderControl.hide(handler);
         },
 
@@ -2170,10 +2187,8 @@
             if (!this.detailPage) {
                 waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_save);
             }
-
             return this.getFormData(false)
                 .then(function(resultType) {
-
                     // era  if (!valid) return false;
                     if (!resultType){
                         self.hideWaitingIndicator(waitingHandler);
@@ -2197,7 +2212,7 @@
                                 .trigger(appMeta.EventEnum.saveDataStop,
                                     self,
                                     result,
-                                    "doDelete").then(function () {
+                                    "cmdMainSave").then(function () {
                                     return resultType && result;
                                 });
                         });
@@ -2223,16 +2238,16 @@
             let returnImmediately = false;
 
             // DEPRECATO enumerato che indica se devo risolvere il deferred globale "this.resultDeferred" della maschera oppure tornare solamente true/false
-            // Questo poichè il saveformData potrebbe esserte chimato da cmdMainSave di un dettaglio,, in quel caso esco con resDialogResultOk
+            // Questo poichè il saveformData potrebbe esserte chiamato da cmdMainSave di un dettaglio,, in quel caso esco con resDialogResultOk
             // var resultType = ResultType.resFalse;
 
-            const res = this.callMethod(toOverrideEvent.beforePost).then(
+            const res = this.callMethod(toOverrideEvent.beforePost)
+            .then(
                 function (){
                     let last = self.helpForm.lastSelected(self.getPrimaryDataTable());
 
                     let wasadelete = (!last);
                     if (last) wasadelete = (last.getRow === undefined);  //(last.getRow().state === dataRowState.deleted);
-
                     return utils._if(self.detailPage)
                     ._then(function (){
                         self.entityChanged = true;
@@ -2240,8 +2255,9 @@
                     })
                     ._else(function (){
                         if (self.state.DS.hasChanges()){
-                            // entra nel loop di salvataggio. sincorno/asincorno, con maschera errori ed eventuale operazione ad db da effettuare
-                            // passo il prm dei messaggi vuoto, poichè in questo punto non ho messaggi accodati
+                            // entra nel loop di salvataggio sincrono/asincrono, con maschera errori ed
+                            //  eventuale operazione d db da effettuare
+                            // passo il prm dei messaggi vuoto, poiché in questo punto non ho messaggi accodati
                             return postData.doPost(self.state.DS, self.primaryTableName, self.editType, [], self)
                             .then(function (postRes){
                                 // può tornare con false, cioè salvataggio non effettuato, oppure con true cioè salvataggio
@@ -2250,13 +2266,12 @@
                             });
                         }
 
-                        // se non entro qui    if (self.state.DS.hasChanges()) nel succesivo then, vado avanti
+                        // se non entro qui    if (self.state.DS.hasChanges()) nel successivo then, vado avanti
                         return true;
 
                     })
                     .then(function (res){
-
-                        // N. B nel caso sia un dettaglio, poichè sto self.detailPage = true, quindi non passo nell'_else
+                        // N. B nel caso sia un dettaglio, poiché sto self.detailPage = true, quindi non passo nell'_else
                         // res qui è sempre true
 
                         let last = self.helpForm.lastSelected(self.getPrimaryDataTable());
@@ -2266,7 +2281,6 @@
                         ._then(function (){
                             return self.callMethod(toOverrideEvent.afterPost)
                             .then(function (){
-
                                 if (self.detailPage && (self.mainSelectionEnabled === false)){
                                     self.currOperation = currOperation.none;
                                     returnImmediately = true; // su mdl faceva return;
@@ -2375,12 +2389,13 @@
                                         last = null;
                                     });
                                 }
-                                else if (self.isTree){
+                                else
+                                    if (self.isTree){
                                     // recupero il manager del tree
                                     treemanager = self.helpForm.mainTableSelector;
                                     lastTreeNodeToSelect = true;
                                     return treemanager.fillNodes(true, false);
-                                }
+                                    }
                                 return true;
                             });
                         })._else(function (){
@@ -2400,8 +2415,11 @@
                         })
                         .then(function (){
                             // su mdl c'era return in determinati punti, qui gestisco con booleano exit, calcolato sopra
-                            // quindi se è true non faccio l'ultme operazioni
-                            if (returnImmediately) return def.resolve(res);
+                            // quindi se è true non faccio le ultime operazioni
+                            if (returnImmediately) {
+                                return self.freshForm(true, false);
+                                //return def.resolve(res);
+                            }
 
                             return utils._if(last)
                             ._then(function (){
@@ -2432,7 +2450,7 @@
          * @method beforeSelectTreeManager
          * @private
          * @description ASYNC
-         * @returns {Deferred}
+         * @returns Promise
          */
         beforeSelectTreeManager:function () {
             const def = Deferred('beforeSelectTreeManager');
@@ -2574,7 +2592,7 @@
          * @description ASYNC
          *
          *
-         * @returns {Promise}
+         * @returns Promise
          */
         cmdMainInsert:function () {
             const def = Deferred("cmdMainInsert");
@@ -2744,7 +2762,7 @@
          * @private
          * @description ASYNC
          * Copies the lasrt selected row and inserts the copy in the primary Table
-         * @returns {Deferred}
+         * @returns Promise
          */
         cmdMainInsertCopy:function () {
             const def = Deferred("cmdMainInsertCopy");
@@ -3182,17 +3200,21 @@
             const def = Deferred("doDelete");
             const self = this;
             try {
-
                 metaModel.applyCascadeDelete(currEntityRow);
+
+
+
                 return self.eventManager
                     .trigger(appMeta.EventEnum.saveDataStart,
                         self,
                         true,
-                        "doDelete").then(function(){
-                        return self.saveFormData();
-                    }).then(function(res) {
+                        "doDelete")
+                    .then(function(){
+                            return self.saveFormData();
+                    })
+                    .then(function(res) {
                         // Il saveFormData effettua la delete a database. ok.
-                        // lato js currEntityRow verrà detacheta, durante il merge dei dataset in getDataUtils.mergeDataSetChanges()
+                        // lato js currEntityRow verrà detached, durante il merge dei dataset in getDataUtils.mergeDataSetChanges()
 
                         if (currEntityRow.getRow) { //equivalente a .state!==detached
                             self.state.DS.rejectChanges();
@@ -3203,9 +3225,10 @@
                                     return def.resolve(true);
                                 });
                         }
-
                         self.setPageTitle();
-                        if (self.state.isInsertState()) def.resolve(null); // AfterClear has caused an insert --> nothing else to do
+                        if (self.state.isInsertState()) {
+                            def.resolve(null);
+                        } // AfterClear has caused an insert --> nothing else to do
                         self.currOperation = currOperation.none;
                         return self.eventManager
                             .trigger(appMeta.EventEnum.saveDataStop,
@@ -3217,7 +3240,6 @@
 
                     });
             } catch (e) {
-
                 self.state.DS.rejectChanges();
                 return self.showMessageOk(localResource.getDeleteObjInsert(self.getName()))
                     .then(function () {
@@ -3236,7 +3258,7 @@
          * @private
          * @description ASYNC
          * Manages a main delete command
-         * @returns {Deferred}
+         * @returns Promise
          */
         cmdMainDelete:function () {
             const def = Deferred("cmdMainDelete");
@@ -3268,20 +3290,20 @@
 
                 if (self.state.isInsertState()){
                     if (!self.dontWarnOnInsertCancel){
-                        return self.showMessageOkCancel(localResource.getDeleteRowConfirm(self.name))
-                        .then(function (res){
-                            if (!res){
-                                self.currOperation = currOperation.none;
-                                self.hideWaitingIndicator(waitingHandler);
-                                return def.resolve(null);
-                            }
+                        return self.showMessageOkCancel(localResource.getDeleteRowConfirm(self.name)).
+                            then(function (res){
+                                if (!res){
+                                    self.currOperation = currOperation.none;
+                                    self.hideWaitingIndicator(waitingHandler);
+                                    return def.resolve(null);
+                                }
 
-                            return self.doDelete(currEntityRow)
-                            .then(function (){
-                                self.hideWaitingIndicator(waitingHandler);
-                                return def.resolve(true);
+                                return self.doDelete(currEntityRow).
+                                    then(function (){
+                                        self.hideWaitingIndicator(waitingHandler);
+                                        return def.resolve(true);
+                                    });
                             });
-                        });
                     }
                     self.currOperation = currOperation.none;
                     self.hideWaitingIndicator(waitingHandler);
@@ -3594,6 +3616,7 @@
                 .then(function (dataRow){
                     return self.selectOneCompleted(dataRow, entityTable, currRootElement);
                 }).then(function (res){
+                    self.hideWaitingIndicator(waitingHandler);
                     return def.resolve(res);
                 });
             });
@@ -3897,7 +3920,6 @@
          * @returns {Deferred}
          */
         assurePageState: function() {
-            "use strict";
             const res = new Deferred("assurePageState");
             if (this.state) {
                 return res.resolve(this.state).promise();
@@ -3976,7 +3998,7 @@
          * @returns Promise<boolean>
          */
         getFormData: function (noCheck) {
-            const def = Deferred("getFormData");
+            const def = Deferred("doing getFormData");
             if (this.state.isSearchState()) return def.resolve(true);
             const self = this;
             const ds = self.state.DS;
@@ -3984,9 +4006,11 @@
             const primaryRow = this.helpForm.lastSelected(this.getPrimaryDataTable());
             if (!primaryRow) return def.resolve(true);
 
-            this.helpForm.getControls();
-
-            const res = this.callMethod(toOverrideEvent.afterGetFormData)
+            const res =
+                this.helpForm.getControls().
+                    then(()=> {
+                    return this.callMethod(toOverrideEvent.afterGetFormData);
+                })
             .then(function (){
                 if (noCheck) return def.resolve(false);
                 const allRowsToCheck = [primaryRow.getRow()];
@@ -4034,7 +4058,8 @@
             });
 
             const result = $.when.apply($, allDeferredChecks)
-            .then(function (){//ha in input tutti i risultati dei manageValidResult
+            .then(function (){
+                //ha in input tutti i risultati dei manageValidResult
 
                 // torna il primo elemento che non ha warning, quindi è obbligatorio. se non trova torna undefined
                 const mandatoryMsg = _.find(arguments,
@@ -4091,20 +4116,20 @@
             return def.from(result).promise();
         },
 
-        /**
-         * @method manageValidResult
-         * @public
-         * @description SYNC
-         * To override Permits externally to apply graphics on mandatory fields
-         * @params {objMandatory} { warningMsg: warningMessage,
-                errMsg: errmess + " (" + outCaption + ")",
-                errField: colname,
-                outCaption: outCaption,
-                row: row }
-         */
-        mandatoryUiFields: function(objMandatory) {
-
-        },
+        // /**
+        //  * @method manageValidResult
+        //  * @public
+        //  * @description SYNC
+        //  * To override Permits externally to apply graphics on mandatory fields
+        //  * @params {objMandatory} { warningMsg: warningMessage,
+        //         errMsg: errmess + " (" + outCaption + ")",
+        //         errField: colname,
+        //         outCaption: outCaption,
+        //         row: row }
+        //  */
+        // mandatoryUiFields: function(objMandatory) {
+        //
+        // },
 
         /**
          * @method manageValidResult
@@ -4112,7 +4137,7 @@
          * @description SYNC
          * Checks if a row is valid, could potentially imply server logic
          * @param {DataRow} rowToCheck
-         * @returns Deferred
+         * @returns Promise
          */
         manageValidResult: function (rowToCheck) {
             // inizializzo il metaDato
@@ -4298,7 +4323,8 @@
             }
 
             try {
-                const res = that.editGridRow(grid, that.helpForm.getFieldLower(grid.tag, 2))
+                let editType = that.helpForm.getFieldLower(grid.tag, 2)
+                const res = that.editGridRow(grid, editType)
                 .then(function (){
                     return that.eventManager.trigger(appMeta.EventEnum.editClick, grid, "editClick");
                 });
@@ -4508,7 +4534,7 @@
         },
 
         /**
-         * @method doDelete
+         * @method unlinkGrid
          * @private
          * @description ASYNC
          * Function to link with an "unlink" button
@@ -4674,7 +4700,6 @@
          */
         insertGridRow:function (grid, editType) {
             const def = Deferred('insertGridRow');
-
             const self = this;
 
             let waitingHandler = this.showWaitingIndicator(localResource.modalLoader_wait_insert);
@@ -4703,7 +4728,7 @@
                     });
                 }
 
-                // N.B note su vecchie chiamate di MDL , ora spostate in altri punti, logici:
+                // N.B note su vecchie chiamate di MDL, ora spostate in altri punti, logici:
                 // questo viene passato nella callPage ---> M.ExtraParameter = SourceTable.ExtendedProperties[FormController.extraParams];
                 // edit_type parametro della callPage  ---> M.edit_type = edit_type;
                 // Fatto all'atto del getDataSet lato server ---> M.SetDefaults(SourceTable);

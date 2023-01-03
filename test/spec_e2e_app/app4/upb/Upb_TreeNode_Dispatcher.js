@@ -3,7 +3,7 @@
     var Deferred = appMeta.Deferred;
     var Upb_TreeNode = appMeta.Upb_TreeNode;
     function Upb_TreeNode_Dispatcher(descrField, codeString) {
-        TreeNode_Dispatcher.apply(this, arguments);
+        TreeNode_Dispatcher.apply(this, []);
         this.descrField = descrField;
         this.codeString = codeString;
     }
@@ -21,7 +21,7 @@
             getNode:function (parentRow, childRow) {
                 var def = Deferred("Upb_TreeNode_Dispatcher-getNode");
 
-                return def.resolve(new Upb_TreeNode(this.descrField, this.codeString, childRow) );
+                return def.resolve(new Upb_TreeNode(childRow, this.descrField, this.codeString) );
             }
 
         });

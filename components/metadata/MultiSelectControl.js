@@ -39,7 +39,7 @@
         this.notEntityChildFilter = model.notEntityChildFilter(this.sourceTable);
 
         // recupero file del template del controllo
-        this.templateFileHtmlPath  = appMeta.basePath + appMeta.config.path_multiSelectTemplate;
+        this.templateFileHtmlPath  =  appMeta.config.path_multiSelectTemplate;
         this.rootElement = rootElement || document.body;
 
         this.addedTable  = null;
@@ -66,7 +66,7 @@
             // avvio loader
             self.loader.showControl();
             // carico il template del multiSelect
-            var htmlFileName =  self.templateFileHtmlPath;
+            var htmlFileName =  appMeta.basePath + self.templateFileHtmlPath;
 
             $.get(htmlFileName)
                 .done(

@@ -116,6 +116,7 @@ module.exports = function(config) {
         exclude: [
         ],
         proxies: {
+            '/components/': '/base/components/',
             '/styles/bootstrap/css/': '/base/components/styles/bootstrap/css/',
             '/styles/': '/base/components/styles/',
             '/jstest/': '/base/test/spec_midway/jstest/',

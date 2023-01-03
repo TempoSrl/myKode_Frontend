@@ -41,7 +41,6 @@
 		cachedSyncGetHtml: function (url) {
 			var htmlCached = this.cachedSyncGetResults[url];
 			if (htmlCached) return htmlCached;
-
 			var htmlCached = $.get({
 				url: url,
 				async: false,
@@ -223,7 +222,7 @@
          * @param {string} columnList
          * @param {jsDataQuery} filter
          * @param {number} top
-         * @returns {Deferred(DataTable)}
+         * @returns Promise<DataTable>
          */
 		runSelect: function (tableName, columnList, filter, top) {
 			var def = Deferred('runSelect');
@@ -384,7 +383,7 @@
          * @param {DataTable} t
          * @param {jsDataQuery} filter. The filter to apply to the select
          * @param {number} top. Max num of rows to read
-         * @returns {DataTable} The table with the rows read
+         * @returns DataTable The table with the rows read
          */
 		runSelectIntoTable: function (t, filter, top) {
 			var def = Deferred("runSelectIntoTable");
@@ -404,7 +403,7 @@
          * Creates and returns a DataTable "tableName" with the specified columns
          * @param {string} tableName
          * @param {string} columnList
-         * @returns {Deferred(DataTable)}
+         * @returns Promise<DataTable>
          */
 		createTableByName: function (tableName, columnList) {
 			var def = Deferred('createTableByName');
@@ -446,8 +445,8 @@
 		getPagedTable: function (tableName, nPage, nRowPerPage, filter, listType, sortby) {
 			var def = Deferred('getPagedTable');
 			// se non passo il filtro, quindi non ho messo filtri, passo stringa vuota
-			var prmfilter = getDataUtils.getJsonFromJsDataQuery(filter);
-			var objConn = {
+			let prmfilter = getDataUtils.getJsonFromJsDataQuery(filter);
+			let objConn = {
 				method: methodEnum.getPagedTable,
 				prm: {
 					tableName: tableName,
@@ -461,12 +460,11 @@
 
 			appMeta.connection.call(objConn)
 				.then(function (json) {
+					let jsonDtOut = json.dt;
+					let totpage = json.totpage;
+					let totrows = json.totrows;
 
-					var jsonDtOut = json.dt;
-					var totpage = json.totpage;
-					var totrows = json.totrows;
-
-					var dt = getDataUtils.getJsDataTableFromJson(jsonDtOut);
+					let dt = getDataUtils.getJsDataTableFromJson(jsonDtOut);
 					def.resolve(dt, totpage, totrows);
 				});
 
@@ -481,16 +479,16 @@
          * @param {DataRow} dataRow
          * @param {DataTable} table primaryTable
          * @param {string} editType
-         * @returns {Deferred}
+         * @returns Promise<object>
          */
 		getDsByRowKey: function (dataRow, table, editType) {
 
-			var def = Deferred('getDsByRowKey');
+			let def = Deferred('getDsByRowKey');
 
 			if (!model.canRead(table)) return def.resolve(null);
 
 			// trovo il filtro date le chiavi della riga
-			var filter = table.keyFilter(dataRow.current);
+			let filter = table.keyFilter(dataRow.current);
 
 			// check su eventuale errore
 			if (_.some(table.key(), function (cname) {
@@ -499,7 +497,7 @@
 
 			if (filter !== null && table.staticFilter()) filter = q.and(filter, table.staticFilter());
 
-			var objConn = {
+			let objConn = {
 				method: methodEnum.getDsByRowKey,
 				prm: {
 					tableName: table.name,
@@ -511,7 +509,7 @@
 			return appMeta.connection.call(objConn)
 				.then(function (res) {
 					// deserializzo il json in ds
-					var ds = getDataUtils.getJsDataSetFromJson(res);
+					let ds = getDataUtils.getJsDataSetFromJson(res);
 					// eseguo merge con ds di input
 					getDataUtils.mergeDataSet(table.dataset, ds, true);
 
@@ -593,11 +591,11 @@
          * @returns {Deferred (DataSet|err})
          */
 		getDataSet: function (tableName, editType) {
-			var def = Deferred("getDataSet");
-			var objConn = {
+			let def = Deferred("getDataSet");
+			let objConn = {
 				method: methodEnum.getDataSet,
 				prm: { tableName: tableName, editType: editType }
-			}
+			};
 
 			return appMeta.connection.call(objConn)
 				.then(function (dsJson) {
@@ -605,7 +603,7 @@
 				}, function (err) {
 					return def.reject(err).promise();
 				}
-				)
+				);
 		},
 
         /**
@@ -718,7 +716,8 @@
 						var primaryDataTable = ds.tables[primaryTableName];
 						_.forEach(primaryDataTable.childRelations(), function (rel) {
 							var childtable = ds.tables[rel.childTable];
-							if ((!model.isSubEntityRelation(rel, childtable, primaryDataTable)) && model.allowClear(childtable)) {
+							if ((!model.isSubEntityRelation(rel, childtable, primaryDataTable)) &&
+									 model.allowClear(childtable)) {
 								return true;
 							}
 							model.getTemporaryValues(childtable);
@@ -880,7 +879,7 @@
 				return def.resolve(this.cachedDescribedTree[key]);
 			}
 
-			// invio solo strruutra, quindi clono e tolgo righe
+			// invio solo struttura, quindi clono e tolgo righe
 			var dtCloned = table.clone();
 			dtCloned.clear();
 
@@ -913,7 +912,7 @@
          * @param {jsDataQuery} startCondition
          * @param {string} startValueWanted
          * @param {string} startFieldWanted
-         * @returns {Deferred(ObjectRow)}
+         * @returns Promise<ObjectRow>
          */
 		getSpecificChild: function (table, startCondition, startValueWanted, startFieldWanted) {
 			var def = Deferred("getSpecificChild");
@@ -964,7 +963,7 @@
          * @description ASYNC
          * Launches a post call to the server with eventName that is the method custom to call, and with custom "prms"
          * @param {string} eventName
-         * @param {object} prm
+         * @param {object} prms
          * @returns {Deferred}
          */
 		launchCustomServerMethod: function (eventName, prms) {
@@ -990,7 +989,7 @@
 		 * Launches a post call to the server with eventName that is the method custom to call, and with custom "prms"
 		 * in asyncronous mode
 		 * @param {string} eventName
-		 * @param {object} prm
+		 * @param {object} prms
 		 * @returns {Deferred}
 		 */
 		launchCustomServerMethodAsync: function (eventName, prms) {

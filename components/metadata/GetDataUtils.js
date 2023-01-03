@@ -225,22 +225,23 @@
                 // se il mio dsTarget contiene la tabella allora effettuo merge delle righe
                 if (dsDest.tables[tSource.name]) {
                     // Questo non basta, vedi righe successive. dsDest.tables[tSource.name].merge(tSource);
-                    // ciclo sulle righe originali del dest attraverso un contatore. ragiono al livello posizionale.
-                    // 1. se riga è modified faccio merge. i 2 indici source e dest allineati
+                    // ciclo sulle righe originali del dest attraverso un contatore. Ragiono a livello posizionale.
+                    // 1. se riga è modified faccio merge. I 2 indici source e dest allineati
                     // 2. se riga è added inserisco riga corrispondente, aumento gli indici
-                    // 3. deleted . faccio acceptChanges() così la riga viene detachata, rimango fermo sugli indici. solo se la transazione è ok
+                    // 3. deleted. Faccio acceptChanges() così la riga viene detachata, rimango fermo sugli indici. Solo se la transazione è ok
 
                     // recupero tabella di destinazione
                     let tDest = dsDest.tables[tSource.name];
 
-                    // Indice delle righe del source, và con l'indice del dest cioè quello di partenza, ma se la riga del source è deleted non viene aumentato
-                    // poichè il js nelle iterazioni successive deve copiare per le mod e add quella con lo stesso indice.
-                    // var rSourceIndex = 0; // NON SERVE, tengo solo l'indicedella dest.
+                    // Indice delle righe del source, và con l'indice del dest cioè quello di partenza, ma se la riga del source
+                    //  è deleted non viene aumentato
+                    // poiché il js nelle iterazioni successive deve copiare per le mod e add quella con lo stesso indice.
+                    // var rSourceIndex = 0; // NON SERVE, tengo solo l'indice della dest.
                     let rDestIndex = 0;
 
                     try {
                         for(rDestIndex; rDestIndex < tDest.rows.length;) {
-                            // ottengo la i-esima riga dest. a seconda dello stato effettuo operazioni,
+                            // Ottengo la i-esima riga dest. A seconda dello stato effettuo operazioni,
                             let rowDest = tDest.rows[rDestIndex];
                             let currState = rowDest.getRow().state;
 
@@ -264,7 +265,8 @@
                                 continue;
                             }
                             if (currState === dataRowState.deleted){
-                                // potrei aver preso degli errori e quindi il commit non è stato fatto, dovrò aumentare il contatore senza cancellare la riga
+                                // potrei aver preso degli errori e quindi il commit non è stato fatto, dovrò aumentare il contatore
+                                //  senza cancellare la riga
                                 if (changesCommittedToDB) {
                                     // NON aumento contatore delle righe del source! poichè era deleted, quindi sul source non la trovo
                                     // poichè il server avrà fatto acceptChanges()

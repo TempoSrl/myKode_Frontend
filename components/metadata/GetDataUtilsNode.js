@@ -28,7 +28,7 @@
     * @param {DataTable} date
     */
     appMeta.getDataUtils.normalizeDataWithoutOffsetTimezone = function (date, normalize) {
-        // nel caso nodejs, la parse toglie offset, la stringfy lo aggiiunge quindi non è necessario normalizzare
+        // nel caso nodejs, la parse toglie offset, la stringify lo aggiunge quindi non è necessario normalizzare
         return date;
     };
 

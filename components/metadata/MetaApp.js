@@ -165,7 +165,10 @@
                     /*{tableName:null,editType:null,html:null}*/
                     let found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
 
-                    if (found) return;
+                    if (found) {
+                        //console.log("page "+tableName+":"+editType+" already exists");
+                        return;
+                    }
                     this.metaPages.push({ tableName: tableName, editType: editType, MetaPage: metaPage });
                 },
 
@@ -183,7 +186,6 @@
                     let res = this.Deferred("getMetaPage");
                     /*{tableName:null,editType:null,html:null}*/
                     let found = _.find(this.metaPages, { "tableName": tableName, "editType": editType });
-
                     let self = this;
                     if (found){
                         let isDetail = found.MetaPage.prototype.detailPage;
@@ -191,7 +193,7 @@
                     }
 
                     let jsFileName = this.getMetaPagePath(tableName) + "/" + tableName + "_" + editType + ".js";
-
+                    //console.log("to get file"+jsFileName);
                     $.getScript(jsFileName) // questo esegue il js caricato
                     .done(
                         function () { //mi attendo che il js caricato abbia effettuato la addMetaPage
@@ -375,6 +377,7 @@
                  * @return  {Deferred}
                  */
                 callPage: function(metaToCall, editType, wantsRow) {
+                    //("calling page "+metaToCall+":"+editType);
                     let self = this;
                     let createdPage;
                     // salva il vecchio root node in una proprietà savedRoot di currentMetaPage ove esista
@@ -408,49 +411,52 @@
                                 });
                         })
                         .then(function(){
-                            // esco se non posso chiudere la precedente, perchè magari ci sono modifiche e l'utente deve prima accettare
+                            // esco se non posso chiudere la precedente, perché magari ci sono modifiche e l'utente deve prima accettare
                             if (!canOpenPage) return;
 
+                            //console.log("to getMetaPage")
                             return appMeta.getMetaPage(metaToCall, editType)
-                                .then(function(calledMetaPage) {
-                                    createdPage = calledMetaPage;
-                                    return calledMetaPage.init(); //returns an instance of metaPage (with meta and state and dataset)
-                                }, function (err) {
-                                    appMeta.logger.log(appMeta.logTypeEnum.ERROR, err);
-                                })
-                                .then(appMeta.utils.skipRun(
-                                    function(/*MetaPage*/ calledMetaPage) {
-                                        // aggiunge accorgimento grafico per far apparire la pag di dettaglio come un popup
-                                        if (wantsRow) $(self.rootElement).addClass(appMeta.cssDefault.detailPage);
-                                        if (!wantsRow) $(self.rootElement).removeClass(appMeta.cssDefault.detailPage);
-                                        return appMeta.getPage(self.rootElement,
-                                            calledMetaPage.primaryTableName,
-                                            calledMetaPage.editType); //gets and render calledMetaPage html
-                                    }))
-                                .then(function(/*MetaPage*/ calledMetaPage) {
-                                    if (self.currentMetaPage) {
-                                        // DS è dataset della CALLING PAGE
-                                        // currMetaData.ExtraParameter diventa calledMetaPage.state.extraParameters
-                                        // currMetaData.ExtraParameter = DS.Tables[entity].ExtendedProperties[FormController.extraParams];
-                                        // è corretta la prox istruzione??
-                                        if (self.currentMetaPage.state.DS.tables[metaToCall]) {
-                                            calledMetaPage.state.extraParameters =
-                                                self.currentMetaPage.state.DS.tables[metaToCall].extraParameters;
-                                        }
-                                        self.currentMetaPage.entityCalledChanged = false;
-                                        self.currentMetaPage.setCallingPage(calledMetaPage, wantsRow);
+                            .then(function (calledMetaPage){
+
+                                createdPage = calledMetaPage;
+                                return calledMetaPage.init(); //returns an instance of metaPage (with meta and state and dataset)
+                            }, function (err){
+                                appMeta.logger.log(appMeta.logTypeEnum.ERROR, err);
+                            })
+                            .then(appMeta.utils.skipRun(
+                                function (/*MetaPage*/ calledMetaPage){
+                                    // aggiunge accorgimento grafico per far apparire la pag di dettaglio come un popup
+                                    if (wantsRow) $(self.rootElement).addClass(appMeta.cssDefault.detailPage);
+                                    if (!wantsRow) $(self.rootElement).removeClass(appMeta.cssDefault.detailPage);
+                                    return appMeta.getPage(self.rootElement,
+                                        calledMetaPage.primaryTableName,
+                                        calledMetaPage.editType); //gets and render calledMetaPage html
+                                }))
+                            .then(function (/*MetaPage*/ calledMetaPage){
+                                if (self.currentMetaPage){
+                                    // DS è dataset della CALLING PAGE
+                                    // currMetaData.ExtraParameter diventa calledMetaPage.state.extraParameters
+                                    // currMetaData.ExtraParameter = DS.Tables[entity].ExtendedProperties[FormController.extraParams];
+                                    // è corretta la prox istruzione??
+                                    if (self.currentMetaPage.state.DS.tables[metaToCall]){
+                                        calledMetaPage.state.extraParameters =
+                                            self.currentMetaPage.state.DS.tables[metaToCall].extraParameters;
                                     }
-                                    self.currentMetaPage = calledMetaPage; //called page is the new current page
-                                    self.toolBarManager.setMetaPage(calledMetaPage); // set the currentMetaPage for the toolbar
-                                    return calledMetaPage.activate(); //activate the page
-                                }).then(function() {
-                                    return createdPage.show();
-                                }).then(function () {
-                                    self.pushPageName(createdPage.getName());
-                                    // Restituisco il deferred della pagina appena aperta. Si risolverà nel mainsave nel caso di dettaglio di un edit di una riga del grid,
-                                    // o nel mainSelect nel caso di autoManage
-                                    return createdPage.deferredResult;
-                                });
+                                    self.currentMetaPage.entityCalledChanged = false;
+                                    self.currentMetaPage.setCallingPage(calledMetaPage, wantsRow);
+                                }
+                                self.currentMetaPage = calledMetaPage; //called page is the new current page
+                                self.toolBarManager.setMetaPage(calledMetaPage); // set the currentMetaPage for the toolbar
+                                return calledMetaPage.activate(); //activate the page
+                            }).then(function (){
+                                return createdPage.show();//this raises appMeta.EventEnum.showPage
+                            }).then(function (){
+                                self.pushPageName(createdPage.getName());
+                                // Restituisco il deferred della pagina appena aperta.
+                                // Si risolverà nel mainsave nel caso di dettaglio di un edit di una riga del grid,
+                                // o nel mainSelect nel caso di autoManage
+                                return createdPage.deferredResult;
+                            });
                         });
 
 
@@ -524,7 +530,7 @@
                  * @public
                  * @description ASYNC
                  * call a  web service named method with prms object. prms are the pairs key:value specific for each call.
-                 * The "method" method must be registered with routing.builderConnObj(...) function
+                 * The "method" method must be registered with routing.registerService(...) function
                  * @param {string} method "the name of web service"
                  * @param {Object} prms pair of key:value.
                  */
@@ -535,7 +541,7 @@
                     let objRouting  = appMeta.routing.getMethod(method);
                     if (!objRouting){
                         alert("method " + method + " not registered for this app. Add the configuration on Routing class calling " +
-                            "routing.builderConnObj('method, 'GET/POST', 'my controller path', false, true);");
+                            "routing.registerService('method, 'GET/POST', 'my controller path', false, true);");
                         return def.resolve();
                     }
                     // stampa di log
@@ -559,7 +565,6 @@
 
             };
             window.appMeta.MetaApp = MetaApp;
-
 
 }());
 

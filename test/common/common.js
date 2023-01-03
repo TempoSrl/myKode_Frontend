@@ -160,7 +160,7 @@
 
 
         /**
-         * @method eventWaiter
+         * @method pageEventWaiter
          * @public
          * @description ASYNC
          * Subscribes an event triggered by a metaPage. When the callback is invoked it unsubscribes the event and resolves the deferred.
@@ -169,7 +169,7 @@
          * @param {string}eventName
          * @returns {Deferred}
          */
-        eventWaiter:function(page, eventName) {
+        pageEventWaiter:function(page, eventName) {
             var def = $.Deferred();
             var that = this;
             var f = function () {

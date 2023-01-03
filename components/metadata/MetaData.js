@@ -75,7 +75,7 @@
          * @description ASYNC
          * Checks if a DataRow "r" has a valid data. Returns an object { warningMsg, errMsg, errField, row }
          * @param {DataRow} r
-         * @returns {Deferred} can be null or Object
+         * @returns Promise can be null or Object
          */
          isValid: function(r) {
             const emptyKeyMsg = this.localResource.dictionary.emptyKeyMsg;
@@ -248,7 +248,7 @@
          * @param {string} outCaption
          * @param {DataRow} row
          * @param {string} [warningMessage]
-         * @returns {Deferred}
+         * @returns Promise
          */
         createIsValidResult: function (errMessage, colname, outCaption, row, warningMessage) {
             let def = Deferred("createIsValidResult");
@@ -324,7 +324,7 @@
          * Describes a listing type (captions, column order, formulas, column formats and so on)
          * @param {DataTable} table
          * @param {string} listType
-         * @returns {Promise<DataTable>}
+         * @returns Promise<DataTable>
          */
         describeColumns: function (table, listType) {
             let def = Deferred("describeColumns");
@@ -370,7 +370,7 @@
          * Describes the table of the tree
          * @param {DataTable} table
          * @param {string} listType
-         * @returns {{rootCondition: sqlFun, nodeDispatcher: TreeNode_Dispatcher, maxDepth: int}}
+         * @returns Promise<{{rootCondition: sqlFun, nodeDispatcher: TreeNode_Dispatcher, maxDepth: int}}>
          */
         describeTree:function (table, listType) {
             return Deferred.resolve(true).promise();
@@ -381,7 +381,7 @@
          * @public
          * @description ASYNC
          * Gets the static filter associated to the "listType"
-         * @param listType
+         * @param {string} listType
          * @return {jsDataQuery | null}
          */
         getStaticFilter:function (listType) {
@@ -467,7 +467,7 @@
          * Gets new row, having ParentRow as Parent, and adds it on DataTable "dtDest"
          * @param {DataRow} parentRow. Parent Row of the new Row to create, or null if no parent is present
          * @param {DataTable} dtDest  Table in which row has to be added
-         * @returns {Deferred<DataRow|null>}
+         * @returns Promise<DataRow|null>
          */
         getNewRow:function (parentRow, dtDest) {
             let def = new Deferred("getNewRow");
@@ -523,7 +523,7 @@
          * the filter, and it is a selectable row. Otherwise returns null
          * @param {jsDataQuery} filter
          * @param {string} tableName
-         * @returns {Deferred<DataRow>} A row belonging to a table equal to PrimaryTable
+         * @returns Promise<DataRow> A row belonging to a table equal to PrimaryTable
          */
         selectByCondition:function (filter, tableName) {
             const def = Deferred("selectByCondition");
@@ -550,10 +550,12 @@
          * Resolves a Deferred with dataRow if dataRow is selectable, null otherwise
          * @param {DataTable} t
          * @param {DataRow} dataRow
-         * @returns {Deferred<null | DataRow>}
+         * @returns Promise<null | DataRow>
          */
         checkSelectRow:function(t, dataRow) {
-            if (typeof appMeta=== undefined)return ;
+            if (typeof appMeta=== undefined){
+                return null;
+            }
             const modal = appMeta.BootstrapModal;
 
             const def = Deferred("MetaData-checkSelectRow");
@@ -580,7 +582,7 @@
         /**
          *
          * @param {DataRow} dataRow
-         * @returns {Promise<boolean>}
+         * @returns Promise<boolean>
          */
         canSelect:function (dataRow) {
         	if(typeof appMeta === 'undefined')

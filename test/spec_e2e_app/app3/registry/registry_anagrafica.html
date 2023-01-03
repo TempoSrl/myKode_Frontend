@@ -1,13 +1,16 @@
 ﻿<div class='container'>
 
-    <div> sotto client/ Sono DIV di registry_anagrafica_GRID_MANAGER.html
+    <div> sotto client/ Sono DIV di registry anagrafica test 3
         <br>
         <!-- html per test bottoni griglia -->
-        <div id="grid1" data-tag="registry.default.reference" data-custom-control="grid" data-mdlbuttoninsert data-mdlbuttonedit data-mdlbuttondelete data-mdlbuttonunlink></div>
+        <div id="grid1" data-tag="registryreference.default.persone" data-custom-control="grid" data-mdlbuttoninsert
+             data-mdlbuttonedit data-mdlbuttondelete data-mdlbuttonunlink></div>
 
-        <h2>Parte Dettaglio</h2>
-        registry-idreg: <label data-tag="registry.idreg"></label>
-        <br>
+        <h2>Tabella anagrafica</h2>
+
+        idreg: <input type="text" data-tag="registry.idreg">
+        title: <input type="text" data-tag="registry.title">
+        extension:  <input type="text" data-tag="registry.extension">
 
         registry-lu: <label  data-tag="registry.lu"></label>
         <br>
@@ -15,20 +18,12 @@
         registry-cu: <label  data-tag="registry.cu"></label>
         <br>
 
-        registry-title: <label  data-tag="registry.title"></label>
-        <br>
-
-        mypiva: <label  name="mypiva" id="txtBox1" data-tag="registry.p_iva"></label><br>
-        gender: <label  name="mygender" id="txtBox2" data-tag="registry.gender" value="M"></label><br>
+        mypiva: <input type="text" data-tag="registry.p_iva">
+        gender: <input type="text" data-tag="registry.gender" value="M">
 
         <br>
 
-        <h3>Campi su tabella registryreference</h3>
-        <br>
-        reference-idreg: <label type="text" data-tag="registryreference.idreg"></label>
-        <br>
-        reference-referencename: <label type="text" data-tag="registryreference.referencename"></label>
-        <br>
+
 
     </div>
 

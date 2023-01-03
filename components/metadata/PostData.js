@@ -63,10 +63,10 @@
                             var messages = [];
 
                             // a prescindere se il salvataggio è avvenuto, mergio il ds di output del metodo save con quello di input
-                            var changesCommittedToDB = (obj.messages.length === 0); // se non ci sono msg e quindi è andato bene sono effettivamente da calcellare
+                            var changesCommittedToDB = (obj.messages.length === 0); // se non ci sono msg e quindi è andato bene sono effettivamente da cancellare
                             getDataUtils.mergeDataSetChanges(ds, dsOut, changesCommittedToDB );
 
-                            // popolo  array di messaggi, creando un opportuno oggetto DbProcedureMessage.
+                            // popolo array di messaggi, creando un opportuno oggetto DbProcedureMessage.
                             _.forEach(obj.messages,
                                 function (message) {
                                     var id = message.id;
@@ -107,7 +107,7 @@
          * @param {string} editType
          * @param {Array} inputMessages
          * @param {MetaPage} metaPage
-         * @returns {Deferred(boolean|DataSet)}
+         * @returns Promise<boolean|DataSet>
          */
         doPost:function (ds, tableName, editType, inputMessages, metaPage) {
             var def  = Deferred("doPost");
@@ -118,8 +118,9 @@
 
                 .then(function (dsOut, newMessages, success, canIgnore) {
 	                // se ritorna con successo esco con true
-                    if(success) return def.resolve(true);
-
+                    if(success) {
+                        return def.resolve(true);
+                    }
                     // se ci sono messaggi mostro form con lista degli errori.
                     // l'utente potrà uscire e non salvare , oppure provare ad ignorare e salvare
                     if (newMessages.length > 0) {

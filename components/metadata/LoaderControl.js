@@ -15,7 +15,7 @@
     function LoaderControl(rootElement, msg) {
         this.rootElement = rootElement || document.body;
         this.msg = msg;
-        this.templateFileHtmlPath  = appMeta.basePath + appMeta.config.path_loaderTemplate;
+        this.templateFileHtmlPath  = appMeta.config.path_loaderTemplate;
     }
 
     LoaderControl.prototype = {
@@ -28,7 +28,7 @@
          * Loads the html template of the LoaderControl and appends it to the "rootElement"
          */
         showControl:function () {
-            var htmlCodeTemplate = appMeta.getData.cachedSyncGetHtml(this.templateFileHtmlPath);
+            var htmlCodeTemplate = appMeta.getData.cachedSyncGetHtml(appMeta.basePath + this.templateFileHtmlPath);
             // non rimpiazzo, aggiungo
             if (!$('#loader_control_id').length) $(this.rootElement).append(htmlCodeTemplate);
             // nascondo tutto e  mostro loader

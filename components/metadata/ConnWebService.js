@@ -36,6 +36,7 @@
             //var deferred = Deferred('ConnWebService.call ' + callConfigObj.url);
             var deferred = appMeta.Deferred('ConnWebService.call ' + callConfigObj.url);
 
+
             var options   = {
                 url: callConfigObj.url,
                 type: callConfigObj.type,
@@ -44,6 +45,7 @@
                 success: _.partial(this.success, this, deferred),
                 error: _.partial(this.error, deferred)
             };
+            //console.log("to invoke:"+JSON.stringify(options.url));
 
             // passo header per autorizzazione solo se metodo lo richiede
             if (callConfigObj.auth){
@@ -52,7 +54,15 @@
                     'Authorization':  "Bearer " + token,
                     "language": appMeta.localResource.currLng
                 };
+                //console.log(options);
             }
+            // else {
+            //     let AnonymousToken = "AnonymousToken123456789";
+            //     options["headers"] = {
+            //         'Authorization':  "Bearer " + AnonymousToken,
+            //         "language": appMeta.localResource.currLng
+            //     };
+            // }
 
             // associa ad una tripla. Serve principalmente per recuperare "multipleResult" alla risposta
             this.requestIdDict[objConn.prm.idRequest] = {method:objConn.method, deferred: deferred, multipleResult:callConfigObj.multipleResult};
@@ -76,6 +86,7 @@
          * @param {Object} thrownError
          */
         error:function (deferred, xhr, ajaxOptions, thrownError) {
+            console.log("got error from web service! "+xhr.responseText);
             return deferred.reject({ text: xhr.responseText, status: xhr.status });
         },
 
@@ -94,16 +105,18 @@
         success:function (that, deferred, res) {
 
             // INIZIO CODICE retrocompatibilità dei test e2e.
-            // introdotta nuova gestione dopo  l'inserimento dell'interfaccia comune con i web socket
+            // Introdotta nuova gestione dopo  l'inserimento dell'interfaccia comune con i web socket
             var isValidJSON = true;
+            //console.log("got data from service")
             if (!res)  return deferred.resolve(null);
-            try { JSON.parse(res) } catch (e){ isValidJSON = false }
+            try { JSON.parse(res); } catch (e){ isValidJSON = false; }
             if (isValidJSON){
                 var obj  = appMeta.getDataUtils.getJsObjectFromJson(res);
                 if (!Array.isArray(obj.data)){
                     return deferred.resolve(res);
                 }
             } else {
+                //it's an object
                 return deferred.resolve(res);
             }
             // FINE codice per retrocompatibilità . Togliere se sarà migrato tutto il backend http
