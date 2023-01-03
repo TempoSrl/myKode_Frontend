@@ -1891,7 +1891,7 @@
                                 appMeta.localResource.cancel,
                                 msgNoRowFound).show(self)
                             .then(function (){
-                                //self.hideWaitingIndicator();
+                                self.hideWaitingIndicator();
                                 return def.resolve(null);
                             });
                         }
@@ -1906,7 +1906,7 @@
                             if (dataTablePaged.rows.length === 0){
                                 return def.resolve(null);
                             }
-                            //self.hideWaitingIndicator();
+                            self.hideWaitingIndicator();
                             return def.from(metaToConsider.checkSelectRow(dataTablePaged, dataTablePaged.rows[0].getRow()));
                         }
 
