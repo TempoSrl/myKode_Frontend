@@ -88,7 +88,7 @@
         editnotes : "Edit note",
         mainclose : "Close",
         showlast: "Row info",
-        mainexportpdf: "Export pdf",
+        mainexportpdf: "Print",
 
         emptyField: "Empty fields",
 

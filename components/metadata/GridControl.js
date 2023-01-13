@@ -127,7 +127,6 @@
          * @description SYNC
          * @param {element} el
          * @param {MetaPage} metaPage
-         * @param {boolean} subscribe
          */
         addEvents: function(el, metaPage) {
             this.metaPage = metaPage;

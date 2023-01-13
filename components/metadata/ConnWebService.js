@@ -56,13 +56,13 @@
                 };
                 //console.log(options);
             }
-            // else {
-            //     let AnonymousToken = "AnonymousToken123456789";
-            //     options["headers"] = {
-            //         'Authorization':  "Bearer " + AnonymousToken,
-            //         "language": appMeta.localResource.currLng
-            //     };
-            // }
+            else {
+                let AnonymousToken = "AnonymousToken123456789";
+                options["headers"] = {
+                    'Authorization':  "Bearer " + AnonymousToken,
+                    "language": appMeta.localResource.currLng
+                };
+            }
 
             // associa ad una tripla. Serve principalmente per recuperare "multipleResult" alla risposta
             this.requestIdDict[objConn.prm.idRequest] = {method:objConn.method, deferred: deferred, multipleResult:callConfigObj.multipleResult};

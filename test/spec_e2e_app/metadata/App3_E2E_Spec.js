@@ -601,7 +601,6 @@ describe('App3_E2E', function() {
                                 // attendo messagebox di conferma
                                 common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
                                     .then(function () {
-                                        console.log("appare msgbox di conferma insertcopy");
                                         // appare msgbox di conferma insertcopy
                                         //E' stato premuto il tasto inserisci copia.
                                         //  Si desidera davvero creare una copia dei dati già salvati?
@@ -611,7 +610,6 @@ describe('App3_E2E', function() {
                                        // tenta di fare la insert a db ma prende errore, rimango in attesa del form degli errori
                                         common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
                                             .then(function () {
-                                                console.log("tenta di fare la insert a db ma prende errore, rimango in attesa del form degli errori");
                                                 allCheckExecuted++;
                                                 // verifico esattamente messaggio di errore
                                                 expect($(".procedureMessage_grid").length).toBe(1);
@@ -624,14 +622,12 @@ describe('App3_E2E', function() {
                                                 //Dopo aver premuto "non salvare" sulle regole facciamo maindelete
                                                 common.pageEventWaiter(metaPage, appMeta.EventEnum.saveDataStop)
                                                 .then(function () {
-                                                    console.log("saveDataStop");
                                                     expect(metaPage.state.DS.tables.registry.rows[0].idreg).toBe(
                                                         metaPage.state.DS.tables.registryaddress.rows[0].idreg
                                                     );
 
                                                     common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
                                                     .then(function () {
-                                                        console.log("showModalWindow 634");
                                                         expect(metaPage.state.DS.tables.registry.rows[0].idreg).toBe(
                                                             metaPage.state.DS.tables.registryaddress.rows[0].idreg
                                                         );
@@ -674,7 +670,6 @@ describe('App3_E2E', function() {
                                         //dopo la conferma del maininsertcopy premi "mainsave"
                                         testHelper.waitEvent(appMeta.EventEnum.commandEnd).
                                             then(function (metaPageDetail) {
-                                                console.log("commandEnd 676");
                                                 // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
                                                 testHelper.testMetaPageInitialization(metaPageDetail,
                                                         "registry", "anagrafica");

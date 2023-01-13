@@ -176,7 +176,6 @@
             if (!that.metaPage) return;
             var def  = appMeta.Deferred("buttonClick");
             var tag = $(this).data("tag");
-            console.log("buttonClick "+tag)
             if (!tag) return def.resolve(false).promise();
             var cmd = tag;
             var filter = $(this).data("filter");
@@ -188,7 +187,6 @@
                         .then(function() {
                             return def.from(that.freshButtons()).
                              then(function () {
-                                 console.log("raising commandEnd of "+cmd)
                                  appMeta.globalEventManager.trigger(appMeta.EventEnum.commandEnd, that.metaPage, cmd).
                                  then(()=>{
                                     return def.resolve();

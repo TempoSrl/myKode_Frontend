@@ -140,6 +140,21 @@
                 filterEdittype
             );
             // leggo valore direttamente
+            return appMeta.getData.runSelect('apppagestemplatedefaultview', 'idattach, idattach_2', filter, null)
+                .then(function (dt) {
+                    if(dt.rows.length) {
+                        return self.exportToPdfFromTemplate(metaPage, dt.rows[0])
+                            .then(function () {
+                                metaPage.hideWaitingIndicator(waitingHandler);
+                                return true;
+                            });
+                    }
+                    // ===> caso export generico
+                    metaPage.hideWaitingIndicator(waitingHandler);
+                    return self.doGenericExport();
+                }
+            );
+
             return appMeta.getData.doReadValue("apppagestemplatedefaultview", filter, "idattach", null)
                 .then(function (idAttach) {
                     // ===> se c'è un idattach sulla tabella eseguo export direttamente
@@ -1090,7 +1105,20 @@
         // *************************************************************************************
 
 
-        exportToPdfFromTemplate:function (metaPage, idAttach) {
+        /**
+         * 
+         * @param {string} metaPage 
+         * @param {dataRow} dr Data row
+         * @returns {Deferred}
+         */
+        exportToPdfFromTemplate:function (metaPage, dr) {
+            let idAttach = dr.idattach,
+                idAttach_2 = dr.idattach_2;
+            if(!idAttach) {
+                console.error("Non specificato idattach");
+                return false;
+            }
+
             var self = this;
             this.def = Deferred("PdfExport.exportToPdfFromtamplete");
             this.metaPage = metaPage;
@@ -1099,7 +1127,7 @@
             var token = appMeta.connection.getAuthToken();
             var callConfigObj = appMeta.routing.getMethod('download');
             var url = callConfigObj.url + '?idattach=' + idAttach;
-            var filename = 'default';
+            var filename = 'default'; // Non utilizzato
             var myInit = { method: callConfigObj.type,
                 headers : {'Authorization':  "Bearer " + token}};
 
@@ -1107,39 +1135,53 @@
                 filename = self.getFileNameFromContentDisposition(response.headers.get('content-disposition'));
                 return response.text();
             }).then(function (htmlText) {
-                // dato html rimpiazzo i palceholders
-                var mytextReplaced = self.replacePlaceHolders(htmlText);
-                let url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(mytextReplaced),
-                fileName = 'stampa.doc',
-                downloadLink = document.createElement("a");
-                
-                downloadLink.style.visibility = 'hidden';
-                document.body.appendChild(downloadLink);
+                    let mytextReplaced = self.replacePlaceHolders(htmlText);
+                    
+                    let blobDownload, nomeDownload = 'stampa.';
+                    if(!idAttach_2) { // Singolo download stampa doc
+                        nomeDownload += 'doc';
+                        blobDownload = new Blob( [mytextReplaced], {type: 'application/vnd.ms-word;charset=utf-8'} );
+                        saveAs(blobDownload, nomeDownload);
+                    } else { // Stampa multipla, preparo zip
+                        nomeDownload += 'zip';
+                        // Scarico secondo template
+                        fetch(callConfigObj.url + '?idattach=' + idAttach_2, myInit)
+                        .then(function (response){
+                            //filename = self.getFileNameFromContentDisposition(response.headers.get('content-disposition'));
+                            return response.text();            
+                        })
+                        .then(function (htmlText) {
+                            // Replace secondo template
+                            htmlText = self.replacePlaceHolders(htmlText);
 
-                downloadLink.href = url;
-                downloadLink.download = fileName;
-                downloadLink.click();
+                            let hZip = new JSZip();
+                            hZip.file("stampa.doc", mytextReplaced);
+                            hZip.file("stampa_2.doc", htmlText);
+                            blobDownload = hZip.generate({ type: 'blob' });
+                            saveAs(blobDownload, nomeDownload);
+                        });
+                    }
 
-                downloadLink.parentElement.removeChild(downloadLink);
+                    /*
+                    if(idAttach_2) {
+                        self.metaPage.stampaConservatorioCagliari(htmlText, mytextReplaced);
+                    } else {
+                        // dato html rimpiazzo i placeholders
+                        let url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(mytextReplaced),
+                        fileName = 'stampa.doc',
+                        downloadLink = document.createElement("a");
+                        
+                        downloadLink.style.visibility = 'hidden';
+                        document.body.appendChild(downloadLink);
 
+                        downloadLink.href = url;
+                        downloadLink.download = fileName;
+                        downloadLink.click();
 
-// Vecchio codice per apertura scheda con stampa
-                    // var printWindow = window.open();
-                    // printWindow.document.write(mytextReplaced);
-                    // printWindow.document.close();
-// Vecchio codice per apertura scheda con stampa                    
+                        downloadLink.parentElement.removeChild(downloadLink);
 
-                  /*  var myBlob = new Blob([mytextReplaced], { type: 'application/pdf' })
-                    var fileURL = window.URL.createObjectURL(myBlob);
-                    var a = document.createElement("a");
-                    document.body.appendChild(a);
-                    a.style = "display: none";
-                    a.href = fileURL;
-                    a.download = filename;
-                    a.click();
-                    def.resolve();*/
-
-
+                    }
+                    */
                     def.resolve();
                 });
 
@@ -1152,16 +1194,15 @@
          * @returns {*}
          */
         replacePlaceHolders: function(text) {
-            var self = this;
-            var placeholders = this.getPlaceholders(text);
+            let self = this,
+                placeholders = this.getPlaceholders(text),
+                funPlaceHolder = this.getFunctionPlaceholders(text);
 
+            
             // loop sui placeholder , dato il tag, cioè il placeholder indicato sul test trova il valore sul dataset e rimpiazza placeholder con valore
-            return  _.reduce(placeholders, function (acc, placeholder) {
-
-                // var el = $("[data-tag='" + placeholder +"']");
-                var el = $("#" + placeholder);
-
-                var row = self.getRowValueByEl(el);
+            text =  _.reduce(placeholders, function (acc, placeholder) {
+                let el = $("#" + placeholder);
+                let row = self.getRowValueByEl(el);
 
                 // effettua replace del placeholder
                 if (row && row.length === 2 ) {
@@ -1172,6 +1213,44 @@
 
             }, text);
 
+            // loop sui placeholder per cui va chiamata una funzione per ricavare la porzione di stampa (rimpiazzia tutte le occorrenze)
+            let that = this;
+            return _.reduce(funPlaceHolder, function (acc, placeholder) {
+                // --- array placeholder: 
+                // [0] : Stringa da sostituire nell'HTML, comprensiva di spazi, es.: "$f(helperStampaScheda, getCurrDate , prova )"
+                // [1] : nome della funzione da chiamare
+                // [2-length] : argomenti, opzionali, da passare alla funzione, se più di uno vengono passati come array
+                let funName = placeholder[1],
+                    argomenti = null,
+                    htmlText = '';
+
+                if (placeholder.length > 2) { // Ci sono argomenti da passare
+                    if (placeholder.length == 3) { //Un solo argomento
+                        argomenti = placeholder[2]; //Passo direttamente
+                    } else { //Più argomenti
+                        argomenti = placeholder.slice(2); // Passo come array
+                    }
+                }
+                if(typeof that.metaPage[funName] == 'function') {
+                    
+                    if(argomenti)
+                        htmlText = that.metaPage[funName](argomenti); //Restutuisce la stringa di HTML / testo da inserire
+                    else
+                        htmlText = that.metaPage[funName](); //Restutuisce la stringa di HTML / testo da inserire
+
+                    if (typeof htmlText != 'string') {
+                        if(typeof htmlText == 'number') {
+                            htmlText = htmlText.toString();
+                        }else{
+                            htmlText = '';
+                        }
+                    }
+                } else {
+                    console.warn("Impossibile rimpiazziare marcatore $f("+funName.toString()+").");
+                }
+                return acc.replace(placeholder[0], htmlText);
+
+            },text);
         },
 
         /**
@@ -1232,8 +1311,8 @@
          * @returns {[]}
          */
          getPlaceholders:function(str) {
-            var regex = /\$\(([\w\[.\]\\\?]+)\)/g;
-            var result = [];
+            let regex = /\$\(([\w\[.\]\\\?]+)\)/g,
+                result = [];
 
             while (match = regex.exec(str)) {
                 result.push(match[1]);
@@ -1241,6 +1320,25 @@
             return result;
         },
 
+        /**
+         * Come getPlaceholders, ritorna però il nome della funzione da richiamare e gli argomenti da passare a questa per ottenere la porzione di stampa da inserire
+         * Da marcare nell'HTML come $f(nome_funzione)
+         * @param str
+         * @returns {[]}
+         */
+         getFunctionPlaceholders:function(str) {
+             //let regex = /\$f\(([\w\[.\]\\\?]+)\)/g,
+             let regex = /\$f\(\s*([^)]+?)\s*\)/g,
+                result = [];
+        
+             while (match = regex.exec(str)) {
+                if(match[1]) {
+                    let ind = result.push(match[1].split(/\s*,\s*/)); // Splitto nome funzione e argomenti
+                    result[ind - 1].unshift(match[0]); //Nella prima posizione metto la stringa originale da sostituire
+                }
+             }
+             return result;
+         },
         // ***********************************************************************************
         // *********************** END EXPORT FORM TEMPLATE **********************************
         // ***********************************************************************************

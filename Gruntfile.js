@@ -51,7 +51,7 @@ module.exports = function(grunt) {
         configFile: "test/karma.conf.js",
         autoWatch: true,
         singleRun: true,
-        reporters: ["spec"],
+        reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
@@ -73,12 +73,12 @@ module.exports = function(grunt) {
         configFile: "test/karma_e2e.conf.js",
         autoWatch: true,
         singleRun: true,
-        reporters: ["spec"],
+        reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
           suppressFailed: false, // do not print information about failed tests
-          suppressPassed: false, // do not print information about passed tests
+          suppressPassed: true, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
           failFast: true // test would finish with error when a first fail occurs.
@@ -88,12 +88,12 @@ module.exports = function(grunt) {
         configFile: "test/karma_e2e.conf.js",
         autoWatch: true,
         singleRun: false,
-        reporters: ["spec"],
+        reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
           suppressFailed: false, // do not print information about failed tests
-          suppressPassed: false, // do not print information about passed tests
+          suppressPassed: true, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
           failFast: false // test would finish with error when a first fail occurs.
@@ -104,13 +104,13 @@ module.exports = function(grunt) {
         configFile: "test/karma_e2e_app.conf.js",
         autoWatch: true,
         singleRun: true,
-        reporters: ["spec"],
+        reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
           suppressFailed: false, // do not print information about failed tests
-          suppressPassed: false, // do not print information about passed tests
-          suppressSkipped: false, // do not print information about skipped tests
+          suppressPassed: true, // do not print information about passed tests
+          suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
           failFast: true // test would finish with error when a first fail occurs.
         }
@@ -120,7 +120,7 @@ module.exports = function(grunt) {
         configFile: "test/karma_e2e_App_produzione.conf.js",
         autoWatch: true,
         singleRun: true,
-        reporters: ["spec"],
+        reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
@@ -136,7 +136,7 @@ module.exports = function(grunt) {
         configFile: "test/karma_e2eWebsocket.conf.js",
         autoWatch: true,
         singleRun: true,
-        reporters: ["spec"],
+        reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
@@ -152,7 +152,7 @@ module.exports = function(grunt) {
         configFile: "test/karma_midway.conf.js",
         autoWatch: true,
         singleRun: true,
-        //reporters: ["spec"],
+        reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
@@ -167,12 +167,12 @@ module.exports = function(grunt) {
         configFile: "test/karma_midway.conf.js",
         autoWatch: true,
         singleRun: false,
-        reporters: ["spec"],
+        reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
           suppressFailed: false, // do not print information about failed tests
-          suppressPassed: false, // do not print information about passed tests
+          suppressPassed: true, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
           failFast: false // test would finish with error when a first fail occurs.

@@ -90,7 +90,7 @@
         editnotes : "Edita Note",
         mainclose : "Chiudi",
         showlast: "Info riga",
-        mainexportpdf: "Pdf Export",
+        mainexportpdf: "Stampa",
 
         emptyField: "Svuota campi",
 

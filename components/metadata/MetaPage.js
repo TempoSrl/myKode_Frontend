@@ -1242,7 +1242,6 @@
          */
         doMainCommandClick:function (that, tag, filter) {
             logger.log(logtypeEnum.INFO,"executing "+tag+" of "+that);
-            console.log("doMainCommandClick "+tag)
             return that.doMainCommand(tag, filter).
                 then(function () {
                     logger.log(logtypeEnum.INFO,"done with "+tag)

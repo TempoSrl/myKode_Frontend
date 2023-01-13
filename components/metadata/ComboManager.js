@@ -338,7 +338,7 @@
          * @method fillControl
          * @public
          * @description ASYNC
-         * Executes the fill of the combo (Seelct html).
+         * Executes the fill of the combo (Select html).
          * @param {node} comboBox
          * @param {object} val
          */

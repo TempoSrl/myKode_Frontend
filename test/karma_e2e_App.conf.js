@@ -12,7 +12,7 @@ module.exports = function(config) {
         usePolling: true,
 
         //dots  progress  junit  growl  coverage kjhtml spec
-        reporters: ['progress'],
+        reporters: ['dots'],
 
 
         // base path, that will be used to resolve files and exclude
@@ -134,7 +134,7 @@ module.exports = function(config) {
         // - PhantomJS
         // - IE (only Windows)
         browsers: [
-            'Chrome' // 'ChromeHeadless' //
+            'ChromeHeadless' //'Chrome' //
         ],
 
         // Which plugins to enable
@@ -154,7 +154,7 @@ module.exports = function(config) {
 
         // level of logging
         // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
-        logLevel: config.LOG_INFO
+        logLevel: config.LOG_ERROR
 
         // Uncomment the following lines if you are using grunt's server to run the tests
         // proxies: {
