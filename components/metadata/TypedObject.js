@@ -47,6 +47,7 @@
             var cc;
             switch (typeName) {
                 case "String":
+                case "string":
                     this.value = s;
                     return this;
                 case "Char":
@@ -56,6 +57,7 @@
                 case "Double":
                 case "Single":
                 case "Decimal":
+                case "number":
                     if (s === "") return this;
                     var d;
                     if (fmt === null || isStandardNumericFormatStyle(fmt)) {
@@ -103,9 +105,11 @@
 
 
                 //The following formats wi11 always return an int datatype...
+                case "int":
                 case "Byte":
                 case "Int16":
                 case "Int32":
+
 
                     if (s === "") return this;
                     var i = parseInt(s);
@@ -156,7 +160,6 @@
             if (this.value === null || this.value === undefined) return "";
 
             var fmt = getFormatfromTag(tag);
-
             if (this.typeName === "DateTime") {
                 if (isStandardDateFormatStyle(fmt)) {
                     return fromDateToString(this.value,fmt);
@@ -283,7 +286,7 @@
             // html input=date. accetta valori di data solo nel formato yyyy-MM-dd
             case "dd":
             {
-                // fo rinput date html5. it accepts yyyy-MM-dd
+                // for input date html5. it accepts yyyy-MM-dd
                 strDay = day.toString();
                 if (strDay.length === 1)
                     strDay = "0" + strDay;
@@ -431,6 +434,7 @@
     function stringFromJsObj  (pType, val) {
         switch (pType) {
             case "String":
+            case "string":
                 return val;
             case "Char":
                 return val.charAt(0).toString();
@@ -438,12 +442,14 @@
             case "Double":
             case "Single":
                 return val.toString();
+            case "int":
             case "Int16":
             case "Int32":
             case "Int64":
             case "Byte":
                 return val.toString();
             case "DateTime":
+            case "Date":
                 return fromDateToString(val, "d");
             default:
                 return val.toString();
@@ -465,19 +471,23 @@
 
         switch (pType) {
             case "String":
+            case "string":
                 return s;
             case "Char":
                 return s.charAt(0);
             case "Decimal":
+            case "number":
             case "Double":
             case "Single":
                 return parseFloat(s);
+            case "int":
             case "Int16":
             case "Int32":
             case "Int64":
             case "Byte":
                 return parseInt(s);
             case "DateTime":
+            case "Date":
                 // utilizzo la funz. già implementata passando d
                 return fromStringToDate(s, "d");
             default:

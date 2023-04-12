@@ -21,6 +21,11 @@ describe('App3_E2E', function() {
                     done();
                 }, timeout);
             });
+            afterEach(function () {
+                if (appMeta.Stabilizer.nesting > 0) appMeta.Stabilizer.showDeferred();
+                expect(appMeta.Stabilizer.nesting).toBe(0);
+               
+            });
 
             function loadRegistry(idreg){
                 //q.or(q.eq('idreg',1) , q.eq('idreg',2), q.eq('idreg',6),
@@ -29,14 +34,14 @@ describe('App3_E2E', function() {
                 appMeta.testStartFilter = q.eq('idreg',idreg);
                 testHelper.waitEvent(appMeta.EventEnum.showPage)
                     .then( (metaPage)=>{
-                        testHelper.testMetaPageInitialization(metaPage, "registry", "anagrafica");
+                        testHelper.testMetaPageInitialization(metaPage, "registry", "anagrafica3");
                         def.resolve(metaPage);
                     });
-                appMeta.currApp.callPage("registry", "anagrafica", true);
+                appMeta.currApp.callPage("registry", "anagrafica3", true);
                 return def.promise();
             }
 
-            it('1. callPage() table:registry, editType:anagrafica" should be async and return data. 2. Grid is filled' ,
+            it('1. callPage() table:registry, editType:anagrafica3" should be async and return data. 2. Grid is filled' ,
                 function(done) {
 
                     appMeta.testCaseNumber  = 1;
@@ -82,7 +87,7 @@ describe('App3_E2E', function() {
 
                 }, timeout);
 
-            it('1. callPage() table:registry, editType:anagrafica" should be async and return data. -> Grid is filled' + "\n" +
+            it('1. callPage() table:registry, editType:anagrafica3" should be async and return data. -> Grid is filled' + "\n" +
                 '2. Click on a row. ' + "\n" +
                 '3. Form control are filled with the row selected.' + "\n" +
                 '4. Press Edit button -> Detail page is opened.' + "\n" +
@@ -97,6 +102,7 @@ describe('App3_E2E', function() {
                     // Evento di attesa pagina caricata
                     loadRegistry(1)
                         .then(function(metaPage) {
+                            //Si è aperta la maschera di anagrafica.
                             allCheckExecuted++;
                             // N.B NON risolvo deferred della pagina così non rimane appeso, ma in questo test verrà risolto dal mainsave sul dettaglio
                             // metaPage.deferredResult.resolve();
@@ -106,31 +112,8 @@ describe('App3_E2E', function() {
                             common.pageEventWaiter(metaPage, appMeta.EventEnum.ROW_SELECT).then(function () {
                                 allCheckExecuted++;
                                 // il valore della prima cella, cioè idreg, viene messo sulla label corrispondente
-
                                 let idreg = $("#grid1").find("tr").eq(gridRowTested).find("td").eq(0).text();
                                 expect($("input[data-tag='registry.idreg']").val()).toBe(idreg);
-
-                                common.pageEventWaiter(metaPage, appMeta.EventEnum.editClick)
-                                    .then(function () {
-                                        allCheckExecuted++;
-                                        expect($("#grid1").find("tr").eq(1).find("td").eq(gridColumnTested).text()).toBe(valueEdit);
-
-                                        // la close mi risolve anche il deferredResult della pagina
-                                        // quindi tutti i def risolti mi aspetto
-                                        var s = stabilize();
-
-                                        // Dopo il close attendo messaggio di warning. Premo ok
-                                        common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
-                                            allCheckExecuted++;
-                                            $(".modal").find("button")[1].click();
-                                        });
-                                        testHelper.clickButtonByTag('mainclose');
-                                        return s;
-                                    }).then(function () {
-                                        allCheckExecuted++;
-                                        expect(allCheckExecuted).toBe(6);
-                                        done();
-                                    });
 
                                 testHelper.waitEvent(appMeta.EventEnum.showPage)
                                     .then(function (metaPageDetail) {
@@ -152,8 +135,34 @@ describe('App3_E2E', function() {
                                         }
                                         testHelper.insertValueInputByTag('registryreference.referencename', valueEdit);
                                         testHelper.insertValueInputByTag('registryreference.email', "aaa");
-                                        
+
                                         allCheckExecuted++;
+
+                                        //Da scatenarsi dopo che si chiude la maschera di dettaglio
+                                        // ****************** E' questo che non sta scattando
+                                        common.pageEventWaiter(metaPage, appMeta.EventEnum.editClick)
+                                        .then(function () {
+                                            allCheckExecuted++;
+                                            expect($("#grid1").find("tr").eq(1).find("td")
+                                            .eq(gridColumnTested).text()).toBe(valueEdit);
+
+                                            // la close mi risolve anche il deferredResult della pagina
+                                            // quindi tutti i def risolti mi aspetto
+                                            var s = stabilize();
+
+                                            // Dopo il close attendo messaggio di warning. Premo ok
+                                            common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow).then(function () {
+                                                allCheckExecuted++;
+                                                $(".modal").find("button")[1].click();
+                                            });
+                                            testHelper.clickButtonByTag('mainclose');
+                                            return s;
+                                        }).then(function () {
+                                            allCheckExecuted++;
+                                            expect(allCheckExecuted).toBe(6);
+                                            done();
+                                        });
+
                                         // premo bottone di "MainSave" che effettua la propagate e torna al chiamante
                                         testHelper.clickButtonByTag('mainsave');
                                     });
@@ -164,14 +173,14 @@ describe('App3_E2E', function() {
                                 //testHelper.clickButtonByTag('edit.reference');
                             });
 
-                            // premo su riga griglia
+                            // premo su riga griglia per aprire la maschera di dettaglio
                             $("#grid1").find("tr").eq(gridRowTested).click();
 
                         });
 
                 }, timeout);
 
-            it('1. callPage() table:registry, editType:anagrafica" should be async and return data. -> Grid is filled' + "\n" +
+            it('1. callPage() table:registry, editType:anagrafica3" should be async and return data. -> Grid is filled' + "\n" +
                 '2. Click on a row. ' + "\n" +
                 '3. Form control are filled with the row selected' + "\n" +
                 '4. Press "Edit" button -> Detail page is opened.' + "\n" +
@@ -202,50 +211,6 @@ describe('App3_E2E', function() {
                                 let gridCellValue = $("#grid1").find("tr").eq(gridRowTested).find("td").eq(0).text();
                                 expect($("input[data-tag='registry.idreg']").val()).toBe(gridCellValue);
 
-                                common.pageEventWaiter(metaPage, appMeta.EventEnum.editClick)
-                                    .then(function () {
-                                        allCheckExecuted++;
-                                        // cella del titolo
-                                        expect($("#grid1").find("tr").eq(gridRowTested).find("td")
-                                                .eq(gridColumnTested).text()).toBe(valueEdit);
-
-                                        // la close mi risolve anche il deferredResult della pagina
-                                        // quindi tutti i def risolti mi aspetto
-                                        let s = stabilize();
-
-                                        // serve per recuperare il template del form dei messaggi, altrimenti andrebbe in errore
-                                        appMeta.basePath = 'base/';
-
-                                        // prima del "commandEnd" attendo il form intermedio e successiva
-                                        //    pressione del tasto "ignora e salva"
-                                        common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
-                                            .then(function () {
-                                                //console.log(document.body.innerHTML)
-                                                allCheckExecuted++;
-                                                // attendo termine del comando "mainsave"
-                                                common.pageEventWaiter(metaPage, appMeta.EventEnum.saveDataStop)
-                                                    .then(function () {
-                                                        allCheckExecuted++;
-                                                        expect($("#grid1").find("tr").eq(gridRowTested).find("td")
-                                                            .eq(gridColumnTested).text()).toBe(valueEdit);
-                                                        //var s = stabilize(); // la close mi risolve anche il deferredResult della pagina quindi tutti i def risolti mi aspetto
-                                                        testHelper.clickButtonByTag('mainclose');
-                                                        return s;
-                                                    })
-                                                    .then(function (){
-                                                        allCheckExecuted++;
-                                                        expect(allCheckExecuted).toBe(7);
-                                                        done();
-                                                    });
-
-                                                // clicco su ignora e salva
-                                                testHelper.clickButtonByCssClass('procedureMessage_btn_ignoreandsave');
-
-                                            });
-                                        // sto su main salvo mod a db
-                                        testHelper.clickButtonByTag('mainsave');
-                                    });
-
                                 testHelper.waitEvent(appMeta.EventEnum.showPage)
                                     .then(function (metaPageDetail) {
                                         // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
@@ -254,6 +219,7 @@ describe('App3_E2E', function() {
                                         // Verifico presenza di un elemento su html
                                         testHelper.htmlNodeByTagExists('registryreference.idreg');
                                         testHelper.htmlNodeByTagValueFilled('registryreference.idreg');
+                                        expect($( "input[data-tag='registryreference.idreg']").val()).toBe("1");
 
                                         // Cambio valore di un campo, cioè effettuo l'edit. N.B il title è colonna 8 sulla main grid
                                         valInit = $("input[data-tag='registryreference.referencename']").val();
@@ -266,11 +232,53 @@ describe('App3_E2E', function() {
                                         testHelper.insertValueInputByTag('registryreference.referencename', valueEdit);
                                         testHelper.insertValueInputByTag('registryreference.email', "aaa@gmail.com");
 
+                                        common.pageEventWaiter(metaPage, appMeta.EventEnum.editClick)
+                                        .then(function () {
+                                            allCheckExecuted++;
+                                            // cella del titolo
+                                            expect($("#grid1").find("tr").eq(gridRowTested).find("td")
+                                            .eq(gridColumnTested).text()).toBe(valueEdit);
+
+                                            // la close mi risolve anche il deferredResult della pagina
+                                            // quindi tutti i def risolti mi aspetto
+                                            let s = stabilize();
+
+                                            // serve per recuperare il template del form dei messaggi, altrimenti andrebbe in errore
+                                            appMeta.basePath = 'base/test_client/';
+
+                                            // prima del "commandEnd" attendo il form intermedio e successiva
+                                            //    pressione del tasto "ignora e salva"
+                                            common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
+                                            .then(function () {
+                                                allCheckExecuted++;
+                                                // attendo termine del comando "mainsave"
+                                                common.pageEventWaiter(metaPage, appMeta.EventEnum.saveDataStop)
+                                                .then(function () {
+                                                    allCheckExecuted++;
+                                                    expect($("#grid1").find("tr").eq(gridRowTested).find("td")
+                                                    .eq(gridColumnTested).text()).toBe(valueEdit);
+                                                    //var s = stabilize(); // la close mi risolve anche il deferredResult della pagina quindi tutti i def risolti mi aspetto
+                                                    testHelper.clickButtonByTag('mainclose');
+                                                    return s;
+                                                })
+                                                .then(function (){
+                                                    allCheckExecuted++;
+                                                    expect(allCheckExecuted).toBe(7);
+                                                    done();
+                                                });
+
+                                                // clicco su ignora e salva
+                                                testHelper.clickButtonByCssClass('procedureMessage_btn_ignoreandsave');
+
+                                            });
+                                            // sto su main salvo mod a db
+                                            testHelper.clickButtonByTag('mainsave');
+                                        });
+
                                         allCheckExecuted++;
                                         // premo bottone di "MainSave" che effettua la propagate e torna al chiamante
                                         testHelper.clickButtonByTag('mainsave');
                                     });
-
 
                                 // premo bottone di "Correggi" per andare in edit
                                 $("#grid1").find("tr").eq(gridRowTested).find("td > div").eq(0).click();
@@ -284,7 +292,7 @@ describe('App3_E2E', function() {
 
                 }, timeout);
 
-            it('1. callPage() table:registry, editType:anagrafica" should be async and return data. -> Grid is filled' + "\n" +
+            it('1. callPage() table:registry, editType:anagrafica3" should be async and return data. -> Grid is filled' + "\n" +
                 '2. Click on a row. ' + "\n" +
                 '3. Form control are filled with the row selected.' + "\n" +
                 '4. Press Edit button -> Detail page is opened. Changes a value' + "\n" +
@@ -371,14 +379,16 @@ describe('App3_E2E', function() {
 
                 }, timeout);
 
-            it('1. callPage() table:registry, editType:anagrafica" should be async and return data. -> Grid is filled' + "\n" +
-                '2. Click on a row.' + "\n" +
-                '3. Form control are filled with the row selected.' + "\n" +
-                '4. Press "Insert" button -> Detail page is opened.' + "\n" +
-                '5. Edit value of title, and press "mainsave" on bottom -> Returns to main page and the grid has the new row with the new value edited' + "\n" +
-                '6. Press "Mainsave" on main toolbar -> post is done.' + "\n" +
-                '7. Business error form server are shown' + "\n" +
-                '8. Press No_save modal error window closed',
+            it(' insert and delete on a detail grid', 
+                //'1. callPage() table:registry, editType:anagrafica3" should be async and return data. -> Grid is filled',
+                //+ "\n" +
+                //'2. Click on a row.' + "\n" +
+                //'3. Form control are filled with the row selected.' + "\n" +
+                //'4. Press "Insert" button -> Detail page is opened.' + "\n" +
+                //'5. Edit value of title, and press "mainsave" on bottom -> Returns to main page and the grid has the new row with the new value edited' + "\n" +
+                //'6. Press "Mainsave" on main toolbar -> post is done.' + "\n" +
+                //'7. Business error form server are shown' + "\n" +
+                //'8. Press No_save modal error window closed',
                 //'7. Select row just inserted on the grid' + "\n" +
                 //'8. Press "Delete" button on grid -> MsgBox appears. Press ok to confirm -> row disappears on grid' + "\n" +
                 //'9. Press "Mainsave" -> Row is deleted from db' ,
@@ -391,7 +401,7 @@ describe('App3_E2E', function() {
                     var allCheckExecuted = 0;
                     // Evento di attesa pagina caricata
                     loadRegistry(1)
-                        .then(function(metaPage) {
+                        .then(function (metaPage) {                           
                             // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
                             // N.B NON risolvo deferred della pagina così non rimane appeso, ma in questo test verrà risolto dal mainsave sul dettaglio
                             // metaPage.deferredResult.resolve();
@@ -409,7 +419,6 @@ describe('App3_E2E', function() {
                                 expect($("input[data-tag='registry.idreg']").val()).toBe(gridCellValue);
                                 allCheckExecuted++;
                                 let s = stabilize(); // la close mi risolve anche il deferredResult della pagina quindi tutti i def risolti mi aspetto
-
 
                                 expect($( "input[data-tag='registry.idreg']").val()).toBe("1");
 
@@ -433,15 +442,35 @@ describe('App3_E2E', function() {
                                         //  del tasto "ignora e salva"
                                         common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
                                             .then(function () {
+                                                _.forEach(_.keys(metaPage.state.DS.tables), function (tableName) {
+                                                    let t = metaPage.state.DS.tables[tableName];
+                                                    expect(t.rows.length).toBeDefined();
+                                                    _.forEach(t.rows,
+                                                        r => {
+                                                            expect(r.getRow).toBeDefined();
+                                                            if (!r.getRow()) done();
+                                                        })
+                                                })                                        
+    
+
                                                 expect($( "input[data-tag='registry.idreg']").val()).toBe("1");
                                                 // verifico esattamente messaggio di warning
                                                 expect($(".procedureMessage_grid")
-                                                .find("tr:last > td:eq(2)").text())
+                                                .find("tr:eq(1) > td:eq(2)").text())
                                                 .toBe('controllo dummy');
                                                 allCheckExecuted++;
                                                 // attendo termine del comando "mainsave"
                                                 common.pageEventWaiter(metaPage, appMeta.EventEnum.saveDataStop)
                                                     .then(function () {
+                                                        _.forEach(_.keys(metaPage.state.DS.tables), function (tableName) {
+                                                            let t = metaPage.state.DS.tables[tableName];
+                                                            _.forEach(t.rows,
+                                                                r => {
+                                                                    expect(r.getRow).toBeDefined();
+                                                                    if (!r.getRow()) done();
+                                                                })
+                                                        })     
+
                                                         expect($("#grid1").find("tr:last > td:eq("+gridColumnTested+")").text()).toBe(valueEdit);
                                                         allCheckExecuted++;
                                                         expect(allCheckExecuted).toBe(6);
@@ -450,6 +479,15 @@ describe('App3_E2E', function() {
                                                         // TODO ABILITARE quando  trovi un esempio di record che viene salvato, e quindi poi posso farne la delete
                                                         // attendo che venga selezionata
                                                         common.pageEventWaiter(metaPage, appMeta.EventEnum.ROW_SELECT).then(function () {
+                                                            _.forEach(_.keys(metaPage.state.DS.tables), function (tableName) {
+                                                                let t = metaPage.state.DS.tables[tableName];
+                                                                _.forEach(t.rows,
+                                                                    r => {
+                                                                        expect(r.getRow).toBeDefined();
+                                                                        if (!r.getRow()) done();
+                                                                    })
+                                                            })
+                                                        
                                                             // verifico che la riga selezionata che andrò a cancellare sia effettivamente quella giusta
                                                             expect($("#grid1").find("tr:last").css('background-color')).toBe(appMeta.config.selectedRowColor);
 
@@ -458,6 +496,14 @@ describe('App3_E2E', function() {
                                                             // message box di conferma
                                                             common.pageEventWaiter(metaPage, appMeta.EventEnum.showModalWindow)
                                                                 .then(function () {
+                                                                    _.forEach(_.keys(metaPage.state.DS.tables), function (tableName) {
+                                                                        let t = metaPage.state.DS.tables[tableName];
+                                                                        _.forEach(t.rows,
+                                                                            r => {
+                                                                                expect(r.getRow).toBeDefined();
+                                                                                if (!r.getRow()) done();
+                                                                            })
+                                                                    })    
                                                                     // appare msgbox di conferma delete
                                                                     expect($(".modal").length).toBe(2);
 
@@ -482,7 +528,6 @@ describe('App3_E2E', function() {
                                                                             expect(allCheckExecuted).toBe(11);
                                                                             done();
                                                                         });
-
                                                                         // sto su main salvo mod a db, ovvero cancello la riga appena inserita
                                                                         testHelper.clickButtonByTag('mainsave');
                                                                     });
@@ -495,7 +540,6 @@ describe('App3_E2E', function() {
                                                             // for (let ii=0;ii<10;ii++){
                                                             //     console.log(ii, $("#grid1").find("tr").eq(2).find("td > div").eq(ii).html());
                                                             // }
-
 
                                                             expect($("#grid1").find("tr").eq(2).find("td > div").eq(1).html()).toContain("fa-trash");
                                                             $("#grid1").find("tr").eq(2).find("td > div").eq(1).click();
@@ -566,7 +610,7 @@ describe('App3_E2E', function() {
 
                 }, timeout);
 
-            it('1. callPage() table:registry, editType:anagrafica" should be async and return data. -> Grid is filled' + "\n" +
+            it('1. callPage() table:registry, editType:anagrafica3" should be async and return data. -> Grid is filled' + "\n" +
                 '2. Click on a row. ' + "\n" +
                 '3. Form control are filled with the row selected' + "\n" +
                 '4. Press "Insert and copy" button -> press ok in msgbox confirm -> Detail page is opened.' + "\n" +
@@ -589,7 +633,7 @@ describe('App3_E2E', function() {
                             expect($("#grid1").find("tr").length).toBe(2);
                             allCheckExecuted++;
 
-                            // se fossi in una situazione relae verrei da una ricerca, e poi modifica, qui invece sarei in cerca
+                            // se fossi in una situazione reale verrei da una ricerca, e poi modifica, qui invece sarei in cerca
                             //metaPage.state.setEditState();
                             
                             // attendo selezione riga
@@ -617,7 +661,6 @@ describe('App3_E2E', function() {
 
                                                 //let s = stabilize(); // la close mi risolve anche il deferredResult della pagina quindi tutti i def risolti mi aspetto
                                                 //appMeta.logger.setLogLevel(appMeta.logTypeEnum.INFO);
-                                                //console.log(document.body)
 
                                                 //Dopo aver premuto "non salvare" sulle regole facciamo maindelete
                                                 common.pageEventWaiter(metaPage, appMeta.EventEnum.saveDataStop)
@@ -637,16 +680,15 @@ describe('App3_E2E', function() {
                                                          then(()=>{
                                                             def.resolve(metaPage);
                                                         });
-                                                        // for(let ii=0;ii<10;ii++){
-                                                        //     console.log(ii,$(".modal").find("button").eq(ii).html());
-                                                        // }
                                                         expect($(".modal").find("button").eq(1).html()).toBe("Ok")
                                                         expect($(".modal").find("button").eq(2).html()).toBe("Annulla")
-                                                        appMeta.logger.setLogLevel(appMeta.logTypeEnum.INFO);
+                                                        //appMeta.logger.setLogLevel(appMeta.logTypeEnum.INFO);
                                                         $(".modal").find("button").eq(1).click();
                                                     });
+                                                    console.log("clicking maindelete");
                                                     testHelper.clickButtonByTag('maindelete');
                                                 })
+                                                console.log("clicking procedureMessage_btn_nosave");
                                                 testHelper.clickButtonByCssClass('procedureMessage_btn_nosave');
                                                 return def.promise();
                                             })
@@ -656,23 +698,24 @@ describe('App3_E2E', function() {
                                                 allCheckExecuted++;
                                                 expect(allCheckExecuted).toBe(6);
                                                 let s = testHelper.waitEvent(appMeta.EventEnum.commandEnd);
+                                                console.log("clicking mainclose");
                                                 //testHelper.clickButtonByCssClass('procedureMessage_btn_nosave');
                                                 testHelper.clickButtonByTag('mainclose');
                                                 return s;
                                             })
-                                            .then(function (){
+                                            .then(function () {
                                                 allCheckExecuted++;
                                                 expect(allCheckExecuted).toBe(7);
-                                                done();
-                                        });
-
+                                                return stabilize(true);
+                                            })
+                                            .then(done);
 
                                         //dopo la conferma del maininsertcopy premi "mainsave"
                                         testHelper.waitEvent(appMeta.EventEnum.commandEnd).
                                             then(function (metaPageDetail) {
                                                 // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
                                                 testHelper.testMetaPageInitialization(metaPageDetail,
-                                                        "registry", "anagrafica");
+                                                        "registry", "anagrafica3");
 
                                                 // Verifico presenza di un elemento su html
                                                 testHelper.htmlNodeByTagExists('registry.idreg');
@@ -689,7 +732,7 @@ describe('App3_E2E', function() {
                                                 testHelper.insertValueInputByTag('registry.title', valueEdit);
 
                                                 // serve per recuperare il template del form dei messaggi, altrimenti andrebbe in errore
-                                                appMeta.basePath = 'base/';
+                                                appMeta.basePath = 'base/test_client/';
                                                 allCheckExecuted++;
                                                 // premo bottone di "MainSave"
                                                 testHelper.clickButtonByTag('mainsave');

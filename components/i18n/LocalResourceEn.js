@@ -9,12 +9,7 @@
      * @constructor LocalResourceEn
      * @description
      */
-    function LocalResourceEn() {
-        "use strict";
-    }
-
-    LocalResourceEn.prototype = {
-        constructor: LocalResourceEn,
+    const LocalResourceEn = {
         yes : "Yes",
         no : "No",
         error : "Error",
@@ -42,8 +37,12 @@
         loading: 'Loading...',
         eq: '=',
         like : 'like',
+        cambioRuolo : 'Role choice',
+        
         logoutMsg : "Do you confirm the app logout?",
         logoutSSOMsg : "Do you confirm logout of \"Single Sign On\" system?",
+        
+        noNetwork : "Your device is not connected to any network! Try to connect and try again",
         networkConnectionError : "Network error. Please check the connection and retry",
         itemChooseNotSelectable : "Item not selectable",
 
@@ -70,15 +69,15 @@
         insertButton : "Add",
         unlinkButton : "Unlink",
 
-        insertFilterSearch : "Insert search filter",
-
         // form title suffux
         searchTitle : "Search",
         changeTitle : "Update",
         insertTitle : "Insert",
 
+        insertFilterSearch : "Insert search filter",
+
         // Main Command button label, la chiave è il tag
-        //mainsetsearch : "Go to search",
+        mainsetsearch : "Go to search",
         maindosearch : "Do search",
         maininsert : "New",
         maininsertcopy : "Create copy",
@@ -169,22 +168,24 @@
         calendarEventResizeEnd:  "Do you want really modify the end date of the event S%eventTitle%S, end-date: S%endDate%S",
         calendarEventMoveEventQuestion : "You are modifing the start date of the event S%eventTitle%S. new start date: S%startDate%S, end-date: S%endDate%S",
 
-        errorListingTypeNull : "ListingType è nullo sulla tabella S%searchTableName%S con il filtro S%filter%S nella MetaPage S%title%S",
-        errorLoadingMetaData: "Errore nel caricamento del metadato  S%searchTableName%S è necessario riavviare l'applicazione",
+        errorListingTypeNull : "ListingType is null on table S%searchTableName%S with filter S%filter%S in MetaPage S%title%S",
+        errorLoadingMetaData: "Error loading metadata S%searchTableName%S you need to restart the application",
         commandExecutionError: "Error on the execution of the S%command%S command",
         entityNotfound: "Entity S%unaliased%S not found on the page S%formTitle%S",
         gridControlTagWrong : "DataGrid with tag S%gridTag%S in the form  S%formTitle%S is wrong!",
         deleteRowConfirm : "Do you confirm the deleting of the row on the table?",
         cantUnlinkDataTable: "Impossible unlink. DataTable S%sourceTableName%S  not " + decodeURI('%C3%A8') + " child of  S%primaryTableName%S",
-        missingTableDataSet: "%tableName%S  table isn't on the DataSet",
-        moreThenRow: "Errore: c'" + decodeURI('%C3%A8') + " più di una riga nella tabella S%tableName%S",
-        gridDataNoValid : "La tabella S%tableName%S contiene dati non validi. Contattare il servizio di assistenza",
+        missingTableDataSet: "S%tableName%S  table isn't on the DataSet",
+        moreThenRow: "Error: there is more than one row in table S%tableName%S",
+        gridDataNoValid : "Table S%tableName%S contains invalid data. Contact the after-sales service",
         cancelObjInsert: "Cancel the adding of S%formTitle%S object",
         deleteObjInsert : "Do you confirm the deleting of the S%formTitle%S object from the database?",
         formNoMainTreeView : "The form S%formTitle%S has not a main tree",
         invalidData : "Table S%tableName%S contains unvalid data. Contact the support",
         noRowSelected : "No selected row on the S%tableName%S table",
         minNumrowRequired : "At least S%numrows%S S%msg%S must be entered",
+        unvalidEMail: "Email S%email%S is incorrect, please enter a valid email",
+        unvalidIp : "The entered ip address S%ip%S is incorrect",
 
         filterDateString: "Date between S%date1%S and S%date2%S",
 
@@ -216,18 +217,34 @@
         serverErrorExpiredSession  : "Session expired, please retry to login!",
         serverErrorBadCredential  : "Username or password not correct, please retry!",
         serverErrorTokenEmpty : "Logout should be done in another window, or token should be removed from browser cache",
+        serverErrorUserNotSecurity: "User out of security management." +
+            "1. Contact the administrators for inserting the user, and inserting it in the organization chart (Organigramma ->  profilo -> tab utenti). " +
+            "2. You may need to close the previous year and generate the new org chart for the new year.",
+        serverErrorAnonymous : "Anonymous operation not allowed, try to login again",
+        serverErrorSSO: "Failed to authenticate via SSO",
         dataContabileMissing : "Need to specify a fiscal date",
-        serverErrorAnonymous : "Anonymous action not permitted. Retry to login",
-
+        filterWithUndefined : "The filter condition contains errors:",
+ 
         gridoption_tab1 : "Column options",
         gridoption_tab2 : "Save layout",
         savingLayoutError : "Saving layout error",
         savingLayoutSucceded : "Layout saved succesfully!",
 
-        pressSaveAfterDelete : "Press ok to delete the object <br><br><strong> S%valuecell%S </strong><br>, then press save on page to confirm the changes!"
+        pressSaveAfterDelete : "Press ok to delete the object <br><br><strong> S%valuecell%S </strong><br>, then press save on page to confirm the changes!",
+
+        confirmSelection: "Confirm selection",
+        selectedRows: "selected rows"
     };
-    
-    appMeta.localResourceEn = LocalResourceEn;
+    let resource = LocalResourceEn;
+
+
+    if (typeof appMeta !== "undefined") {
+        appMeta.LocalResource.prototype.registerDictionary("en", resource);
+    }
+    else {
+        module.exports = resource;
+    }
+
 }());
 
 

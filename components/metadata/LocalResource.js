@@ -153,7 +153,7 @@
          * @param listingType
          * @return {*}
          */
-        getNoRowFound:function (searchTableName, mergedFilter, listingType) {
+        getNoRowFound: function (searchTableName, mergedFilter, listingType) {
             let msg = this.getNoRowFound1(searchTableName);
             msg += this.getNoRowFound2(mergedFilter);
             msg += this.getNoRowFound3(listingType);
@@ -176,8 +176,8 @@
          * @param mergedFilter
          * @return {string|*}
          */
-        getNoRowFound2:function (mergedFilter) {
-            if (mergedFilter.length > 0) return this.replacePlaceolderLocalization('mergedFilter', mergedFilter, this.filterWas);
+        getNoRowFound2: function (mergedFilter) {
+            if (mergedFilter.length > 0) return this.replacePlaceolderLocalization('mergedFilter', mergedFilter, this.dictionary.filterWas);
             return "";
         },
 
@@ -342,28 +342,8 @@
          * translates jsDataQuery expression in a clearest mode
          * @param filter
          */
-        getFilterMessage:function(filter) {
-            /*
-                \( : match parentesi aperta
-                ( : inizio del gruppo all'interno delleparentesi
-                [^)]+: qualsiasi carattere uno o più ma non ")" parentesi  chiusa
-                ) : fine del gruppo
-                \) : matcth parentesi chiusa
-             */
-
-            // loop su tutte le condizioni trovate e costruice stringa.
-            // se è "eq" mette campo=valore se "like" campo simile
-            // expr ex: "eq(field, value),like(filed2,value)"
-            let self = this;
-            let conds = filter.match(/(eq|like)+\(([^)]+)\)/g);
-            return _.join(_.reduce(conds, function (acc, cond) {
-                    const els = cond.match(/(eq|like)|\(([^)]+)\)/g);
-                    const operator = els[0];
-                    const fieldValue = els[1].replace("(", "").replace(")","").split(",");
-                    acc.push("(" + fieldValue[0] + " " + self[operator] + " " + fieldValue[1] + ")");
-                    return acc;
-                }, []),
-                " " + this.dictionary.and + " ");
+        getFilterMessage: function (filter) {
+            return filter;
         },
 
         /**

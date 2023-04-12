@@ -127,6 +127,7 @@
          * @description SYNC
          * @param {element} el
          * @param {MetaPage} metaPage
+         * @param {boolean} subscribe
          */
         addEvents: function(el, metaPage) {
             this.metaPage = metaPage;
@@ -305,6 +306,22 @@
         },
 
         /**
+         * @method getSorting
+         * @private
+         * @description SYNC
+         * Returns the sorting for the DataTable. Ex "title asc"
+         * It calls first the getSorting of the js metadata, and if it is null call the orderby on the dt.
+         * orderBy is the getSorting of the backend metadata
+         * @param {DataTable} dt
+         * @returns {string} the sorting
+         */
+        getSorting: function (dt) {
+            let sorting = this.meta.getSorting(this.listType);
+            return (sorting ? sorting : dt.orderBy());
+        },
+
+
+        /**
          * @method getSortedRows
          * @private
          * @description SYNC
@@ -313,24 +330,37 @@
          * @param {jsDataQuery} filter
          * @returns {objectRow[]}
          */
-        getSortedRows: function(t, filter) {
-            var sorting = t.orderBy();
-            if (!sorting) return t.select(filter);
-            var parts = sorting.split(",");
+        getSortedRows: function (t, filter) {
+            // se ho cambiato sort tramite click su header  lo memorizzo sulla prop orderBy, quindi qui la rileggo
+            let sorting = t.orderBy() || this.getSorting(t);
+            let rows = t.select(filter);
+            if (!sorting) return _.orderBy(rows, t.key());
+            let parts = sorting.split(",");
+            rows = _.orderBy(rows, t.key());
 
-            var sortingObject = _.reduce(parts,
-                function(result, part) {
-                    var sortElem = part.trim().split(" ");
-                    result.names.push(sortElem[0]);
+            let sortingObject = _.reduce(parts,
+                function (result, part) {
+                    let sortElem = part.trim().split(" ");
+                    let field = sortElem[0];
+                    result.names.push(function (row) {
+                        let value = row[field];
+                        if (value) {
+                            if (value instanceof Date) return value.getTime();
+                            if (!isNaN(value)) return value;
+                            return value.toLowerCase ? value.toLowerCase() : value;
+                        }
+                        return value;
+                    });
                     if (sortElem.length === 1) {
-                        result.names.push("asc");
+                        result.sorting.push("asc");
                     } else {
-                        result.names.push(sortElem[1].toLowerCase());
+                        result.sorting.push(sortElem[1].toLowerCase());
                     }
                     return result;
                 },
                 { names: [], sorting: [] });
-            return _.orderBy(t.select(filter), sortingObject.names, sortingObject.sorting);
+            return _.orderBy(rows, sortingObject.names, sortingObject.sorting);
+
         },
 
         /**

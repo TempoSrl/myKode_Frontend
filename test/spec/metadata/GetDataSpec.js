@@ -183,10 +183,10 @@ describe('GetData', function () {
                     t1.add(objrow6);
                     t1.key(["c_name", "c_double"]);
                     
-                    var filter  = getData.getWhereKeyClause(objrow3.getRow(),t1, t1);
+                    var filter  = t1.keyFilter(objrow3);
                     expect(filter).toBeDefined();
 
-                    var rows = t1.select(filter); // aspetto esattamente le 2 righe che corrisppsondono ai valori di objrow3
+                    var rows = t1.select(filter); // aspetto esattamente le 2 righe che corrispondono ai valori di objrow3
                     expect(rows.length).toBe(2);
                     expect(rows[0].c_age).toBe(3);
                     expect(rows[1].c_age).toBe(6);
@@ -232,7 +232,7 @@ describe('GetData', function () {
 
                     expect(t1.rows.length).toBe(3);
                     
-                    getData.addRowToTable(t1, objrow4);
+                    getData.addRowToTable(t1, objrow4);                    
                     getData.addRowToTable(t1, objrow5)
                     getData.addRowToTable(t1, objrow6)
                     

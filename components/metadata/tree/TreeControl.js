@@ -116,7 +116,6 @@
          var dtTree = metapage.getDataTable(treeTableName);
          var idParentVirtual = 9999999;
 
-
          var arrayEq = _.map(metapage.getPrimaryDataTable().key(), function (columnName) {
             return q.eq(columnName, currentRow[columnName]);
          });
@@ -131,11 +130,11 @@
          }
        
          // se non è sul dataset vedo sul db
-         return appMeta.getData.runSelect(treeTableName, '*', rootCondition)
+          return appMeta.getData.runSelect(prms.tableForReading, '*', rootCondition)
             .then(function (table) {
                // non esiste già rootcondition, creo la riga
                if (!table.rows.length) {
-                  var meta = appMeta.getMeta(treeTableName);
+                  var meta = appMeta.getMeta(prms.tableForReading);
                   var objDefaults = {};
                   objDefaults[parIdTreeColumnName] = idParentVirtual;
                   objDefaults[prms.rootColumnNameTitle] = prms.rootTitle;

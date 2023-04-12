@@ -390,7 +390,7 @@
             let tablename = null;
             let kind = this.getField(tag, 0);
             let type = this.getField(tag, 2);
-            
+
             // N.B il filtro è impostato dall'esterno, tramite la MetaPage.registerFilter()
             const startFilter = this.getFilterFormDataAttribute(el);
 
@@ -583,9 +583,10 @@
          * @param {HelpForm} that
          * @returns {Deferred}
          */
-        textBoxLostFocus: function(that, ev){
+        textBoxLostFocus: function (that, ev) {
             const def = Deferred('textBoxLostFocus' + $(this).attr("id"));
             if (that.insideTextBoxLeave) return def.resolve(false);
+
             const textBox = this;
             if ($(textBox).prop("readonly")) return def.resolve(false);
             if ($(textBox).prop("disabled")) return def.resolve(false);
@@ -611,18 +612,18 @@
             let oldTag = $(textBox).data("tag");
 
             //// salvo in var campo su cui ho fatto autochoose, la metterò sul listmanger
-            let queryLabel=$("label[for='" + $(textBox).attr('id') + "']");
+            let queryLabel = $("label[for='" + $(textBox).attr('id') + "']");
             that.metaPage.titleAutochoose =
                 queryLabel.length > 0 ?
                     queryLabel.text() :
                     ai.startfield;
 
-            if (ai.kind === "AutoManage"){
+            if (ai.kind === "AutoManage") {
                 $(textBox).data("tag", null); // removes temporarily the tag from the textbox
                 filter = that.iterateGetSpecificSearchCondition(ai.G, ai.table);
                 $(textBox).data("tag", oldTag); //restores the tag
             }
-            else{
+            else {
                 let oldVal = $(textBox).val();
                 let txtBoxTag = that.getStandardTag(oldTag);
                 $(textBox).data("tag", txtBoxTag);
@@ -638,64 +639,67 @@
             let selected = false;
 
             const res = utils._if(startValue === "")
-            ._then(function (){
-                return that.metaPage.choose("choose." + ai.table + ".unknown.clear", null, ai.G).then(function (){
-                    selected = true;
-                    return true;
-                });
-            })
-            .then(function (){
-
-                const newStr = that.evaluateLastValidText(textBox);
-                if (newStr === that.lastValidText()){
-                    ai.busy = false;
-                    that.pageState.closeDisabled = saved;
-                    return def.resolve(true);
-                }
-                that.lastValidText(textBox);
-                //that.insideTexBoxLeave = true;
-
-                filter = that.mergeFilters(filter, ai.startFilter);
-
-                //do a choose.table.listtype.filter
-
-                return utils._if((!selected) && (ai.kind === "AutoChoose"))
-                ._then(function (){
-                    return that.metaPage.choose("choose." + ai.table + "." + ai.type, filter, null)
-                    .then(function (result){
-                        selected = result;
+                ._then(function () {
+                    return that.metaPage.choose("choose." + ai.table + ".unknown.clear", null, ai.G).then(function () {
+                        selected = true;
                         return true;
                     });
-                }).then(function (){
-                    return utils._if((!selected) && (ai.kind === "AutoManage"))
-                    ._then(function (){
-                        return that.metaPage.manage("manage." + ai.table + "." + ai.type,
-                            ai.startfield,
-                            startValue,
-                            filter,
-                            ai.G)
-                        .then(function (result){
-                            selected = result;
-                            return true;
-                        });
-                    })
-                    .then(function (){
-                        if (selected){
-                            that.lastValidText(textBox);
-                        }
-                        else{
-                            that.lastValidText(savedLastTextNoFound);
-                            return that.applyFocus(textBox);
-                        }
-                    })
-                    .then(() => {
-                        //that.insideTexBoxLeave = false;
+                })
+                .then(() => {
+                    const newStr = that.evaluateLastValidText(textBox);
+                    if (newStr === that.lastValidText()) {
                         ai.busy = false;
                         that.pageState.closeDisabled = saved;
                         return def.resolve(true);
-                    });
+                    }
+                    that.lastValidText(textBox);
+                    //that.insideTexBoxLeave = true;
+
+                    filter = that.mergeFilters(filter, ai.startFilter);
+
+                    //do a choose.table.listtype.filter
+
+                    return utils._if((!selected) && (ai.kind === "AutoChoose"))
+                        ._then(function () {
+                            return that.metaPage.choose("choose." + ai.table + "." + ai.type, filter, null)
+                                .then(function (result) {
+                                    selected = result;
+                                    return true;
+                                });
+                        })
+                        .run();
+                })
+                .then(() => {
+                    return utils._if((!selected) && (ai.kind === "AutoManage"))
+                        ._then(function () {
+                            return that.metaPage.manage("manage." + ai.table + "." + ai.type,
+                                ai.startfield,
+                                startValue,
+                                filter,
+                                ai.G)
+                                .then(function (result) {
+                                    selected = result;
+                                    return true;
+                                });
+                        })
+                        .run();
+                })
+                .then(() => {
+                    if (selected) {
+                        that.lastValidText(textBox);
+                    }
+                    else {
+                        that.lastValidText(savedLastTextNoFound);
+                        return that.applyFocus(textBox);
+                    }
+                })
+                .then(() => {
+                    //that.insideTexBoxLeave = false;
+                    ai.busy = false;
+                    that.pageState.closeDisabled = saved;
+                    return def.resolve(true);
                 });
-            });
+
             return def.from(res).promise();
         },
 
@@ -1240,8 +1244,9 @@
          * @public
          * @description SYNC
          * Clears all the controls manged by the framework
+         * @return Promise
          */
-        clearControls: function() {
+        clearControls: function () {
             return this.iterateOverTag("tag", "clearControl");
         },
 
@@ -2013,7 +2018,7 @@
             colType = colType || $(el).data("mdlColType");
 
             //va anche ragionato e potremmo stabilire che in fase di fill lo mettiamo sempre a false
-            //$(el).data("threestate", metaModel.allowDbNull(col) && !metaModel.denyNull(col));
+            //$(el).data("threestate", metaModel.allowNull(col) && !metaModel.denyNull(col));
 
             const tag = this.getStandardTag($(el).data("tag"));
             const pos = tag.indexOf(':');
@@ -2177,7 +2182,7 @@
                     const elType = $(el).attr("type").toUpperCase();
                     switch (elType) {
                         case "CHECKBOX":
-                            $(el).data("threestate", metaModel.allowDbNull(col) && !metaModel.denyNull(col));
+                            $(el).data("threestate", metaModel.allowNull(col) && !metaModel.denyNull(col));
                             $(el).on("click", this.chkBoxClick);
                             break;
                         case "TEXT":
@@ -2332,7 +2337,7 @@
                     allCtrlPromise.push(self[task](this, optParam));
                 });
 
-            return Deferred("iterateOverTag").from($.when.apply($,allCtrlPromise)).promise();
+            return Deferred("iterateOverTag:"+task).from($.when.apply($,allCtrlPromise)).promise();
         },
 
         /**
@@ -2985,7 +2990,7 @@
         lastSelected: function(datatable, row) {
             if (row || row === null) {
                 datatable.lastSelectedRow = row;
-                // nel caso si tratti di primary table, mantnego sincronizzata il currentRow sullo stato.
+                // nel caso si tratti di primary table, mantengo sincronizzata il currentRow sullo stato.
                 if (datatable.name === this.primaryTableName) this.pageState.currentRow = row;
                 return row;
             } else {
@@ -3564,6 +3569,7 @@
             let def = appMeta.Deferred();
             let inputTag = errField;
             if (errField.indexOf('.') < 0) inputTag = tableName + "." + errField;
+
             let self = this;
             let someThingFound=false;
             $(this.rootElement)
@@ -3571,6 +3577,7 @@
                 .each(function() {
                     // "this" è il controllo
                     let currTag = $(this).data("tag");
+
                     let standardTag = self.getStandardTag(currTag);
                     if (standardTag){
                         let t = self.getTableName(standardTag);
@@ -3586,6 +3593,7 @@
                     }
                 });
             if (!someThingFound){
+
                 def.resolve(false);
             }
             return def.promise();

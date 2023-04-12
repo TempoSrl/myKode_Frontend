@@ -20,18 +20,20 @@ describe("ModalForm",
         });
 
         afterEach(function () {
-
+            expect(appMeta.Stabilizer.nesting).toBe(0);
         });
 
         describe("methods work",
 
             function () {
 
-                it("ModalForm constructor , simple html is attached to modal",function () {
+                it("ModalForm constructor , simple html is attached to modal",function (done) {
                     var html = "<div>Added html<div>";
                     mf = new ModalForm($("#rootelement"), html);
                     mf.show();
-                    expect( $(".modal .modal-body").html()).toContain(html);
+                    expect($(".modal .modal-body").html()).toContain(html);
+                    $(".modal").find("button")[0].click();
+                    appMeta.stabilize(true).then(done)
                 });
 
                 it("ModalForm constructor , complex html is attached to modal",function (done) {
@@ -46,7 +48,8 @@ describe("ModalForm",
                                 mf = new ModalForm($("#rootelement"), data);
                                 mf.show();
                                 expect( $(".modal .modal-body").html()).toMatch("Html Test for Tab Control");
-                                done();
+                                $(".modal").find("button")[0].click();
+                                appMeta.stabilize(true).then(done)
                             })
                         .fail(
                             function (e) {

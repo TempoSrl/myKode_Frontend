@@ -57,10 +57,6 @@ describe("CheckBoxListControl",
             objrow5 = t2.add(objrow5).current;
             objrow4 = t2.add(objrow4).current;
 
-            t2.add(objrow2);
-            t2.add(objrow3);
-            t2.add(objrow5);
-            t2.add(objrow4);
             t2.acceptChanges();
 
             objrow6 = {id1: 11, c1: "mainrow1"};

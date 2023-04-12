@@ -1,5 +1,4 @@
-/// <binding AfterBuild='test' />
-
+/// <binding BeforeBuild='karma:e2e_app' />
 // # Globbing
 // for performance reasons we're only matching one level down:
 // 'test/spec/{,*/}*.js'
@@ -71,14 +70,14 @@ module.exports = function(grunt) {
 
       e2e: {
         configFile: "test/karma_e2e.conf.js",
-        autoWatch: true,
+          autoWatch: false,
         singleRun: true,
-        reporters: ["dots"],
+          reporters: ["spec"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
           suppressFailed: false, // do not print information about failed tests
-          suppressPassed: true, // do not print information about passed tests
+            suppressPassed: false, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
           failFast: true // test would finish with error when a first fail occurs.
@@ -96,20 +95,20 @@ module.exports = function(grunt) {
           suppressPassed: true, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
-          failFast: false // test would finish with error when a first fail occurs.
+          failFast: true // test would finish with error when a first fail occurs.
         }
       },
 
       e2e_app: {
         configFile: "test/karma_e2e_app.conf.js",
-        autoWatch: true,
+          autoWatch: false,
         singleRun: true,
-        reporters: ["dots"],
+        reporters: ["spec"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
           suppressErrorSummary: false, // do not print error summary
           suppressFailed: false, // do not print information about failed tests
-          suppressPassed: true, // do not print information about passed tests
+          suppressPassed: false, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
           failFast: true // test would finish with error when a first fail occurs.
@@ -118,12 +117,12 @@ module.exports = function(grunt) {
 
       e2e_app_produzione: {
         configFile: "test/karma_e2e_App_produzione.conf.js",
-        autoWatch: true,
+        autoWatch: false,
         singleRun: true,
         reporters: ["dots"],
         specReporter: {
           maxLogLines: 5, // limit number of lines logged per test
-          suppressErrorSummary: false, // do not print error summary
+          suppressErrorSummary: true, // do not print error summary
           suppressFailed: false, // do not print information about failed tests
           suppressPassed: false, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
@@ -160,7 +159,7 @@ module.exports = function(grunt) {
           suppressPassed: true, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
-          failFast: false // test would finish with error when a first fail occurs.
+            failFast: true // test would finish with error when a first fail occurs.
         }
       },
       midway_auto: {
@@ -175,7 +174,7 @@ module.exports = function(grunt) {
           suppressPassed: true, // do not print information about passed tests
           suppressSkipped: true, // do not print information about skipped tests
           showSpecTiming: true, // print the time elapsed for each spec
-          failFast: false // test would finish with error when a first fail occurs.
+            failFast: true // test would finish with error when a first fail occurs.
         }
       }
     },

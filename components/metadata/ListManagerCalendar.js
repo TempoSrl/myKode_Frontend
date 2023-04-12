@@ -374,7 +374,8 @@
             // Delete from list those who have not the filter property in the ToMerge Table
             var toExclude = this.toMerge.select(q.not(noChildFilter));
             _.forEach(toExclude, function (r) {
-                var  cond = getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
+                var  cond = dt.keyFilter(r);
+                    //getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
 
                 var toDelete = dt.select(cond);
                 if (toDelete.length > 0) {
@@ -386,7 +387,8 @@
             // Add to list those who are not present in the list and are present in the ToMerge table
             var toAdd = this.toMerge.select(noChildFilter);
             _.forEach(toAdd, function (r) {
-                var  cond = getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
+                var  cond =  dt.keyFilter(r);
+                        //getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
                 var toInsert = dt.select(cond);
                 // Removes eventually present row from DT
                 _.forEach(toInsert, function (rIns) {

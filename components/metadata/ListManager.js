@@ -325,7 +325,7 @@
                 // oppure se eseguo un ordinamento sulla griglia e ci sono più pagine
                 res = getData.getPagedTable(this.tableName, this.currentPageDisplayed,
                                 this.nRowPerPage, this.filter, this.listType, this.newSort)
-                    .then(function(dtp, totp, totr) {
+                    .then(function (dtp, totp, totr) {
                         // Nel momento in cui torno la riga alla metapage viene fatta della logica sulla riga
                         //  selezionata su relazioni etc... Quindi recupera dalla table la proprietà dataset,
                         //  che in questo caso non avrebbe perché getPagedTable() torna solo un datatable,
@@ -443,7 +443,8 @@
             // Delete from list those who have not the filter property in the ToMerge Table
             let toExclude = this.toMerge.select(q.not(noChildFilter));
             _.forEach(toExclude, function (r) {
-                let  cond = getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
+                let  cond = dt.keyFilter(r);
+                    //getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
 
                 let toDelete = dt.select(cond);
                 if (toDelete.length > 0) {
@@ -455,7 +456,8 @@
             // Add to list those who are not present in the list and are present in the ToMerge table
             let toAdd = this.toMerge.select(noChildFilter);
             _.forEach(toAdd, function (r) {
-                let cond = getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
+                let cond = dt.keyFilter(r);
+                    //getData.getWhereKeyClause(r.getRow(), self.toMerge , self.toMerge, false);
                 let toInsert = dt.select(cond);
                 // Removes eventually present row from DT
                 _.forEach(toInsert, function (rIns) {

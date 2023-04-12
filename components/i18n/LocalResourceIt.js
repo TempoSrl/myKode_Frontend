@@ -221,9 +221,8 @@
         serverErrorBadCredential  : "Credenziali non corrette, riprovare l'inserimento di utente e/o password",
         serverErrorTokenEmpty : "E' stato effettuato il logout",
         serverErrorUserNotSecurity: "Utente fuori dalla gestione di sicurezza. " +
-            "1. Contatta Admin per inserimento utente virtuale, associato all'utente che sta eseguendo la login, su Organigramma (Organigramma ->  profilo -> tab utenti). " +
-            "2. Potrebbe essere necessario eseguire la chiusura dell'anno precedente e generare il nuovo organigramma per l'anno nuovo.  " +
-            "3. Controllare infine il dipartimento associato all' utente virtuale",
+            "1. Contatta gli amministratori per l'inserimento dell'utente, e l'inserimento nell'Organigramma (Organigramma ->  profilo -> tab utenti). " +
+            "2. Potrebbe essere necessario eseguire la chiusura dell'anno precedente e generare il nuovo organigramma per l'anno nuovo.  ",
         serverErrorAnonymous : "Operazione anonima non permessa, provare ad effettuare di nuovo l'accesso",
         serverErrorSSO: "Non è stato possibile autenticare tramite SSO",
         dataContabileMissing : "Bisogna specificare una data contabile",

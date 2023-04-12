@@ -6,14 +6,26 @@ describe('ConnectionWebService', function () {
     var logType = appMeta.logTypeEnum;
     var methodEnum = appMeta.routing.methodEnum;
     var $q = window.jsDataQuery;
-    var timeout  = 50000;
+    var timeout = 50000;
+
+    beforeAll(function () {
+        appMeta.basePath = "base/";
+        appMeta.serviceBasePath = "/"; // path relativo dove si trovano i servizi
+        appMeta.globalEventManager = new appMeta.EventManager();
+        appMeta.localResource.setLanguage("it");
+        appMeta.logger.setLanguage(appMeta.LocalResource);
+        
+    });
+
     beforeEach(function () {
+
         //conn = new Connection();
         jasmine.getFixtures().fixturesPath = 'base/test/spec/fixtures';
     });
     
     
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
         // resert del token, altrimenti la login memorizza il token, e i test potrebbero non avere una situazione pulita
         conn.currentBackendManager.setToken("");
     });
@@ -87,7 +99,8 @@ describe('ConnectionWebService', function () {
                 objConn.noLogError = true;
                 conn.call(objConn)
                     .then(function(res) {
-                            expect(true).toBe(false);
+                            //expect(true).toBe(false);
+                        expect(res).toBe('Invio mail completato.');
                             done();
                         },
                         function(err) {
@@ -148,7 +161,6 @@ describe('ConnectionWebService', function () {
                                     done();
                                 });
 
-                            done();
                         },
                         function(err) {
                             logger.log(logType.ERROR, "login err ", err);

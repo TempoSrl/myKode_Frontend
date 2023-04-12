@@ -124,6 +124,7 @@
          * @param {type} context
          */
         unregister: function (callBack, context) {
+            //console.log("unregistering from ", this.eventName);
             _.remove(this.subscribers,
                 function(c) {
                     return c.callBack === callBack && c.context === context;
@@ -139,7 +140,15 @@
          * @param {object[]} [args]
          */
         trigger: function (sender, args) {
-            if (this.subscribers.length === 0) return Deferred().resolve(true);
+            //console.log("Event trigger invoked on " + this.eventName);
+            //logger.log(logtypeEnum.INFO, "triggering_ " + this.eventName, Array.prototype.slice.call(args));
+            //console.log("triggering:", arguments[0],arguments[2]);
+
+            //console.log("trigger("+sender+","+args)
+            if (this.subscribers.length === 0) {
+                // console.log("no subscribers")
+                return Deferred().resolve(true);
+            }
 
             let chain = when();
 
@@ -162,6 +171,8 @@
 
         /* {{Event}} */
         this.events = {};
+        this.events["increase"] = new Event("increase")
+        this.events["decrease"] = new Event("decrease")
     }
 
     EventManager.prototype = {
@@ -172,15 +183,18 @@
          * @public
          * @description SYNC
          * Attaches a listener "callback" to an event
-         * @param {String} eventType
+         * @param {string} eventType
          * @param {Function} callback
          * @param {Object} context this of the subscriber
          */
-        subscribe: function(eventType, callback, context) {
+        subscribe: function (eventType, callback, context) {
+            
             if (!this.events[eventType]) {
                 this.events[eventType] = new Event(eventType);
+                //console.log("event created for " + eventType);
             }
             this.events[eventType].register(callback, context);
+            //console.log("listener added for " + eventType);
         },
 
         /**
@@ -205,15 +219,24 @@
          * Invokes all listener's delegates, this is ASYNC
          * @param {string} type
          * @param {object} sender
-         * @paran {object} params
+         * @param {object} params
+         * @return Promise
          */
         trigger: function(type, sender) {
             // recupera la lista dei sottoscrittori a questo evento type
+            if (type !== "increase" && type != "decrease") {
+                //console.log("triggering:", arguments); //Array.prototype.slice.call(arguments, 2)
+            }
+           
             let event = this.events[type];
-            if (!event) return Deferred().resolve(true);
-            let sendName = sender? sender.name:null;
-            //logger.log(logtypeEnum.INFO,"trigger "+type+" of sender:"+sendName+" arguments sliced:", Array.prototype.slice.call(arguments,2))
-
+            if (!event) {
+                //console.log("event " + type + " not found ");               
+                if (type !== "increase" && type!="decrease"){
+                    //console.log("No one was subscribing "+type)
+                }
+                return Deferred().resolve(true);
+            }
+          
             return event.trigger(sender, Array.prototype.slice.call(arguments, 2));
         }
 
@@ -224,16 +247,22 @@
      * @constructor Stabilizer
      */
     function Stabilizer() {
-        this.nesting = 0;
-        this.currentDeferred = new Deferred();
-        this.isPaused = false;
-        this.pauseDeferred = new Deferred().resolve(true);
-        this.enabled = true;
-        this.evManager = new EventManager();
+        this.reset();
+        this.monitoring = {};
     }
 
     Stabilizer.prototype = {
         constructor: Stabilizer,
+
+        reset: function () {
+            //console.log("resetting Stabilizer");
+            this.nesting = 0;
+            this.currentDeferred = new Deferred();
+            this.isPaused = false;
+            this.pauseDeferred = new Deferred().resolve(true);
+            this.enabled = true;
+            this.evManager = new EventManager();
+        },
         /**
          * Detect if d is a Deferred (duck typing)
          * @param {object} d
@@ -277,11 +306,9 @@
          * Links result of sourceDeferred to targetDeferred so that when source is fired, target follows
          * @param {Deferred} targetDeferred
          * @param {Deferred} sourceDeferred
-         * @param {string} eventName
          * @return {Deferred} targetDeferred
          */
-        takeFrom: function(targetDeferred, sourceDeferred, eventName) {
-            targetDeferred.__eventName = eventName;
+        takeFrom: function (targetDeferred, sourceDeferred) {
             sourceDeferred
                 .then(function(data) {
                         //console.log("waited and now:", data);
@@ -301,6 +328,7 @@
          */
         encapsulate: function(eventName) {
             const that = this;
+            //console.log("encapsulating:" + eventName);
             //if (inputDeferred && inputDeferred.__createdByStabilizer) return inputDeferred;
             this.increaseNesting(eventName);
 
@@ -326,12 +354,13 @@
          * @param {string} [eventName]
          * @returns {Deferred}
          */
-        Deferred: function(eventName) {
+        Deferred: function (eventName) {
+            //console.log("creating Deferred:", eventName);
+            this.eventName = eventName;
             if (!this.enabled) {
                 return Deferred(); //quello esterno
             }
             return this.encapsulate(eventName); //who owns the handle will pilote the promise
-
         },
 
         /**
@@ -350,24 +379,42 @@
          * @public
          * @param {string} [eventName]
          **/
-        increaseNesting: function(eventName) {
+        increaseNesting: function (eventName) {
+            //console.log("increaseNesting invoked on ", eventName, " and nesting ", this.nesting);
+            if (this.monitoring[eventName]!==undefined) {
+                this.monitoring[eventName]+= 1;
+            }
+            else {
+                this.monitoring[eventName] = 1;
+            }
             this.nesting++;
-            //logger.log(logtypeEnum.INFO, "increasing nesting", eventName, this.nesting);
+            //logger.log(logtypeEnum.INFO, "increasing nesting ", eventName, this.nesting);
             this.evManager.trigger("increase", this, eventName);
         },
-
+        showDeferred: function () {
+            console.log(JSON.stringify(this.monitoring));
+        },
         /**
          * Decrease number of open Deferred
          * @method decreaseNesting
          * @public
          * @param {string} [eventName]
          */
-        decreaseNesting: function(eventName) {
+        decreaseNesting: function (eventName) {
+            //console.log("decreaseNesting invoked on ", eventName, " and nesting ", this.nesting);
+            if (this.monitoring[eventName] !== undefined) {
+                this.monitoring[eventName] -= 1;
+                if (this.monitoring[eventName] == 0) delete this.monitoring[eventName];
+            }
+            else {
+                this.monitoring[eventName] = -1;
+            }
             this.nesting--;
             //logger.log(logtypeEnum.INFO, "decreaseNesting ", eventName, this.nesting);
             if (!this.evManager) console.log("this.evManager is null");
             this.evManager.trigger("decrease", this, eventName);
             if (this.nesting === 0) {
+                //console.log("resolving current deferred");
                 this.currentDeferred.resolve();
                 this.currentDeferred = new Deferred();
             }
@@ -397,18 +444,17 @@
                 //logger.log(logtypeEnum.INFO, "stabilize invoked: immediately stabilized");
                 return Deferred().resolve();
             }
-            //logger.log(logtypeEnum.INFO, this.nesting > 0 ? "stabilize invoked:  actually unstable:" + this.nesting : "stabilize invoked:  waiting for unstable");
+            logger.log(logtypeEnum.WARNING, this.nesting > 0 ? "stabilize invoked:  actually unstable:" + this.nesting : "stabilize invoked:  waiting for unstable");
             var listener = new DeferredListener(this);
             return listener.result;
         },
 
         /**
-         * Wait for instability and then for stability
-         * @param {int} stillOpen
+         * Wait for unstability and then for stability
          * @returns {Deferred}
          */
         stabilizeToCurrent: function(stillOpen) {
-            //console.log(this.nesting > 0 ? "stabilize invoked:  actually unstable:" + this.nesting : "stabilize invoked:  waiting for unstable");
+            logger.log(logtypeEnum.WARNING, this.nesting > 0 ? "stabilize invoked:  actually unstable:" + this.nesting : "stabilize invoked:  waiting for unstable");
             stillOpen = stillOpen|0;
             let listener = new DeferredListener(this, this.nesting-stillOpen);
             return listener.result;
@@ -429,6 +475,7 @@
         this.stabilizer = stabilizer;
         stabilizer.evManager.subscribe("decrease", this.decrease, this);
         if (!this.activated) {
+            //console.log("DeferredListener: this is not yet activated. Desired=", this.desiredNesting, " actual=", stabilizer.nesting);
             stabilizer.evManager.subscribe("increase", this.increase, this);
         }
     }

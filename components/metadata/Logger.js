@@ -1,4 +1,3 @@
-/*global appMeta*/
 /**
  * Created by Gaetano Lazzo on 07/02/2015.
  * Thanks to lodash, ObjectObserve
@@ -13,35 +12,16 @@
  * Contains the method to log the messages on user javascript console
  */
 
-(function (localResource) {
+(function (localResource,Deferred) {
     'use strict';
 
     //noinspection JSUnresolvedVariable
 
-    /** Detect free variable `global` from Node.js. */
     let freeGlobal = typeof global === 'object' && global && global.Object === Object && global;
-
-    //const freeGlobal = freeExports && freeModule && typeof global === 'object' && global;
-
-
-    /** Detect free variable `self`. */
     let freeSelf = typeof self === 'object' && self && self.Object === Object && self;
-
-    /** Used as a reference to the global object. */
     let root = freeGlobal || freeSelf || Function('return this')();
-
-
-
-    /** Detect free variable `exports`. */
-    let freeExports = typeof exports === 'object' && exports && !exports.nodeType && exports;
-
-
-    /** Detect free variable `module`. */
+    let freeExports = typeof exports == 'object' && exports && !exports.nodeType && exports;
     let freeModule = freeExports && typeof module === 'object' && module && !module.nodeType && module;
-
-
-    //noinspection JSUnresolvedVariable
-    /** Detect free variable `global` from Node.js or Browserified code and use it as `root`. (thanks lodash)*/
     let moduleExports = freeModule && freeModule.exports === freeExports;
 
     /**
@@ -70,7 +50,7 @@
         setLanguage: function (lan) {
             localResource = lan;
         },
-
+        
         /**
          * @method log
          * @public
@@ -79,9 +59,19 @@
          * There several type of information (see enum logTypeEnum)
          * @param {logTypeEnum} type
          * @param {object} args
+         * @returns Promise|undefined
          */
         log: function (type, args) {
             let params = Array.prototype.slice.call(arguments, 1, arguments.length);
+
+            params = params.map((x) => {
+                if (x && x.substring) {
+                    return x.substring(0, 100);
+                }
+               return x;
+            });
+
+
             let time = this.getTime();
             switch (type) {
                 case logTypeEnum.ERROR:
@@ -119,6 +109,7 @@
                     if (this.levelLog >= logTypeEnum.INFO) console.info(params, time);
                     break;
             }
+            return new Deferred().resolve(true).promise();
         },
 
         /**
@@ -129,6 +120,7 @@
          * @param {logTypeEnum} level
          */
         setLogLevel: function (level) {
+            //console.log("changing level from "+this.levelLog+" to "+ level);
             this.levelLog = level;
         },
 
@@ -215,6 +207,7 @@
 
 }(
     (typeof appMeta === 'undefined') ? require('./LocalResource').localResource : appMeta.localResource,
+    (typeof $ === 'undefined') ? require('JQDeferred') : $.Deferred,
 ));
 
 

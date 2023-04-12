@@ -189,7 +189,7 @@
             $("#" + this.dialogid).dialog({
                 modal: true,
                 autoResize:true,
-                width: screen.width * 0.5,
+                width: screen.width * 0.3,
                 title: 'Pdf export',
                 open: function () {
                     // attacco html

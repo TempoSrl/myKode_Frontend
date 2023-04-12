@@ -8,7 +8,8 @@ describe('MetaPage', function () {
     var metapage2, state1, state2, r1,r2, r3, r4 ;
     var stabilizeToCurrent = appMeta.stabilizeToCurrent;
     var Deferred = appMeta.Deferred;
-   
+    var stabilize = appMeta.stabilize;
+
     beforeEach(function () {
         jasmine.getFixtures().fixturesPath = 'base/test/spec/fixtures';
         appMeta.basePath = "base/";
@@ -76,6 +77,7 @@ describe('MetaPage', function () {
     });
     
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
         metapage = null;
     });
 
@@ -247,19 +249,21 @@ describe('MetaPage', function () {
                                         expect(metapage.doOptionalMainDoSearch).toHaveBeenCalled();
                                         metapage.doActivation_EmptyMain  =origindoActivation_EmptyMain;
                                         metapage.doPreFill = originDoPrefill;
-                                        done();
+                                        metapage.cmdClose();
+                                        stabilize(true).then(done);
                                     },
                                     function (error) {
                                         expect(true).toBe(false);
                                         metapage.doActivation_EmptyMain  =origindoActivation_EmptyMain;
                                         metapage.doPreFill = originDoPrefill;
-                                        done();
+                                        metapage.cmdClose();
+                                        stabilize(true).then(done);
                                     });
                             });
 
 
 
-                        }, 2000);
+                        });
 
                     it('editNewCopy() is Async and copy row selected and children (Deep-copy),',
                         function(done) {
@@ -368,12 +372,14 @@ describe('MetaPage', function () {
                                 expect(t2.rows[1].other_field).toBe("o2bis");
                                 // expect($("#l3").text()).toBe("key10"); // chiave riga figlia
                                 // expect($("#l4").text()).toBe("o2"); // valore della child di partenza della riga primaria selzionata.
-                                done();
+
+                                stabilize(true).then(done);                    
+                               
                             });
                             
-                        }, 2000);
+                        });
 
-                    it('editNewCopy() isList=true is Async, not perform deep-copy',
+                    it('editNewCopy() isList=true is Async, does not perform deep-copy',
                         function(done) {
                             var mainDiv = '<div id="rootelement">' +
                                 't1-key: <label id="l1"  data-tag="table1.key"></label><br>' +

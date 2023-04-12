@@ -326,6 +326,8 @@
             if (typeof k === 'string'){
                 return  "'"+k.replace(/'/g,"''")+"'";
             }
+            if (k===null) return "<null>";
+            if (k===undefined) return "<undefined>";
             return k.toString();
         };
 
@@ -972,7 +974,7 @@
                 return v1 !== v2;
             };
         f.toString = function() {
-            return  + expr.toString() + '!=' + expr2.toString() + ')';
+            return  expr.toString() + '!=' + expr2.toString() + ')';
         };
 
         f.myName = 'ne';
@@ -2610,8 +2612,7 @@
         else {
             freeExports.jsDataQuery = q;
         }
-    }
-    if (root) {
+    } else {
         // Export for a browser or Rhino.
         root.jsDataQuery = q;
     }

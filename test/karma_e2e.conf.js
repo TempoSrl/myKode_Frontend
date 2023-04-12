@@ -4,8 +4,7 @@
 // generator-karma 0.9.0
 
 module.exports = function(config) {
-    'use strict';
-
+ 
     config.set({
         // enable / disable watching file and executing tests whenever any file changes
         //autoWatch: true,
@@ -32,7 +31,7 @@ module.exports = function(config) {
             'bower_components/observe-js/src/observe.js',
             'bower_components/jsDataQuery/src/jsDataQuery.js',
             'bower_components/jasmine-jquery/lib/jasmine-jquery.js',
-            'bower_components/jsDataSet/src/jsDataSet.js',
+            'components/metadata/jsDataSet.js',
             'bower_components/jstree/dist/jstree.js',
             'components/metadata/MetaApp.js',
             'app_segreterie/metadata/MetaSegreterieApp.js',
@@ -41,6 +40,7 @@ module.exports = function(config) {
             'components/metadata/ConfigDev.js',
             'components/metadata/Logger.js',
             'components/metadata/EventManager.js',
+            'components/metadata/LocalResource.js',
             'components/metadata/Routing.js',
             'components/metadata/DbProcedureMessage.js',
             'components/metadata/ConnWebService.js',
@@ -57,9 +57,10 @@ module.exports = function(config) {
             'components/metadata/MetaData.js',
             'components/metadata/PostData.js',
             'components/i18n/*.js',
-            'components/metadata/LocalResource.js',
+            
             'components/metadata/LoaderControl.js',
             'components/metadata/ModalLoaderControl.js',
+            'components/metadata/CssDefault.js', //deve precedere HelpForm
             'components/metadata/HelpForm.js',
             'components/metadata/MetaPageState.js',
             'components/metadata/BootstrapModal.js',
@@ -67,7 +68,6 @@ module.exports = function(config) {
             'components/metadata/TreeNode_Dispatcher.js',
             'components/metadata/TreeViewManager.js',
             'components/metadata/ModalForm.js',
-            'components/metadata/CssDefault.js',
             'components/metadata/GridControl.js',
             'components/metadata/GridControlX.js',
             'components/metadata/ListManager.js',
@@ -76,30 +76,46 @@ module.exports = function(config) {
             'components/metadata/ComboManager.js',
             'components/metadata/GridMultiSelectControl.js',
             'components/metadata/MultiSelectControl.js',
+            'components/utility/select2.min.js',
+            'components/styles/select2.min.css',
             'test/common/common.js',
             'test/spec/fixtures/*.html',    
             'components/template/*.html',
             'test/app/styles/app.css',
             'test/app/styles/bootstrap/css/bootstrap.css',
             'test/app/styles/bootstrap/js/bootstrap.js',
-            'test/spec_e2e/metadata/*.js',
-            { pattern: 'test/spec_midway/**/*.html', included: false, served: true },
-            { pattern: 'test/spec_midway/**/*.js', included: false, served: true },
+            'test/spec_e2e/metadata/AuthManager_E2E_Spec.js',
+            'test/spec_e2e/metadata/ConnectionWebService_E2E_Spec.js',
+            'test/spec_e2e/metadata/ConnectionWebServiceNoAuth_E2E_Spec.js',
+            'test/spec_e2e/metadata/Data_E2E_Spec.js',
+            'test/spec_e2e/metadata/DataQuery_E2E_Spec.js',
+            'test/spec_e2e/metadata/GetData_E2E_Spec.js',
+            'test/spec_e2e/metadata/MetaData_E2E_Spec.js',
+            'test/spec_e2e/metadata/MetaPage_E2E_Spec.js',
+            'test/spec_e2e/metadata/HelpForm_E2E_Spec.js',
+            'test/spec_e2e/metadata/MultiSelectControl_E2E_Spec.js',
+            'test/spec_e2e/metadata/PostData_E2E_Spec.js',
+            'test/spec_e2e/metadata/SecurityE2E_Spec.js',
+            'test/spec_e2e/metadata/TreeViewManager_E2E_Spec.js',
+            'test/spec_e2e/meta/*.js',
+            //{pattern: 'test/spec_midway/jstest/*.json', included: false, served: true },            
+            //{ pattern: 'test/spec_midway/**/*.html', included: false, served: true },
+            //{ pattern: 'test/spec_midway/**/*.js', included: false, served: true },
             { pattern: 'test/spec_midway/**/*.json', included: false, served: true },
-            { pattern: 'test/spec_e2e/**/*.js', included: false, served: true },
+            //{ pattern: 'test/spec_e2e/**/*.js', included: false, served: true },
             // { pattern: 'test/spec_e2e/**/*.html', included: false, served: true },
             // { pattern: 'test/spec_e2e/**/*.json', included: false, served: true },
         ],
 
         // list of files / patterns to exclude
-        exclude: [
-        ],
+        exclude: [],
         proxies: {
             '/auth/': 'http://localhost:54471/auth/',
             '/data/': 'http://localhost:54471/data/',
             '/static/': 'http://localhost:54471/static/',
-            'test//styles/bootstrap/css/': '/base/test/app/styles/bootstrap/css',
-            '/styles/': '/base/test/app/styles',
+            
+            'test/styles/bootstrap/css/': '/base/test/app/styles/bootstrap/css/',
+            '/styles/': '/base/test/app/styles/',
             '/jstest/': '/base/test/spec_midway/jstest/'
         },
 
@@ -117,8 +133,9 @@ module.exports = function(config) {
         // - Safari (only Mac)
         // - PhantomJS
         // - IE (only Windows)
+        // - ChromeHeadless
         browsers: [
-            'ChromeHeadless'
+            'Chrome'
         ],
 
         // Which plugins to enable

@@ -69,6 +69,9 @@
 					if (!model.canRead(t)) return;
 					allPromises.push(that.doGetTable(t, null, true, null, selectList));
 				});
+			if (allPromises.length===0){
+				return Deferred("readCached").resolve(true).promise();
+			}
 			return Deferred("readCached").from(
 				$.when(allPromises)
 					.then(function () {
@@ -81,7 +84,8 @@
 									});
 								return true;
 							});
-					}));
+					})
+			);
 
 		},
 
@@ -99,6 +103,7 @@
          */
 		doGetTable: function (t, filter, clear, top, selectList) {
 			var def = Deferred("doGetTable");
+
 			// log per controllo se il filtro di tipo mcmp non è su colonne presenti sulla tabella.
 			var columnFilterInTable = function (t, f) {
 				if (!t || !f) return true;
@@ -236,10 +241,13 @@
 					filter: filterSerialized
 				}
 			};
-			return appMeta.connection.call(objConn)
+			appMeta.connection.call(objConn)
 				.then(function (dataJson) {
 					return def.resolve(getDataUtils.getJsDataTableFromJson(dataJson));
-				});
+				},
+				err => { def.reject(err); }
+			);
+			return def.promise();
 		},
 
         /**
@@ -260,7 +268,7 @@
 				}
 			});
 
-			t.add(newRow);
+			//t.add(newRow);
 			newRow.getRow().acceptChanges();
 			return newRow;
 		},
@@ -323,7 +331,6 @@
 				.then(
 					function () {
 						// vanno serializzate le chiamate alle sel.onRead(), ove siano definite
-
 						var allDeferredOnRead = utils.filterArrayOnField(selectList, 'onRead');
 
 						return utils.thenSequence(allDeferredOnRead);
@@ -336,7 +343,7 @@
          * @description ASYNC
          * Executes a bunch of select, based on "selectList". Not much different from a multiple runSelectIntoTable
          * @param {SelectBuilder[]} selectList
-         * @returns {Deferred}
+         * @returns {Promise}
          */
 		multiRunSelect: function (selectList) {
 
@@ -350,11 +357,9 @@
 				method: methodEnum.multiRunSelect,
 				prm: { selBuilderArr: selBuilderArr }
 			};
-
 			return appMeta.connection.call(objConn)
 				.then(
 					function (data) {
-
 						var ds = getDataUtils.getJsDataSetFromJson(data);
 						// vanno serializzate le chiamate alle sel.onRead(), ove siano definite
 
@@ -366,13 +371,12 @@
 								var tableWasEmpty = (destTable.rows.length === 0);
 								getDataUtils.mergeRowsIntoTable(destTable, inputTable.rows, !tableWasEmpty);
 							}
-
 						});
 
 						var allDeferredOnRead = utils.filterArrayOnField(selectList, 'onRead');
-
 						return utils.thenSequence(allDeferredOnRead);
-					});
+					}					
+				);
 		},
 
         /**
@@ -481,7 +485,7 @@
          * @param {string} editType
          * @returns Promise<object>
          */
-		getDsByRowKey: function (dataRow, table, editType) {
+		getDsByRowKey: function (dataRow, table, editType){
 
 			let def = Deferred('getDsByRowKey');
 
@@ -491,9 +495,10 @@
 			let filter = table.keyFilter(dataRow.current);
 
 			// check su eventuale errore
-			if (_.some(table.key(), function (cname) {
+			if (_.some(table.key(), function (cname){
 				return dataRow.current[cname] === undefined;
-			})) console.log("Table view " + dataRow.table.name + " has different column key name respect to the " + table.name);
+			}))
+			console.log("Table view " + dataRow.table.name + " has different key column name from " + table.name);
 
 			if (filter !== null && table.staticFilter()) filter = q.and(filter, table.staticFilter());
 
@@ -512,14 +517,13 @@
 					let ds = getDataUtils.getJsDataSetFromJson(res);
 					// eseguo merge con ds di input
 					getDataUtils.mergeDataSet(table.dataset, ds, true);
-
-					_.forEach(table.childRelations(), function (rel) {
+					_.forEach(table.childRelations(), function (rel){
 						var childtable = table.dataset.tables[rel.childTable];
-						if ((!model.isSubEntityRelation(rel, childtable, table)) && model.allowClear(childtable)) return true;
+						if ((!model.isSubEntityRelation(rel, childtable, table))
+							&& model.allowClear(childtable)) return true;
 						model.getTemporaryValues(childtable);
 					});
 					model.getTemporaryValues(table);
-
 					return def.resolve(table.dataset);
 				}, function (err) {
 					return def.reject(err);
@@ -601,6 +605,8 @@
 				.then(function (dsJson) {
 					return def.resolve(getDataUtils.getJsDataSetFromJson(dsJson));
 				}, function (err) {
+					console.log("dataset not received " + tableName+"-"+editType
+						+JSON.stringify(err));
 					return def.reject(err).promise();
 				}
 				);
@@ -666,6 +672,7 @@
 				method: methodEnum.fillDataSet,
 				prm: { tableName: tableName, editType: editType, filter: getDataUtils.getJsonFromJsDataQuery(filter) }
 			};
+			
 			return appMeta.connection.call(objConn)
 				.then(function (dsJson) {
 					var myDS = getDataUtils.getJsDataSetFromJson(dsJson);
@@ -694,9 +701,9 @@
 
 			// invio al server non la datarow che per ora non serializzo, ma la coppia tabella + filtro che individuano appunto la riga in questione
 			if (dataRow) {
+				//console.log("doGet has datarow "+JSON.stringify(dataRow.current));
 				filter = dataRow.table.keyFilter(dataRow.current); // this.getWhereKeyClause(dataRow, dataRow.table, dataRow.table, false);
 			}
-
 			var objConn = {
 				method: methodEnum.doGet,
 				prm: {
@@ -709,13 +716,12 @@
 
 			var res = appMeta.connection.call(objConn)
 				.then(function (dsJson) {
-					var myDS = getDataUtils.getJsDataSetFromJson(dsJson);
+					let myDS = getDataUtils.getJsDataSetFromJson(dsJson);
 					getDataUtils.mergeDataSet(ds, myDS, true);
-
 					if (onlyPeripherals) {
-						var primaryDataTable = ds.tables[primaryTableName];
+						let primaryDataTable = ds.tables[primaryTableName];
 						_.forEach(primaryDataTable.childRelations(), function (rel) {
-							var childtable = ds.tables[rel.childTable];
+							let childtable = ds.tables[rel.childTable];
 							if ((!model.isSubEntityRelation(rel, childtable, primaryDataTable)) &&
 									 model.allowClear(childtable)) {
 								return true;
@@ -742,9 +748,11 @@
          * @param {DataColumn[]} valueCol Columns  of ParentRow from which values to be compare have to be taken
          * @param {DataColumn[]} filterCol Columns  of ChildRows for which the Column NAMES have to be taken
          * @param {DataTable} filterColTable table linked to the filtercolcolumns
+		 * @paran {bool} sql
          * @returns {jsDataQuery}
          */
-		getWhereKeyClauseByColumns: function (valueRow, valueCol, filterCol, filterColTable, sql) {
+		getWhereKeyClauseByColumns: function (valueRow, valueCol,
+											  filterCol, filterColTable, sql) {
 			var conditions = [];
 			_.forEach(valueCol, function (c, index) {
 				var val = valueRow.current[c.name] ? valueRow.current[c.name] : null;
@@ -774,31 +782,31 @@
 			return q.and(conditions);
 		},
 
-        /**
-         * @method getWhereKeyClause
-         * @public
-         * @description SYNC
-         * Builds a DataQuery clause where the keys are the columns in "filterColTable" and the values are those in "valueRow" DataRow
-         * @param {DataRow} valueRow Row to use for getting values to compare
-         * @param {DataTable} valueColTable Row Columns  of ParentRow from which values to be compare have to be taken
-         * @param {DataTable} filterColTable Row Column  of ChildRows for which the Column NAMES have to be taken
-         * @param {boolean} sql
-         * @returns {jsDataQuery}
-         */
-		getWhereKeyClause: function (valueRow, valueColTable, filterColTable, sql) {
-
-			var valueCol = _.map(valueColTable.key(),
-				function (cName) {
-					return valueColTable.columns[cName];
-				});
-
-			var filterCol = _.map(filterColTable.key(),
-				function (cName) {
-					return filterColTable.columns[cName];
-				});
-
-			return this.getWhereKeyClauseByColumns(valueRow, valueCol, filterCol, filterColTable, sql);
-		},
+        // /**
+        //  * @method getWhereKeyClause
+        //  * @public
+        //  * @description SYNC
+        //  * Builds a DataQuery clause where the keys are the columns in "filterColTable" and the values are those in "valueRow" DataRow
+        //  * @param {DataRow} valueRow Row to use for getting values to compare
+        //  * @param {DataTable} valueColTable Row Columns  of ParentRow from which values to be compare have to be taken
+        //  * @param {DataTable} filterColTable Row Column  of ChildRows for which the Column NAMES have to be taken
+        //  * @param {boolean} sql
+        //  * @returns {jsDataQuery}
+        //  */
+		// getWhereKeyClause: function (valueRow, valueColTable, filterColTable, sql) {
+		//
+		// 	var valueCol = _.map(valueColTable.key(),
+		// 		function (cName) {
+		// 			return valueColTable.columns[cName];
+		// 		});
+		//
+		// 	var filterCol = _.map(filterColTable.key(),
+		// 		function (cName) {
+		// 			return filterColTable.columns[cName];
+		// 		});
+		//
+		// 	return this.getWhereKeyClauseByColumns(valueRow, valueCol, filterCol, filterColTable, sql);
+		// },
 
         /**
          * @method doGetTableRoots
@@ -826,7 +834,7 @@
          * @param {DataTable} table
          * @param {string} listType
          * Calls the describeColumns server side method on "tableName" and "listType"
-         * @returns {Deferred(DataTable)}
+         * @returns Promise(DataTable)
          */
 		describeColumns: function (table, listType) {
 			var def = Deferred('describeColumns');
@@ -850,7 +858,7 @@
 
 			appMeta.connection.call(objConn)
 				.then(function (jsonDataTable) {
-					var dtDescribed = getDataUtils.getJsDataTableFromJson(jsonDataTable);
+					let dtDescribed = getDataUtils.getJsDataTableFromJson(jsonDataTable);
 
 					// salvo nella cache
 					self.cachedDescribedColumnTable[key] = dtDescribed;
@@ -867,20 +875,20 @@
          * @param {DataTable} table
          * @param {string} listType
          * Calls the describeTree server side method on "tableName" and "listType"
-         * @returns {Deferred(DataTable)}
+         * @returns Promise(DataTable)
          */
 		describeTree: function (table, listType) {
-			var def = Deferred('describeColumns');
-			var self = this;
+			let def = Deferred('describeColumns');
+			let self = this;
 
-			var key = table.name + "-" + listType;
+			let key = table.name + "-" + listType;
 			// se ho in cache le info del tree di cui ho fatto la describeTree risolvo immediatamente
 			if (this.cachedDescribedTree[key]) {
 				return def.resolve(this.cachedDescribedTree[key]);
 			}
 
 			// invio solo struttura, quindi clono e tolgo righe
-			var dtCloned = table.clone();
+			let dtCloned = table.clone();
 			dtCloned.clear();
 
 			var objConn = {
@@ -917,9 +925,9 @@
 		getSpecificChild: function (table, startCondition, startValueWanted, startFieldWanted) {
 			var def = Deferred("getSpecificChild");
 
-			var prmfilter = getDataUtils.getJsonFromJsDataQuery(startCondition);
-			var jsonTable = getDataUtils.getJsonFromDataTable(table);
-			var objConn = {
+			let prmfilter = getDataUtils.getJsonFromJsDataQuery(startCondition);
+			let jsonTable = getDataUtils.getJsonFromDataTable(table);
+			let objConn = {
 				method: methodEnum.getSpecificChild,
 				prm: {
 					dt: jsonTable,
@@ -931,14 +939,14 @@
 
 			var res = appMeta.connection.call(objConn)
 				.then(function (jsonRes) {
-					var jsonDtOut = jsonRes.dt;
-					var jsonFilterOut = jsonRes.filter;
+					let jsonDtOut = jsonRes.dt;
+					let jsonFilterOut = jsonRes.filter;
 					// deserializzo
-					var dtOut = getDataUtils.getJsDataTableFromJson(jsonDtOut);
-					var filter = jsonFilterOut ? getDataUtils.getJsDataQueryFromJson(jsonFilterOut) : null;
+					let dtOut = getDataUtils.getJsDataTableFromJson(jsonDtOut);
+					let filter = jsonFilterOut ? getDataUtils.getJsDataQueryFromJson(jsonFilterOut) : null;
 
 					// recupero riga
-					var rowFound = dtOut.select(filter);
+					let rowFound = dtOut.select(filter);
 
 					if (rowFound.length === 1) {
 						// eseguo merge delle righe
@@ -1032,9 +1040,9 @@
          * @returns {Deferred}
          */
 		doReadValue: function (tableName, filter, expr, orderby) {
-			var def = Deferred('doReadValue');
-			var filterSer = getDataUtils.getJsonFromJsDataQuery(filter);
-			var objConn = {
+			let def = Deferred('doReadValue');
+			let filterSer = getDataUtils.getJsonFromJsDataQuery(filter);
+			let objConn = {
 				method: methodEnum.doReadValue,
 				prm: {
 					table: tableName,

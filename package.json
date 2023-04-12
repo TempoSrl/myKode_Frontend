@@ -1,6 +1,6 @@
 {
 	"name": "mykode_frontend",
-	"version": "1.0.012",
+	"version": "1.0.013",
 	"description": "MyKode frontend",
 	"main": "app/main.js",
 	"scripts": {
@@ -37,7 +37,7 @@
 		"grunt-open": "^0.2.4",
 		"grunt-shell": "^3.0.1",
 		"jasmine": "4.4.0",
-		"jasmine-collection-matchers": "*",
+		"jasmine-collection-matchers": "0.2",
 		"jasmine-console-reporter": "^3.1.0",
 		"jasmine-core": "^3.6.0",
 		"jasmine-node": "3.0.0",

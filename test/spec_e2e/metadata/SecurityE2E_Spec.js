@@ -3,12 +3,20 @@
 describe('Security', function () {
   
     var timeout  = 20000;
-    
+
+    beforeAll(function () {
+        appMeta.basePath = "base/";
+        appMeta.serviceBasePath = "/"; // path relativo dove si trovano i servizi
+        appMeta.globalEventManager = new appMeta.EventManager();
+    });
+
     beforeEach(function () {
     });
 
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
     });
+
 
     describe("Test Authentication methods",
         function() {

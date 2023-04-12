@@ -22,6 +22,11 @@ describe('App2_E2E', function() {
                 }, timeout);
             });
 
+            afterEach(function () {
+                expect(appMeta.Stabilizer.nesting).toBe(0);
+                if (appMeta.Stabilizer.nesting > 0) appMeta.Stabilizer.showDeferred();
+            });
+
 
             it('1. callPage() table:registry, editType:anagrafica" should be async and return data. -> combo filled' ,
                 function(done) {
@@ -31,7 +36,7 @@ describe('App2_E2E', function() {
                         .then(function(metaPage) {
                             allCheckExecuted++;
                             // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
-                            testHelper.testMetaPageInitialization(metaPage, "registry", "anagrafica");
+                            testHelper.testMetaPageInitialization(metaPage, "registry", "anagrafica2");
 
                             // risolvo deferred della pagina così non rimane appeso
                             // metaPage.deferredResult.resolve();
@@ -48,7 +53,7 @@ describe('App2_E2E', function() {
                         });
 
                     // Apro la pagina
-                    appMeta.currApp.callPage("registry", "anagrafica", true);
+                    appMeta.currApp.callPage("registry", "anagrafica2", true);
 
                 }, timeout);
 

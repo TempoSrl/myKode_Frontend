@@ -29,48 +29,60 @@
          * @param {object} objConn contains the name of the method and the parameters
          * @returns {Deferred}
          */
-        call:function (callConfigObj, objConn) {
-            
+        call: function (callConfigObj, objConn) {
+
             //la riga seguente l'ho commentata e poi sostituita perché nella login page
             //mi dava l'errore "Deferred is not a function"
             //var deferred = Deferred('ConnWebService.call ' + callConfigObj.url);
             var deferred = appMeta.Deferred('ConnWebService.call ' + callConfigObj.url);
 
 
-            var options   = {
+            let options = {
                 url: callConfigObj.url,
                 type: callConfigObj.type,
                 data: objConn.prm,
-                timeout : appMeta.config.ajax_timeout,
+                timeout: appMeta.config.ajax_timeout,
                 success: _.partial(this.success, this, deferred),
                 error: _.partial(this.error, deferred)
             };
-            //console.log("to invoke:"+JSON.stringify(options.url));
 
             // passo header per autorizzazione solo se metodo lo richiede
-            if (callConfigObj.auth){
-                var token = this.getAuthToken();
+            if (callConfigObj.auth) {
+                let token = this.getAuthToken();
+                //console.log("evaluated token is "+token)
                 options["headers"] = {
-                    'Authorization':  "Bearer " + token,
+                    'Authorization': "Bearer " + token,
                     "language": appMeta.localResource.currLng
                 };
-                //console.log(options);
             }
             else {
                 let AnonymousToken = "AnonymousToken123456789";
                 options["headers"] = {
-                    'Authorization':  "Bearer " + AnonymousToken,
+                    'Authorization': "Bearer " + AnonymousToken,
                     "language": appMeta.localResource.currLng
                 };
             }
 
             // associa ad una tripla. Serve principalmente per recuperare "multipleResult" alla risposta
-            this.requestIdDict[objConn.prm.idRequest] = {method:objConn.method, deferred: deferred, multipleResult:callConfigObj.multipleResult};
+            this.requestIdDict[objConn.prm.idRequest] =
+            {
+                method: objConn.method,
+                deferred: deferred,
+                multipleResult: callConfigObj.multipleResult
+            };
 
             // Aggiungo solo se necessario il prm datatype
-            if (callConfigObj.dataType)  options.datatype = callConfigObj.dataType;
-
-            $.ajax(options);
+            if (callConfigObj.dataType) {
+                options.datatype = callConfigObj.dataType;
+            }
+            //console.log("invoking " + JSON.stringify(options));
+            try {
+                $.ajax(options);
+            }
+            catch (err) {
+                console.log("catching " + err);                
+                deferred.reject({ text: err, status:500 });
+            }
 
             return deferred.promise();
         },
@@ -85,9 +97,17 @@
          * @param {Object} ajaxOptions
          * @param {Object} thrownError
          */
-        error:function (deferred, xhr, ajaxOptions, thrownError) {
-            console.log("got error from web service! "+xhr.responseText);
-            return deferred.reject({ text: xhr.responseText, status: xhr.status });
+        error: function (deferred, xhr, status, thrownError) {
+            //console.log(xhr);
+            let err = xhr.responseText;
+            //if (err.Message) err = JSON.parse(err).Message;
+            console.log("got error server (ConnWebService): " + xhr.responseJSON + " status " + status + " body:" + thrownError);
+            if (xhr.responseJSON) {
+                err = xhr.responseJSON;
+                if (err.Message) err = err.Message;
+            }
+           
+            deferred.reject({ text: err, status: xhr.statusText });
         },
 
         /**
@@ -110,7 +130,7 @@
             //console.log("got data from service")
             if (!res)  return deferred.resolve(null);
             try { JSON.parse(res); } catch (e){ isValidJSON = false; }
-            if (isValidJSON){
+            if (isValidJSON) {
                 var obj  = appMeta.getDataUtils.getJsObjectFromJson(res);
                 if (!Array.isArray(obj.data)){
                     return deferred.resolve(res);
@@ -135,10 +155,8 @@
             if (type === appMeta.RequestTypeEnum.resolve){
 
                 if (currRequest.multipleResult){
-                    
                     // deve fare un foreach sui dati e mandare la notify
                     _.forEach(data,function (singleData) {
-                        //console.log(" loop su conn " + singleData);
                         deferred.notify(singleData);
                     });
                     
@@ -175,7 +193,8 @@
          * @param {Date} expiresOn
          */
 		setToken: function (token, expiresOn) {
-            // salvo su storage locale,per riverificare se utente è già connesso
+            // salvo su storage locale, per riverificare se utente è già connesso
+            //console.log("saving token into localStorage:"+token);
 			window.localStorage.setItem('mdlusertoken', token);
             window.localStorage.setItem('expiresOn', expiresOn);
 			//window.localStorage.setItem('idreg', idreg); // è nelle var di ambiente security.usr

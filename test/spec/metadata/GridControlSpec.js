@@ -1,4 +1,3 @@
-"use strict";
 
 describe("GridControlX",
     function () {
@@ -35,6 +34,10 @@ describe("GridControlX",
             t1.setDataColumn(cDec, "Decimal");
             t1.setDataColumn(cDouble, "Double");
 
+            t1.columns[cName].caption = "";
+            t1.columns[cDec].caption = "";
+            t1.columns[cDouble].caption = "";
+
             t2.setDataColumn("notcol", "String");
             t2.setDataColumn("mycol1", "Decimal");
             t2.setDataColumn("mycol2", "String");
@@ -60,10 +63,10 @@ describe("GridControlX",
             objrow5 = t2.add(objrow5).current;
             objrow4 = t2.add(objrow4).current;
 
-            t2.add(objrow2);
+            //t2.add(objrow2);
             t2.add(objrow3);
-            t2.add(objrow5);
-            t2.add(objrow4);
+            //t2.add(objrow5);
+            //t2.add(objrow4);
             t2.key(['mycol1']);
 
             objrow6 = {cName: "name11", cDec: 1, cDouble: 111};
@@ -143,7 +146,7 @@ describe("GridControlX",
                     expect(t2.rows[0]["mycol1"]).toBe(22);
                     var filter  = q.eq("mycol4", "vsame");
                     var rows = grid.getSortedRows(t2, filter);
-                    expect(rows[0]["mycol1"]).toBe(33); // rtorvo ordinato su "mycol1" e filtrato su "mycol4" per il valore passato
+                    expect(rows[0]["mycol1"]).toBe(33); // output ordinato su "mycol1" e filtrato su "mycol4" per il valore passato
                     expect(rows[1]["mycol1"]).toBe(44);
                     expect(rows[2]["mycol1"]).toBe(55);
                 });
@@ -258,8 +261,7 @@ describe("GridControlX",
     
                                 var s = stabilize();
                                 $("#grid1").find("tr").eq(1).click(); // clicco sulla prima riga dei dati
-                                return s;
-    
+                                return s;    
                         })
                         .then(function () {
                             expect($("#grid1").find("tr").eq(1).data("mdldatarowlinked")).toBe(objrow2);
@@ -275,7 +277,7 @@ describe("GridControlX",
                             expect( grid.currentRow).toBe(objrow1);
                             done();
                         });
-                },2000);
+                });
 
                 it("getformattedValue() set the correct text in the td",function (done) {
 

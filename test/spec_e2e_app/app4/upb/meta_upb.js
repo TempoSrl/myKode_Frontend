@@ -1,12 +1,13 @@
 (function() {
     var MetaData = window.appMeta.MetaData;
-    var getData = window.appMeta.getData;
-    var getDataUtils = window.appMeta.getDataUtils;
-    var Deferred = window.appMeta.Deferred;
+    var q = window.jsDataQuery;
+
     function Meta_upb() {
-        MetaData.apply(this, ["upb"]);
-        this.name = 'meta_upb';
-    }
+       MetaData.apply(this, ["upb"]);
+       this.name = 'meta_upb';
+   }
+
+
 
     Meta_upb.prototype = _.extend(
         new MetaData(),
@@ -25,32 +26,39 @@
              * @returns {Deferred}
              */
             describeTree: function (table, listType) {
-                var def = Deferred("meta_upb-describeTree");
+
+                let treeDescr = null;
+                if ( listType === "tree") {
+                    // Torno il dt popolato solo con i dati che mi aspetto
+                    treeDescr = {
+                        "withdescr": false,
+                        "rootCondition": q.isNull("paridupb"),
+                        "maxDepth": 9
+                        };
+                }
 
                 // lato server torna rootcondition e poi vedremo cosa altro
-                var resDef = getData.describeTree(table, listType)
-                // N.B: ----> quando ritorno al treeview chiamante, torno le proprietà cusotm che si aspetta.
+                let res = treeDescr;
+                // N.B: ----> quando ritorno al treeview chiamante, torno le proprietà custom che si aspetta.
                 // il default si aspetta solo "rootCondition"
-                    .then(function (res) {
 
-                        var maxDepth = res.maxDepth;
-                        var withdescr = res.withdescr;
-                        var rootCondition = getDataUtils.getJsDataQueryFromJson(res.rootCondition);
+                let maxDepth = res.maxDepth;
+                let withdescr = res.withdescr;
+                let rootCondition = res.rootCondition;
 
-                        // instanzio il dispatcher giusto
-                        var nodedispatcher = new appMeta.Upb_TreeNode_Dispatcher("title", "codeupb");
+                // instanzio il dispatcher giusto
+                let nodedispatcher = new appMeta.Upb_TreeNode_Dispatcher("title", "codeupb");
 
-                        // torno al treeviewManger che ha invocato la resove con i prm attesi, che sono tutti e solo quelli che utilizza
-                        def.resolve({
-                            rootCondition:rootCondition,
-                            nodeDispatcher: nodedispatcher
-                        });
-                    });
+                // torno al treeviewManger che ha invocato la resove con i prm attesi, che sono tutti e solo quelli che utilizza
 
-                return def.from(resDef).promise();
+                return appMeta.Deferred().resolve({
+                    rootCondition:rootCondition,
+                    nodeDispatcher: nodedispatcher
+                }).promise();
             }
 
         });
 
-    window.appMeta.addMeta('upb', new Meta_upb());
+
+    window.appMeta.addMeta('upb', new Meta_upb('upb'));
 }());

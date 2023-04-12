@@ -5,6 +5,7 @@
  * @description
  * Collection of utility functions about used by GetData
  */
+
 (function (q,logger,logType,jsDataSet,_) {
 
     /** Detect free variable `global` from Node.js. */
@@ -25,17 +26,58 @@
     let getDataUtils = {};
     let dataRowState = jsDataSet.dataRowState;
 
+    const dateFormat =  /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+    // vecchio formato senza millisecondi /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/;
+
+    function dataTransform(key, value) {
+        if (typeof value === "string" && dateFormat.test(value)) {
+            // console.log("date found:"+value);
+            return  new Date(value);
+            //Node side is not necessary to normalize date
+
+            //value =  getDataUtils.normalizeDataWithoutOffsetTimezone(new Date(value), false);
+                //) new Date(new Date(value).getTime() + (new Date().getTimezoneOffset() * 60000));
+        }
+        return value;
+    }
+
+    /**
+     * @method normalizeDataWithoutOffsetTimezone
+     * @public
+     * @description SYNC
+     * When js convert to JSON, JSON uses Date.prototype.toISOString that doesn't represent local hour but the UTC +offset.
+     * So the string will be modified with a new date. In this function we avoid this behaviour, it adds the offset to the date.
+     * succesive stringfy() doesn't change the date
+     * @param {Date} date
+     */
+    getDataUtils.normalizeDataWithoutOffsetTimezone = function (date, normalize) {
+        if (normalize){
+            return new Date(date.getTime() - (date.getTimezoneOffset() * 60000));
+        } else{
+            return new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
+        }
+        return date;
+    };
+
     /**
      * @function getJsObjectFromJson
      * @public
      * @description SYNC
      * Given a json representation of the DataSet/DataTable returns a javascript object
-     * @param {string} json Json string
+     *  this manages translation of date objects
+     * @param {string} json
      * @returns {object} an object (DataTable or DataSet)
      */
     getDataUtils.getJsObjectFromJson = function (json) {
+        //console.log("the method getJsObjectFromJson is BASE")
         // riconverto la stringa json proveniente dal server
-        return JSON.parse(json);
+        if (typeof json === 'string') {
+            //console.log("json is not an object");
+            return JSON.parse(json, dataTransform);
+        }
+        //console.log("json is already an object")
+        return json;
+        //return JSON.parse(json);
     };
 
     /**
@@ -69,11 +111,13 @@
      */
     getDataUtils.getJsDataSetFromJson = function (jsonJsDataSet) {
         // riconverto la stringa json proveniente dal server
+
         let objParsed = getDataUtils.getJsObjectFromJson(jsonJsDataSet);
         // creo nuovo jsDataSet da popolare
         let ds = new jsDataSet.DataSet(objParsed.name);
         // deserializzo il json proveniente dal server e popolo ds
         ds.deSerialize(objParsed, true);
+        //ds.displayData();
         return ds;
     };
 
@@ -87,8 +131,17 @@
      * @returns {string} the json string
      */
     getDataUtils.getJsonFromJsDataSet = function (ds, serializeStructure) {
-        return JSON.stringify(ds.serialize(serializeStructure));
+        //return JSON.stringify(ds.serialize(serializeStructure));
+
+        var objser = ds.serialize(serializeStructure);
+        // _.forEach(objser.tables, function (objdt) {
+        //     getDataUtils.convertDateTimeToUTC(objdt, false);
+        // });
+        var jsonToSend = JSON.stringify(objser);
+        return jsonToSend;
+
     };
+
 
     /**
      * @function getJsonFromJsDataSet
@@ -100,6 +153,7 @@
      */
     getDataUtils.getJsonFromDataTable = function (dt) {
         let objser = dt.serialize(true);
+        objser.name = dt.name;
         return JSON.stringify(objser);
     };
 
@@ -166,9 +220,10 @@
      */
     getDataUtils.cloneDataTable = function (dt) {
         let dsClone = getDataUtils.cloneDataSet(dt.dataset);
-        let t =  getDataUtils.getJsDataTableFromJson(appMeta.getDataUtils.getJsonFromDataTable(dt));
-        dt.dataset = dsClone;
-        return t;
+        return dsClone.tables[dt.name];
+        //let t =  getDataUtils.getJsDataTableFromJson(getDataUtils.getJsonFromDataTable(dt));
+        //dt.dataset = dsClone;
+        //return t;
     };
 
     /**
@@ -180,7 +235,7 @@
      * @returns {DataSet}
      */
     getDataUtils.cloneDataSet = function (ds) {
-        return getDataUtils.getJsDataSetFromJson(appMeta.getDataUtils.getJsonFromJsDataSet(ds, true));
+        return getDataUtils.getJsDataSetFromJson(getDataUtils.getJsonFromJsDataSet(ds, true));
     };
 
     /**
@@ -196,7 +251,7 @@
         _.forEach(dsSource.tables, function (tSource) {
             // se il mio dsTarget contiene la tabella allora effettuo merge delle righe
             if (dsDest.tables[tSource.name]){
-                // se non ci sono inutile fare il check esistenza. così si va più rapidi
+                // se non ci sono inutile fare il check esistenza
                 if (!dsDest.tables[tSource.name].rows.length) {
                     getDataUtils.mergeRowsIntoTable(dsDest.tables[tSource.name], tSource.rows, false);
                 } else {
@@ -204,7 +259,7 @@
                 }
 
             }else{
-				//TODO: richiamare localresource per internazioinalizzare il messaggio
+				//TODO: richiamare localresource per internazionalizzare il messaggio
                 logger.log(logType.ERROR, "Table " + tSource.name + " does not exists in dataset " + dsDest.name);
             }
         });
@@ -226,65 +281,75 @@
                 if (dsDest.tables[tSource.name]) {
                     // Questo non basta, vedi righe successive. dsDest.tables[tSource.name].merge(tSource);
                     // ciclo sulle righe originali del dest attraverso un contatore. Ragiono a livello posizionale.
-                    // 1. se riga è modified faccio merge. I 2 indici source e dest allineati
+                    // 1. se riga è modified faccio merge. i 2 indici source e dest allineati
                     // 2. se riga è added inserisco riga corrispondente, aumento gli indici
-                    // 3. deleted. Faccio acceptChanges() così la riga viene detachata, rimango fermo sugli indici. Solo se la transazione è ok
+                    // 3. deleted . faccio acceptChanges() così la riga viene detachata, rimango fermo sugli indici. solo se la transazione è ok
 
                     // recupero tabella di destinazione
                     let tDest = dsDest.tables[tSource.name];
 
-                    // Indice delle righe del source, và con l'indice del dest cioè quello di partenza, ma se la riga del source
-                    //  è deleted non viene aumentato
+                    // Indice delle righe del source, va con l'indice del dest cioè quello di partenza, ma se la riga del source è deleted non viene aumentato
                     // poiché il js nelle iterazioni successive deve copiare per le mod e add quella con lo stesso indice.
-                    // var rSourceIndex = 0; // NON SERVE, tengo solo l'indice della dest.
+                    var rSourceIndex = 0; // NON SERVE, tengo solo l'indice della dest.
+                        // Nino: serve, non stiamo inviando le righe unchanged
                     let rDestIndex = 0;
 
                     try {
                         for(rDestIndex; rDestIndex < tDest.rows.length;) {
-                            // Ottengo la i-esima riga dest. A seconda dello stato effettuo operazioni,
+
+                            // ottengo la i-esima riga dest. a seconda dello stato effettuo operazioni,
                             let rowDest = tDest.rows[rDestIndex];
                             let currState = rowDest.getRow().state;
 
                             if (currState === dataRowState.unchanged){
-                                // non fai nulla nel caso unchanged
+                                // sul db di origine non fai nulla se in destinazione è unchanged
                                 rDestIndex++;
                                 continue;
                             }
                             if (currState === dataRowState.modified){
-                                // 1. se riga è modified faccio merge. i 2 indici source e dest allineati
-                                rowDest.getRow().makeSameAs(tSource.rows[rDestIndex].getRow());
-                                // aumento contatore delle righe del source
+                                // 1. se riga è modified faccio merge. I due indici source e dest allineati
+                                rowDest.getRow().makeSameAs(tSource.rows[rSourceIndex].getRow());
                                 rDestIndex++;
+                                rSourceIndex++;
                                 continue;
                             }
                             if (currState === dataRowState.added){
                                 // 2. se riga è added inserisco riga corrispondente, aumento gli indici
-                                rowDest.getRow().makeSameAs(tSource.rows[rDestIndex].getRow());
+
+                                rowDest.getRow().makeSameAs(tSource.rows[rSourceIndex].getRow());
                                 // aumento contatore delle righe del source
                                 rDestIndex++;
+                                rSourceIndex++;
+
                                 continue;
                             }
                             if (currState === dataRowState.deleted){
-                                // potrei aver preso degli errori e quindi il commit non è stato fatto, dovrò aumentare il contatore
-                                //  senza cancellare la riga
+                                // potrei aver preso degli errori e quindi il commit non è stato fatto, dovrò aumentare il contatore senza cancellare la riga
                                 if (changesCommittedToDB) {
-                                    // NON aumento contatore delle righe del source! poichè era deleted, quindi sul source non la trovo
-                                    // poichè il server avrà fatto acceptChanges()
-                                    // qui io voglio che diventi detached e quindi a sua volta eseguo acceptChanges() sulla riga. Verrà tolto il metodo getRow()
+                                    // NON aumento contatore delle righe del source! poiché era deleted, quindi sul source non la trovo
+                                    // poiché il server avrà fatto acceptChanges()
+                                    // qui io voglio che diventi detached e quindi a sua volta eseguo acceptChanges() sulla riga.
+                                    // Verrà tolto il metodo getRow()
                                     rowDest.getRow().acceptChanges();
                                     continue;
                                 } else{
                                     rDestIndex++;
+                                    rSourceIndex++;
                                     continue;
                                 }
                             }
                         }
-                    } catch (e){
+                    } catch (e) {
+                        console.log("Dataset disallineati dopo il salvataggio " + e.message);
                         logger.log(logType.ERROR, "Dataset disallineati dopo il salvataggio " + e.message);
                     }
 
-                } else {
-                    logger.log(logType.ERROR, "La tabella " + tSource.name + " non esiste sul dataset " + dsDest.name);
+                }
+                else {
+                    if (tSource.rows.length > 0) {
+                        console.log("La tabella " + tSource.name + " non esiste sul dataset di destinazione " + dsDest.name);
+                        logger.log(logType.ERROR, "La tabella " + tSource.name + " non esiste sul dataset di destinazione " + dsDest.name);
+                    }
                 }
             });
     };
@@ -438,7 +503,7 @@
 
     }
 
-}((typeof appMeta === 'undefined') ? require('./jsDataQuery') : jsDataQuery,
+}((typeof jsDataQuery === 'undefined') ? require('./jsDataQuery') : jsDataQuery,
     (typeof appMeta === 'undefined') ? require('./Logger').logger : appMeta.logger,
     (typeof appMeta === 'undefined') ? require('./Logger').logTypeEnum : appMeta.logTypeEnum,
     (typeof appMeta === 'undefined') ? require('./jsDataSet') : jsDataSet,

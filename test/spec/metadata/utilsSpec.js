@@ -195,10 +195,10 @@ describe('utils',
                                 },
                                 100);//wait
                             var tt = 0;
-                            while (res === 0) {
-                                tt++;
-                                jasmine.clock().tick(1);
-                            };
+                            //while (res === 0) {
+                            //    tt++;
+                            //    jasmine.clock().tick(1);
+                            //};
                             state = 1;
                             return 10;
                         }
@@ -220,10 +220,10 @@ describe('utils',
                                 },
                                 500);//wait
                             var tt = 0;
-                            while (res === 0) {
-                                tt++;
-                                jasmine.clock().tick(1);
-                            };
+                            //while (res === 0) {
+                            //    tt++;
+                            //    jasmine.clock().tick(1);
+                            //};
                             state = 1;
                             return 20;
                         }

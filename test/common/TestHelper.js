@@ -65,9 +65,9 @@
 			appMeta.htmlPages = [];
 			appMeta.globalEventManager = new appMeta.EventManager();
 			appMeta.localResource.setLanguage("it");
-			appMeta.logger.levelLog = appMeta.logTypeEnum.DEBUG;
+			appMeta.logger.levelLog = appMeta.logTypeEnum.ERROR;
 			// N.B non c'è bisogno passa per il proxy di Karma. (vedi nel Karma_e2e_app.conf.js
-			//appMeta.routing.setUrlPrefix("http://localhost:54471");
+			appMeta.routing.setUrlPrefix("http://localhost:54471");
 		},
 
         /**
@@ -79,7 +79,7 @@
 			appMeta.appMain = {}; // inizializza oggetto appMain che in test non verrebbe tirato su
 
 			//nell'ambiente di Quality Assurance attivo il log al livello debug altrimento lascio quello di produzione ERROR
-			appMeta.logger.levelLog = appMeta.logTypeEnum.DEBUG;
+			appMeta.logger.levelLog = appMeta.logTypeEnum.ERROR;
 
 			// registra ws utilizzato in app_segreterie metaPage perfvalutazionepersonale_default
 			appMeta.routing.builderConnObj("calcolaComportamenti", 'POST', 'performance', false, true);
@@ -93,7 +93,7 @@
 			// rebase del path poichè i file necessari per il test, in particolare la MetaPage derivata sta sotto base/<pathapp>
 			appMeta.basePathMetadata = 'base/' + appfolder + '/metadata/';
 			console.log("assigned basePathMetadata = "+appMeta.basePathMetadata);
-			appMeta.config.path_maintoolBarTemplate = "/components/userTemplate/mainToolBar_Template.html";
+			appMeta.config.path_maintoolBarTemplate = "components/userTemplate/mainToolBar_Template.html";
 			appMeta.config.defaultDecimalFormat = 'n';
 			appMeta.config.defaultDecimalPrecision = 2;
 			appMeta.config.dataContabileYear = (new Date()).getFullYear();
@@ -238,7 +238,7 @@
         * @param {string} className
         */
 		htmlNodeByClassNotExists: function (className) {
-			expect($("." + className).length).toBe(0);
+			expect($("." + className).length).toBe(0,"An element of class "+className+" does not exist");
 		},
 
         /**
@@ -251,7 +251,8 @@
          */
 		htmlNodeByTagValueFilled: function (tag,htmlTagType) {
 			if (!htmlTagType) htmlTagType = "input";
-			expect($(htmlTagType + "[data-tag='" + tag + "']").val()).not.toBe(""); // non vuoto
+			let tagVal = $(htmlTagType + "[data-tag='" + tag + "']").val();
+			expect(tagVal).not.toBe("", " at tag " + tag + " of type " + htmlTagType); // non vuoto
 
 			//expect($("input[data-tag='" + tag + "']").val()).not.toBe(""); // non vuoto
 		},
@@ -264,7 +265,7 @@
          * @param {string} tag
          */
 		htmlNodeByTagNotFilled: function (tag) {
-			expect($("input[data-tag='" + tag + "']").val()).toBe(""); // vuoto
+			expect($("input[data-tag='" + tag + "']").val()).toBe("", " at tag " + tag); // vuoto
 		},
 
         /**
@@ -276,7 +277,7 @@
          * @param {string} value
          */
 		htmlNodeByTagValue: function (tag, value) {
-			expect($("input[data-tag='" + tag + "']").val()).toBe(value);
+			expect($("input[data-tag='" + tag + "']").val()).toBe(value, " at tag " + tag);
 		},
 
         /**
@@ -752,12 +753,16 @@
 														// osserva se è il td è quello che interessa
 														if (fNameElement === columnname) {
 															// recupero i 2 valori da confrontare. uno su html, l'altro lo stringValue() della cella nel dt.
-															var tdvalue = $(this).html();
+															var tdvalue = $(this).html().substring(0, 190);
 															var completeTag = metapage.helpForm.completeTag(elArr.tag, dt.columns[fNameElement]);
-															var tdvalueinserted = new appMeta.TypedObject(dt.columns[fNameElement].ctype, elArr.value, completeTag).stringValue(completeTag);
-															expect(tdvalue).toBe(tdvalueinserted);
+															var tdvalueinserted = new appMeta.TypedObject(dt.columns[fNameElement].ctype, elArr.value, completeTag).
+																					stringValue(completeTag).substring(0,190);
+															expect(tdvalue).toEqual(tdvalueinserted);
 															if (tdvalue !== tdvalueinserted) {
-																self.log('ERRORE: nel grid html ' + tNameElement + ' la riga presente non ha nel campo ' + fNameElement + ' il valore atteso ' + tdvalueinserted, EnumLogType.err);
+																self.log('ERRORE: nel grid html ' + tNameElement + ' la riga presente ' +
+																	"ha il valore .." + tdvalue+
+																	" nel campo" + fNameElement +
+																	 ' invece del valore atteso ..' + tdvalueinserted, EnumLogType.err);																	;
 															}
 														}
 													});
@@ -1048,7 +1053,7 @@
 						// come le dipendenze tra controlli   
 						$("input[data-tag='" + input.tag + "']").blur();
 
-						// se il controllo ha eventi di change attacchati allora vengono invocati forzatamente nel test.
+						// se il controllo ha eventi di change attached allora vengono invocati forzatamente nel test.
 						// --> gli eventi change DEVONO essere gestiti con Deferred solito
 						var elem =$("input[data-tag='" + input.tag + "']")[0];
 						var data = $.hasData( elem ) && $._data( elem );
@@ -1185,9 +1190,8 @@
 									// in questo caso è la metaPage dettaglio aperta dal grid
 									self.testMetaPageInitialization(metaPageDetail, detailTableName, detailEditType);
 
-									// recupero dal file del dettaglio opportuno gli input
-									var detailTestPrototype = 'appMeta.' + detailTableName + '_' + detailEditType;
-									var myinstance = eval(detailTestPrototype);
+									// recupero dal file del dettaglio opportuno gli input									
+									var myinstance = appMeta[detailTableName + '_' + detailEditType];
 									if (!myinstance) console.log(detailTestPrototype + " not FOUND");
 									var arrayInputDetail = myinstance.arrayInput;
 
@@ -1210,7 +1214,9 @@
 												// c'è la riga dei dati + header
 												var checkTr = "tr:not([data-mdlgrouped]):not(.table-in-cell-tr)";
 												expect(gridCtrl.find(checkTr).length).toBe(rowcount + 1);
-												if (gridCtrl.find(checkTr).length !== rowcount + 1) self.log("ERRORE: Ci sono delle righe in meno nella grid: " + tag, EnumLogType.err);
+												if (gridCtrl.find(checkTr).length !== rowcount + 1) {
+													self.log("ERRORE: Ci sono delle righe in meno nella grid: " + tag, EnumLogType.err);
+												}
 												self.log("torno su principale da dettaglio grid: " + tag);
 												// torno sulla meta page chiamante
 												return defFillGrid.resolve();
@@ -1246,6 +1252,7 @@
 
 						break;
 					case controlTypeEnum.checklist:
+						console.log("executing controlTypeEnum.checklist");
 						if (!isForSearch) {
 							// SYNC
 							var listCtrl = $("[data-tag='" + input.tag + "']");

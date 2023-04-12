@@ -1,4 +1,3 @@
-'use strict';
 
 describe('App4_E2E', function() {
     let appMeta = window.appMeta;
@@ -17,6 +16,11 @@ describe('App4_E2E', function() {
                     expect(res).toBe(true);
                     done();
                 }, timeout);
+            });
+
+            afterEach(function () {
+                expect(appMeta.Stabilizer.nesting).toBe(0);
+                if (appMeta.Stabilizer.nesting > 0) appMeta.Stabilizer.showDeferred();
             });
 
             it('1. callPage() table:upb, editType:tree" should be async , tree upb loaded. ',

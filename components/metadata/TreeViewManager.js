@@ -527,11 +527,11 @@
          * @description SYNC
          * Fills the treeview with the nodes taken from all tree_table rows
          * Selects no node.
-         * @returns {Deferred}
+         * @returns Promise
          */
         fillNodes:function (isToSelect, last) {
             // console.log('executing fillNodes');
-            var def = Deferred('filNodes');
+            var def = Deferred('fillNodes');
             var self = this;
             var sort = this.getSorting(this.treeTable);
 
@@ -554,7 +554,7 @@
 
                         var allCreateNodeDeferred = [];
 
-                        // le createnode sono asyncrone dentro un ciclo, metto in array e risolvo in when()
+                        // le createnode sono asincrone dentro un ciclo, metto in array e risolvo in when()
                         _.forEach(roots, function (rootRow) {
                             allCreateNodeDeferred.push(self.createNewNode(null, rootRow));
                         });
@@ -910,7 +910,7 @@
             if (!r) return def.resolve(null);
 
             //Verify if R is already in Tree
-            var keyfilter = getData.getWhereKeyClause(r, this.treeTable, this.treeTable, false);
+            var keyfilter = this.treeTable.keyFilter(r.current);//, this.treeTable, this.treeTable, false);
             var existent = this.treeTable.select(keyfilter);
 
             var toSelect = null;
@@ -968,7 +968,8 @@
 
                     //checks if any filter is present
                     if (self.treeTable.MetaData_TreeFilterTable) {
-                        var rowkey = getData.getWhereKeyClause(dtRow, dtRow.table, dtRow.table, false);
+                        var rowkey = dtRow.table.keyFilter(dtRow.current);
+                            //getData.getWhereKeyClause(dtRow, dtRow.table, dtRow.table, false);
                         var list = self.treeTable.MetaData_TreeFilterTable;
                         var founded = list.select(rowkey);
                         if (founded.length === 0) {
@@ -1037,9 +1038,12 @@
                     metaModel.copyPrimaryKey(list, self.treeTable);
 
                     _.forEach(list.rows, function (toCopy) {
-                        var searchFilter = getData.getWhereKeyClause(toCopy, toCopy.table, toCopy.table, false);
+                        var searchFilter =self.treeTable.keyFilter(toCopy.current);
+                            //getData.getWhereKeyClause(toCopy, toCopy.table, toCopy.table, false);
 
-                        if (self.treeTable.select(searchFilter).length > 0) return true; // continuo iterazione
+                        if (self.treeTable.select(searchFilter).length > 0) {
+                            return true;
+                        } // continuo iterazione
                         var newR = self.treeTable.newRow();
                         _.forEach(self.treeTable.columns, function (col) {
                             newR[col.name] = toCopy[col.name];
@@ -1050,7 +1054,8 @@
 
                     var rowsChild  = [];
                     _.forEach(list.rows, function (toCopy) {
-                        var searchFilter = getData.getWhereKeyClause(toCopy, toCopy.table, toCopy.table, false);
+                        var searchFilter =self.treeTable.keyFilter(toCopy.current);
+                            //getData.getWhereKeyClause(toCopy, toCopy.table, toCopy.table, false);
                         var found = self.treeTable.select(searchFilter)[0];
                         rowsChild.push(found);
                     });

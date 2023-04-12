@@ -44,12 +44,12 @@ describe('MetaApp',
                         expect(Object.keys(ds.tables[registryaddressTableName].columns).length).toBe(18);
                         expect(Object.keys(ds.tables[registryreferenceTableName].columns).length).toBe(22);
 
-                        expect(ds.relations["FK_registryaddress_registry"]).toBeDefined();
-                        expect(ds.relations["FK_registryreference_registry"]).toBeDefined();
+                        expect(ds.relations["registry_registryaddress"]).toBeDefined();
+                        expect(ds.relations["registry_registryreference"]).toBeDefined();
 
                         // Test sulle relazioni
-                        var rel_FK_registryaddress_registry = ds.relations["FK_registryaddress_registry"];
-                        var rel_FK_registryreference_registry = ds.relations["FK_registryreference_registry"];
+                        var rel_FK_registryaddress_registry = ds.relations["registry_registryaddress"];
+                        var rel_FK_registryreference_registry = ds.relations["registry_registryreference"];
 
                         expect(rel_FK_registryaddress_registry.childTable).toBe(registryaddressTableName);
                         expect(rel_FK_registryaddress_registry.parentTable).toBe(registryTableName);
@@ -102,7 +102,7 @@ describe('MetaApp',
                     });
                 
                 // *** TEST addMetaPage e getMetaPage
-                xdescribe("add/getMetaPage",
+                describe("add/getMetaPage",
                     function() {
                         
                         it('after invoking addMetaPage, getMetaPage returns data as a promise',
@@ -130,8 +130,8 @@ describe('MetaApp',
                                     });                                
                             });
 
-                        // test caricamento a runtime, poichè la pagina non è stata instanziata
-                        it('getMetaPage retrieves data from server',
+                        // test caricamento a runtime, poiché la pagina non è stata instanziata
+                        xit('getMetaPage retrieves data from server',
                             function(done) {
                                 // verifico che torni il valore esatto che avevo passato
                                 appMeta.getMetaPage('table1', 'def').then(function(result) {

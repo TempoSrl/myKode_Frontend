@@ -12,6 +12,16 @@ describe('ConnectionWebService', function () {
     var arrayReturned = [];
 
     var timeout  = 120000;
+    beforeAll(function () {
+        appMeta.basePath = "base/";
+        appMeta.serviceBasePath = "/"; // path relativo dove si trovano i servizi
+        //if (appMeta.globalEventManager === undefined) {
+            appMeta.globalEventManager = new appMeta.EventManager();
+        //}
+        appMeta.localResource.setLanguage("it");
+        appMeta.logger.setLanguage(appMeta.LocalResource);
+
+    });
 
     beforeEach(function () {
         jasmine.getFixtures().fixturesPath = 'base/test/spec/fixtures';
@@ -19,6 +29,7 @@ describe('ConnectionWebService', function () {
 
 
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
     });
 
     describe("ConnectionWebService class",
@@ -65,7 +76,7 @@ describe('ConnectionWebService', function () {
                                     done();
                                 });
                     }, timeout);
-                }, timeout);
+                });
 
             it('Method multiRunSelect: 1. GetDataSet method; 2. Builds array with selectBuilder; 3. Launches multiRunSelect',
                 function(done) {
@@ -116,7 +127,7 @@ describe('ConnectionWebService', function () {
                                         prm: { selBuilderArr: selBuilderArraySer }
                                     }
 
-                                    console.log("START " + logger.getTime());
+                                    
                                     // chiamata al server
                                     conn.call(objConn)
                                         .then(
@@ -140,7 +151,6 @@ describe('ConnectionWebService', function () {
                                                 expect(ds1MultiRunSelect.tables["registry"].rows.length).toBeGreaterThan(0);
                                                 expect(ds1MultiRunSelect.tables["registryaddress"].rows.length).toBeGreaterThan(0);
                                                 expect(ds1MultiRunSelect.tables["geo_city"].rows.length).toBeGreaterThan(0);
-                                                console.log("FINISH " + logger.getTime());
                                                 done();
                                             })
                                         .fail(
@@ -156,9 +166,9 @@ describe('ConnectionWebService', function () {
                                     done();
                                 });
                     }, timeout);
-                }, timeout);
+                });
 
-            it('Method multiRunSelect: Loads 10000 rows from registry table',
+            it('Method multiRunSelect: Loads 1000 rows from registry table',
                 function(done) {
                     appMeta.authManager.login(
                         appMeta.configDev.userName,
@@ -189,13 +199,10 @@ describe('ConnectionWebService', function () {
                                         prm: { selBuilderArr: selBuilderArraySer }
                                     }
 
-                                    console.log("START " + logger.getTime());
                                     // chiamata al server
                                     conn.call(objConn).then(
                                             function (res) {
-
                                                 expect(res).toBeDefined();
-
                                                 var ds = appMeta.getDataUtils.getJsDataSetFromJson(res);
                                                 // vanno serializzate le chiamate alle sel.onRead(), ove siano definite
 
@@ -207,11 +214,9 @@ describe('ConnectionWebService', function () {
                                                         var tableWasEmpty = (destTable.rows.length === 0);
                                                         appMeta.getDataUtils.mergeRowsIntoTable(destTable, inputTable.rows, !tableWasEmpty);
                                                     }
-
                                                 });
 
                                                 expect(ds1MultiRunSelect.tables["registry"].rows.length).toBe(top);
-                                                console.log("FINISH " + logger.getTime());
                                                 done();
                                         }).fail(
                                             function (err) {
@@ -226,7 +231,7 @@ describe('ConnectionWebService', function () {
                                     done();
                                 });
                     }, timeout);
-                }, timeout);
+                });
 
             it('Test notify/progress calling testNotify method on server',
                 function(done) {
@@ -243,25 +248,23 @@ describe('ConnectionWebService', function () {
                         // chiamata al server di tipo web socket
                         conn.call(objConn).then(
                             function (res) {
-                                console.log("then " + arrayReturned);
                                 expect(res).toBeUndefined();
                                 expect(arrayReturned.length).toBe(5);
                                 expect(_.isEqual(arrayReturned, [5,6,7,8,9])).toBe(true);
-                                console.log("ottenuta resolve finale");
                                 done();
                             }).fail(
                                 function (err) {
                                     logger.log(logType.ERROR, 'Errore notify ', 'err: ' , err.text);
                                     expect(false).toBe(true);
                                     done();
-                            }).progress(
+                                })
+                            .progress(
                                 function (data) {
                                     arrayReturned.push(data);
-                                    console.log("progress " + arrayReturned);
                             })
 
-                    }, timeout);
-                }, timeout);
+                    });
+                },10000);
 
         });
 });

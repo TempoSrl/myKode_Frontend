@@ -216,7 +216,7 @@
             var field = that.ai.childField;
             var col = childTable.columns[field];
             if (that.metaPage.state.isEditState() &&
-               (metaModel.denyNull(col) || metaModel.denyZero(col) || !metaModel.allowDbNull(col) || !metaModel.allowZero(col))) {
+               (metaModel.denyNull(col) || metaModel.denyZero(col) || !metaModel.allowNull(col) || !metaModel.allowZero(col))) {
                return that.metaPage.showMessageOk("Questo campo è obbligatorio, seleziona un valore!")
                   .then(function () {
                      that.helpForm.applyFocus(that.el);

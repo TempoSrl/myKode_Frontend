@@ -1,3 +1,5 @@
+/*global appMeta_ */
+
 /**
  * @module AuthManager
  * @description
@@ -53,7 +55,7 @@
          * @returns {Deferred} true if login is ok, false otherwise
          */
         loginSSO: function(userName, session, datacontabile) {
-            return this.loginCore(EnumLoginType.sso, userName, session, datacontabile)
+            return this.loginCore(EnumLoginType.sso, userName, session, datacontabile);
         },
 
         /**
@@ -106,12 +108,12 @@
             appMeta.connection.call(objConn)
                 .then(function(data) {
                         if (data.token) {
-                            return def.from(self.callBackLoginWithToken(data))
+                            return def.from(self.callBackLoginWithToken(data));
                         }
                         // se non arriva token devo valutare sia login sso oppure ldap con registrazione abilitata
-                        return def.from(self.callBackLoginWithoutToken(data))
+                        return def.from(self.callBackLoginWithoutToken(data));
                     },
-                    function() {
+                    function () { //Unauthorized error
                         return def.resolve(false);
                     });
 
@@ -121,6 +123,7 @@
         callBackLoginWithToken: function (data) {
             var self = this;
             var def  = Deferred("callBackLoginWithToken");
+            //console.log("received token "+data.token)
             // memorizzo token di autenticazione. verrà passato ad ogni chiamata
             appMeta.connection.setToken(data.token, data.expiresOn);
             // salvo var ambiente di sicurezza tornate dal server sulla classe security
@@ -142,10 +145,14 @@
             var def = Deferred("callBackLoginWithoutToken");
             if (this.isValidSsoRequest(data)) {
                 // in ogni caso devo riportare al login
-                appMeta.globalEventManager.trigger(appMeta.EventEnum.SSORegistration, self, 'SSORegistration', data);
-                return def.resolve();
+                def.from(appMeta.globalEventManager.trigger(appMeta.EventEnum.SSORegistration,
+                        self, 'SSORegistration', data))
+                
             }
-            return def.resolve(false);
+            else {
+                def.resolve(false);
+            }
+            return def.promise();
         },
 
         isValidSsoRequest:function(json) {
@@ -153,30 +160,30 @@
             // sarà obbligatorio nella richiesta registrazione
             return true;
 
-            if (json && !!json.cf) {
-                return true
-            }
-            return false;
+            // if (json && !!json.cf) {
+            //     return true;
+            // }
+            // return false;
         },
 
         setSystemInfo:function() {
-            var calcFeVer = function () {
-                var currhtml = document.documentElement.outerHTML;
-                var firstvariable = '<script src="../dist/mdlw_bundle_';
-                var secondvariable = '.js"></script>';
-                var matches = currhtml.match(new RegExp(firstvariable + "(.*)" + secondvariable));
+            let calcFeVer = function () {
+                let currhtml = document.documentElement.outerHTML;
+                let firstvariable = '<script src="../dist/mdlw_bundle_';
+                let secondvariable = '.js"></script>';
+                let matches = currhtml.match(new RegExp(firstvariable + "(.*)" + secondvariable));
                 if (matches && matches.length > 1){
-                    var match = matches[1];
-                    return match.substring(match.indexOf('_') + 1)
+                    let match = matches[1];
+                    return match.substring(match.indexOf('_') + 1);
                 }
                 return 'Debug';
             };
-            var dbver = sec.sys('dbversion');
-            var bever = sec.sys('backendversion');
-            var fever = calcFeVer();
-            var systemInfo = 'DB ver: ' + dbver + ' - server version: ' + bever + ' - client ver: ' + fever;
-            var footer = $('.footer p');
-            var footerText = appMeta.appMainConfig.copyright;
+            let dbver = sec.sys('dbversion');
+            let bever = sec.sys('backendversion');
+            let fever = calcFeVer();
+            let systemInfo = 'DB ver: ' + dbver + ' - server version: ' + bever + ' - client ver: ' + fever;
+            let footer = $('.footer p');
+            let footerText = appMeta.appMainConfig.copyright;
             footer.text(footerText + ' - ' + systemInfo);
         },
 
@@ -186,8 +193,8 @@
          * @returns {Deferred} true is logged ok, false otherwise
          */
         cambioRuolo:function(dtRoles) {
-          var def  = Deferred("cambioRuolo");
-          var self = this;
+          let def  = Deferred("cambioRuolo");
+          let self = this;
           // apre modale per la scelta del ruolo, quindi si mette in attesa
           var cambioRuolo = new appMeta.CambioRuolo();
           cambioRuolo.show(dtRoles)
@@ -308,9 +315,9 @@
          */
         register:function (username, password, email, codiceFiscale, partitaIva, cognome, nome, dataNascita, role){
 
-            var def  = Deferred("register");
+            let def  = Deferred("register");
 
-            var objConn = {
+            let objConn = {
                 method: methodEnum.register,
                 prm: {
                     userName: username,
@@ -346,9 +353,9 @@
          * @returns {Deferred}
          */
         resetPassword:function (email) {
-            var def  = Deferred("resetPassword");
+            let def  = Deferred("resetPassword");
 
-            var objConn = {
+            let objConn = {
                 method: methodEnum.resetPassword,
                 prm: {
                     email: email
@@ -367,9 +374,9 @@
         },
 
         nuovaPassword:function (token, password) {
-            var def  = Deferred("nuovaPassword");
+            let def  = Deferred("nuovaPassword");
 
-            var objConn = {
+            let objConn = {
                 method: methodEnum.nuovaPassword,
                 prm: {
                     token: token,
@@ -389,9 +396,9 @@
         },
 
         sendMail:function (emailDest, subject, htmlBody) {
-            var def  = Deferred("sendMail");
+            let def  = Deferred("sendMail");
 
-            var objConn = {
+            let objConn = {
                 method: methodEnum.sendMail,
                 prm: {
                     emailDest: emailDest,
@@ -421,7 +428,7 @@
             register : "register",
             resetPassword : "resetPassword",
             nuovaPassword: "nuovaPassword",
-            cambiaRuolo: "cambiaRuolo",
+            cambiaRuolo: "changeRole",
             sendMail: "sendMail"
         });
      

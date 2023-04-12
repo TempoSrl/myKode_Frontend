@@ -7,7 +7,7 @@
  * Collection of utility functions
  */
 (function (Deferred, OriginaDeferred, when) {
-    "use strict";
+
 
     /** Detect free variable `global` from Node.js. */
     let freeGlobal = typeof global === 'object' && global && global.Object === Object && global;
@@ -123,7 +123,9 @@
     utils.optBind = function(fun, obj, args) {
         if (!fun) return function() {};
         let rest = Array.prototype.slice.call(arguments, 1);
-        if (rest.length > 1) return fun.bind.apply(fun, rest);
+        if (rest.length > 1) {
+            return fun.bind.apply(fun, rest);
+        }
         return fun.bind(obj);
     };
 

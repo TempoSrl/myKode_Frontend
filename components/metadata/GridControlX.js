@@ -515,7 +515,7 @@
                }
                return result;
             },
-            { names: [], sorting: [] });
+             { names: [], sorting: [] });
          return _.orderBy(rows, sortingObject.names, sortingObject.sorting);
 
       },
@@ -705,28 +705,67 @@
        * @param {DataColumn} column
        */
       addStandardCell: function ($tr, objRow, column) {
+         let getCompressButton = function(){
+            return '<button data-mdlbuttontype="expandBtn" data-mdlexpanded="false" type="button" '+ // Adding the button
+                        `style="cursor:zoom-in;margin-left:2%; border-radius: 15%;"`+ // Inline styles, cursor is toggled
+                        '>' +
+                           '<i class="fas fa-chevron-down"></i>' +
+                        '</button>';
+         };
          let value = this.getFormattedValue(objRow, column);
          let columnStyle = cssDefault.getColumnsAlignmentCssClass(column.ctype);
          // a seconda se è un json o stringa semplice formatto la cella
          let jsonObj = this.getJson(value);
          let $td = $('<td style="user-select: none" nowrap data-mdlcolumnname="' +
-             column.name.replace("!", "") + '" >');
+                     column.name.replace("!", "") + '" >');
+         let originalText = '';
+
          if (!!jsonObj) {
 
-           this.addToJsonOrNipoti(column.name);
-            let $tableCell = $('<table class="table table-in-cell">');
+            this.addToJsonOrNipoti(column.name);
+            let $tableCell = $('<table class="table table-in-cell">'),
+               that = this;
             _.forEach(Object.keys(jsonObj), function (k) {
                let $tr1 = $('<tr class="table-in-cell-tr">');
+               originalText = '';
                if (typeof jsonObj[k] === 'object') {
                   for (let key in jsonObj[k]) {
-                     let $td3 = $('<td class="mdl-cell-size-calc">');
-                     $td3.html(key + ": " + jsonObj[k][key]);
+                     originalText = '';
+                     let $td3 = $('<td class="mdl-cell-size-calc">'),
+                        value = jsonObj[k][key];
+                     
+                     if(value.length > 200) { // Value cut down to 200 chars if too long
+                        originalText = value;
+                        value = value.substring(0, 197) + '...'; // Adding 3 dots at the end of the text
+                        value += getCompressButton();
+                     }
+                     
+                     $td3.html(key + ": " + value);
                      $tr1.append($td3);
+                     if (originalText) {
+                        let $button = $td3.children("button[data-mdlbuttontype='expandBtn']"); //Using the data-mdlbuttontype="expandBtn" attribute to identify the button
+                        $button.attr("data-tag-originalText",originalText); //Saving the full text
+                        $button.click(that.toggleExpandCell ); //Registering the click
+                     }
                   }
                } else {
-                  let $td3 = $('<td class="mdl-cell-size-calc">');
+                  let $td3 = $('<td class="mdl-cell-size-calc">'),
+                     value = jsonObj[k];
+                  
+                  if(value.length > 200) { // Value cut down to 200 chars if too long
+                     originalText = value;
+                     value = value.substring(0, 197) + '...'; // Adding 3 dots at the end of the text
+                     value += getCompressButton();
+                  }
+
                   $td3.html(k + ": " + jsonObj[k]);
                   $tr1.append($td3);
+                  
+                  if (originalText) {
+                     let $button = $td3.children("button[data-mdlbuttontype='expandBtn']"); //Using the data-mdlbuttontype="expandBtn" attribute to identify the button
+                     $button.attr("data-tag-originalText",originalText); //Saving the full text
+                     $button.click(that.toggleExpandCell ); //Registering the click
+                  }
                }
 
                $tableCell.append($tr1);
@@ -736,9 +775,55 @@
          } else {
             // applico lo stile
             $td.addClass(columnStyle);
+
+            if(value.length > 200) { // Value cut down to 200 chars if too long
+               originalText = value;
+
+               value = value.substring(0, 197) + '...'; // Adding 3 dots at the end of the text
+               value += getCompressButton();
+            }
             this.addChildElement($tr, $td, value);
+
+            if (originalText) { // Registering the click function to toggle the compression of the text
+
+               let $button = $td.children("button[data-mdlbuttontype='expandBtn']"); //Using the data-mdlbuttontype="expandBtn" attribute to identify the button
+               $button.attr("data-tag-originalText",originalText); //Saving the full text
+               $button.click(this.toggleExpandCell ); //Registering the click
+            }
          }
          if (column.tohide) $td.hide();
+      },
+
+      /**
+       * @method toggleExpandCell
+       * @private
+       * @description SYNC
+       * Toggles the display of the whole text or the truncated one
+       * @param {jQueryEvent} ev click event on the toggle button
+       */
+      toggleExpandCell: function (ev) {
+
+         let $button = $(ev.delegateTarget); //Using the delegateTraget since the target could be the icon or the button
+         let $td = $button.parent(),
+             $icon = $button.find('svg'),
+             isExpanded = ( $button.attr("data-mdlexpanded") === 'true' );
+         
+         ev.stopPropagation(); // Prevents the click from propagating to the list below and selecting the row
+
+         let originalText = $button.attr("data-tag-originalText");
+         $td.contents().first()[0].textContent = //Replacing the text (always the first node) with the complete text or the cut one
+            isExpanded ?
+               originalText.substring(0, 197) + '...'
+            :
+               originalText;
+
+         $button.css("cursor", isExpanded ? 'zoom-in' : 'zoom-out');
+         
+         if($icon.length > 0) {
+            $icon.attr("data-icon", isExpanded ? 'chevron-down' : 'chevron-up') //Switching the icon
+         }
+
+         $button.attr("data-mdlexpanded", !isExpanded); //Switching the flag
       },
 
       /**
@@ -2082,7 +2167,7 @@
                }
                else {
                   // aggiungo data-mdlcolumnname, serve per individuare la colonna da invertire quando le sposto con drag n drop
-                  $th = $('<th draggable="true" id="' + thid + '" data-mdlcolumnname="' + c.name.replace("!", "") + '">');
+                  $th = $('<th draggable="true" id="' + thid + '" data-mdlcolumnname="' + c.name.replace("!", "") + '" class="mdl-cell-size-calc">');
                   $th.on("dragstart", _.partial(self.dragHeaderColumn, self, c));
                   $th.on("click", _.partial(self.sortColumnClick, self, c));
                }
@@ -2798,13 +2883,13 @@
 
 
       /**
-       * @method gridHtmlToExcel
+       * @method replaceSpecialCharacters
        * @private
        * @description SYNC
        * replaces some special character into html code. Used in html export
        * @param {string} s
        */
-      replaceSpecialCharatcters: function (s) {
+      replaceSpecialCharacters: function (s) {
          var html = s;
          var fReplcace = function (htmlprm, char, code) {
             return htmlprm.split(char).join(code);
@@ -2876,7 +2961,18 @@
 
          });
 
-         let gridhtml = that.replaceSpecialCharatcters($(gridcloned).html());
+         // Prima di tutto verifico se ci sono colonne compresse (troncate a 250 caratteri)
+         let compressButtons = $(gridcloned).find("button[data-mdlbuttontype='expandBtn']");
+         compressButtons.each( function() { // Ripristino eventualmente il testo originale e rimuovo il bottone prima di mandarlo in stampa
+            let $btn = $(this);
+            let $parentRow = $btn.parent();
+
+            //Ripristino il testo originale
+            $parentRow.contents().first()[0].textContent = $btn.attr("data-tag-originalText");
+            $btn.remove(); //Rimuovo il bottone dalla lista da stampare
+         });
+
+         let gridhtml = that.replaceSpecialCharacters($(gridcloned).html());
 
          // creo excel direttamente dal table
          let tab_text = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';

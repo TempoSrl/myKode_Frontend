@@ -79,9 +79,11 @@
          var def = $.Deferred();
 
          countExpect++;
-         var ds1 = null;
+          var ds1 = null;
+          testHelper.log("to do testMetaPageInitializationeffettuato");
          // TEST GENERICO DA INVOCARE per testare inizializzazione di qualsiasi MetaPage
          testHelper.testMetaPageInitialization(mp, tablename, edittype);
+          testHelper.log("done with testMetaPageInitializationeffettuato");
 
          // TEST SPECIFICO DI PAGINA.
          testHelper.testHtmlNodeByTagExists(arrayInput, true);
@@ -91,12 +93,15 @@
 
          // verifica prima la correttezza del dataset rispetto al db
          testHelper.testDatasetCompliant(tablename, edittype)
-            .then(function () {
+             .then(function () {
+                 testHelper.log("testDatasetCompliant done");
                // si mette in attesa della fine dell'evento del bottone di insert.
-               // N.B non posso usare lo stabileToCurrnet poichè tornano nel mentre le chaimate ai ws delle describeColumns che quindi mi risolvono l'instabilità
-               // e non va bene. Son costretto ad usare l'evento, quindi poi dalla usccessiva instabilità tutto sarà ok.
-               common.eventGlobalWaiter(mp, appMeta.EventEnum.buttonClickEnd)
-                  .then(function () {
+               // N.B non posso usare lo stabileToCurrent poichè tornano nel mentre le chiamate ai ws delle describeColumns che quindi mi risolvono l'instabilità
+               // e non va bene. Son costretto ad usare l'evento, quindi poi dalla successiva instabilità tutto sarà ok.
+                 common.eventGlobalWaiter(mp, appMeta.EventEnum.buttonClickEnd)
+                 //common.pageEventWaiter(mp, appMeta.EventEnum.stopMainRowSelectionEvent)
+                   .then(function () {
+                     testHelper.log("buttonClickEnd fired");
                      countExpect++;
                      // verifico i valori di default che ho nel vettore di configurazione.
                      testHelper.testDefaultValues(arrayInput);
@@ -113,9 +118,13 @@
                      common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
                         testHelper.log("Tento di Premere ignora e salva");
                         if ($(".modal-footer .procedureMessage_btn_ignoreandsave").length) {
-                           testHelper.log("Premuto ignora e salva");
                            $(".modal-footer .procedureMessage_btn_ignoreandsave").click();
-                        }
+                            testHelper.log("Premuto ignora e salva");
+                         }
+                         if ($(".modal")) {
+                             $(".modal").find("button")[1].click();
+                             testHelper.log("Premuto ignora e salva");
+                         }
                      });
 
                      ds1 = mp.state.DS;
@@ -157,7 +166,7 @@
                         if ($(".modal-footer .procedureMessage_btn_ignoreandsave").length) {
                            testHelper.log("Premuto ignora e salva");
                            $(".modal-footer .procedureMessage_btn_ignoreandsave").click();
-                        }
+                         }
                      });
                      mp.canSave = true;
                      testHelper.clickButtonByTag('mainsave');
@@ -182,7 +191,11 @@
                        // Messaggio conferma per la cancellazione. premo ok
                        common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
                            countExpect++;
-                           $(".modal").find("button")[1].click();
+                           testHelper.log("Tento di premere la conferma della cancellazione");
+                           if ($(".modal").find("button")[1]) {
+                               $(".modal").find("button")[1].click();
+                               testHelper.log("Premuto la conferma della cancellazione");
+                           }
                        });
                        // 6. premo "Delete"
                        mp.canCancel = true;
@@ -214,8 +227,11 @@
                      // Premo ok sul msgbox di riga non trovata
                      common.pageEventWaiter(mp, appMeta.EventEnum.showModalWindow).then(function () {
                         countExpect++;
-                        testHelper.log("Premuto \"ok riga non trovata\"");
-                        $(".modal").find("button")[0].click();
+                         testHelper.log("Tento di premere \"ok riga non trovata\"");
+                         if ($(".modal").find("button")[1]) {
+                             $(".modal").find("button")[1].click();
+                             testHelper.log("Premuto \"ok riga non trovata\"");
+                        }
                      });
                      return s7;
                   }).then(function () {
@@ -239,6 +255,7 @@
                   });
 
                // 2. premo bottone di "Nuovo"
+                 testHelper.log("clicking maininsert");
                testHelper.clickButtonByTag('maininsert');
             });
 
@@ -449,12 +466,13 @@
             appMeta.configDev.password,
             appMeta.configDev.datacontabile)
             .then(function (res) {
-               expect(res).toBe(true);
+                expect(res).toBe(true);
                countExpect++;
-
+                testHelper.log("Login effettuato");
                // Evento di attesa pagina caricata
                testHelper.waitEvent(appMeta.EventEnum.showPage)
-                  .then(function (metaPage) {
+                   .then(function (metaPage) {
+                       testHelper.log("showPage effettuato");
                       // forzo esistenza bottone insert, per quelle pagine che ce l'hanno disabilitato
                      metaPage.canInsert = true;
                      metaPage.canCancel = true;

@@ -81,13 +81,16 @@ module.exports = function(config) {
             'test/common/TestHelper.js',
             'test/common/TestCase.js',
             'test/common/metadata/TestApp.js',
-            'test/common/*.js',
+            //'test/common/*.js',
             'test/spec/fixtures/*.html',
             'components/template/*.html',
             'test/app/styles/app.css',
             'test/app/styles/bootstrap/css/bootstrap.css',
             'test/app/styles/bootstrap/js/bootstrap.js',
-            'test/spec_e2e_app/metadata/*.js',
+            'test/spec_e2e_app/metadata/App1_E2E_Spec.js',
+            'test/spec_e2e_app/metadata/App2_E2E_Spec.js',
+            'test/spec_e2e_app/metadata/App3_E2E_Spec.js',
+            'test/spec_e2e_app/metadata/App4_E2E_Spec.js',
             'test/spec_e2e_app/app3/registry/*.js',
             'test/spec_e2e_app/app3/registryreference/*.js',
             'test/spec_e2e_app/app4/upb/Upb_TreeNode.js',
@@ -95,14 +98,15 @@ module.exports = function(config) {
             'test/spec_e2e_app/app4/upb/Upb_TreeViewManager.js',
             'test/spec_e2e_app/app4/upb/meta_upb.js',
             { pattern: 'test/spec_e2e_app/**/*.js', included: false, served: true },
-             { pattern: 'test/spec_e2e_app/**/*.html', included: false, served: true },
-             { pattern: 'test/spec_e2e_app/**/*.json', included: false, served: true },
+             { pattern: 'test/spec_e2e_app/**/*.html', included: false, served: true }
+            // { pattern: 'test/spec_e2e_app/**/*.json', included: false, served: true },
         ],
 
         // list of files / patterns to exclude
         exclude: [
         ],
         proxies: {            
+            '/base/test_client/components/template/': '/base/components/template/',
             '/base/test/spec_e2e_app/app1/components/template/': '/base/components/template/',
             '/base/test/spec_e2e_app/app2/components/template/': '/base/components/template/',
             '/base/test/spec_e2e_app/app3/components/template/': '/base/components/template/',
@@ -133,12 +137,23 @@ module.exports = function(config) {
         // - Safari (only Mac)
         // - PhantomJS
         // - IE (only Windows)
+        // - Edge
+      
+
         browsers: [
-            'ChromeHeadless' //'Chrome' //
+            'ChromeDebugging' // ChromeDebugging ChromeHeadless  EdgeDebugging
         ],
+
+        customLaunchers: {
+            ChromeDebugging: {
+                base: 'Chrome', 
+                flags: ['--remote-debugging-port=9333']
+            }
+        },
 
         // Which plugins to enable
         plugins: [
+            //'karma-edge-launcher',
             'karma-phantomjs-launcher', 'karma-jasmine',
             'karma-jasmine-html-reporter',
             'karma-chrome-launcher',
@@ -154,7 +169,7 @@ module.exports = function(config) {
 
         // level of logging
         // possible values: LOG_DISABLE || LOG_ERROR || LOG_WARN || LOG_INFO || LOG_DEBUG
-        logLevel: config.LOG_ERROR
+        logLevel: config.LOG_WARN
 
         // Uncomment the following lines if you are using grunt's server to run the tests
         // proxies: {

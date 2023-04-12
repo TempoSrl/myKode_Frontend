@@ -41,12 +41,15 @@
         this.setCurrentBackend(this.backendType);
         this.context = {};
 
-        this.requestIdCurrent  = 0; // contatore delle richieste corrente
+        this.requestIdCurrent = 0; // contatore delle richieste corrente
+        this.testMode = false;
     };
 
 
     Connection.prototype = {
-
+        setTestMode: function (value) {
+            this.testMode = value;
+        },
         constructor: Connection,
 
         /**
@@ -104,8 +107,11 @@
                             var msg = appMeta.localResource.serverUnracheable;
                             if (err.status) {
 
-                                // ripulsico errore
-                                var serr = err.text.replace(/"/g, '');
+                                // ripulisco errore
+                                var serr = null;
+                                if (err.text) {
+                                    serr = err.text.replace(/"/g, '');
+                                }
 
                                 if (err.status === 401) {
                                     self.currentBackendManager.unsetToken(); // reset della'header dove c'è token di autenticazione
@@ -176,10 +182,17 @@
                             objConn.prm.password = '************'
                         }
 
-                        logger.log(logtype, msg + " method: '" + objConn.method + "' ",
-                            showInfo ? " errors: " + JSON.stringify(err) : "",
-                            showInfo ? " prm: " + JSON.stringify(objConn.prm) : "");
-                        return def.reject(err);
+                        if (self.testMode) {
+                            console.log(err);
+                            def.reject(err);
+                        }
+                        else {
+                            logger.log(logtype, msg + " method: '" + objConn.method + "' ",
+                                showInfo ? " errors: " + JSON.stringify(err) : "",
+                                showInfo ? " prm: " + JSON.stringify(objConn.prm) : "").
+                                then(() => def.reject(err))
+                        }
+                        return def.promise();
                     })
         },
 
@@ -244,7 +257,7 @@
          * @param {string} token
          * @param {Date} expiresOn
          */
-        setToken: function (token, expiresOn) {
+        setToken: function (token, expiresOn) {            
             return this.currentBackendManager.setToken(token, expiresOn);
         },
 

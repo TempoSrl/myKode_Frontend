@@ -1,18 +1,17 @@
-'use strict';
-
-describe('getDataUtils', function () {
+/*global it,describe,jsDataSet,expect*/
+describe('getDataUtils', function (){
     var q = window.jsDataQuery;
     var getDataUtils = appMeta.getDataUtils;
 
-    beforeEach(function() {
+    beforeEach(function (){
 
     });
 
     describe("getDataUtils class",
-        function () {
+        function (){
 
             it('mergeRowsIntoTable() with checkExistance=false, merges rows correctly into the dsTarget ',
-                function () {
+                function (){
 
                     var ds = new jsDataSet.DataSet("temp");
                     var tSource = ds.newTable("tSource");
@@ -27,10 +26,10 @@ describe('getDataUtils', function () {
                     tTarget.setDataColumn(cCodice, "Decimal");
                     tTarget.setDataColumn(cField1, "String");
                     tTarget.setDataColumn(cField2, "String");
-                    var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                    var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                    var objrow3 = { c_codice: 3, c_field1: "tre", c_field2: "f2_3" };
-                    var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
+                    var objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    var objrow3 = {c_codice: 3, c_field1: "tre", c_field2: "f2_3"};
+                    var objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
 
                     tSource.add(objrow1);
                     tSource.add(objrow2);
@@ -45,7 +44,7 @@ describe('getDataUtils', function () {
                 });
 
             it('mergeRowsIntoTable() with checkExistance=false, merges rows correctly into the dsTarget ',
-                function () {
+                function (){
 
                     var ds = new jsDataSet.DataSet("temp");
                     var tSource = ds.newTable("tSource");
@@ -62,17 +61,17 @@ describe('getDataUtils', function () {
                     tTarget.setDataColumn(cField2, "String");
                     tSource.key("c_codice");
                     tTarget.key("c_codice");
-                    var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                    var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                    var objrow3 = { c_codice: 3, c_field1: "tre", c_field2: "f2_3" };
-                    var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
+                    var objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    var objrow3 = {c_codice: 3, c_field1: "tre", c_field2: "f2_3"};
+                    var objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
 
                     tSource.add(objrow1);
                     tSource.add(objrow2);
                     tSource.add(objrow3);
                     tSource.add(objrow4);
 
-                    var objrow3old = { c_codice: 3, c_field1: "tre_old", c_field2: "f2_3" };
+                    var objrow3old = {c_codice: 3, c_field1: "tre_old", c_field2: "f2_3"};
                     tTarget.add(objrow3old);
 
                     expect(tTarget.rows.length).toBe(1); // inizialmente solo 1 riga
@@ -85,7 +84,7 @@ describe('getDataUtils', function () {
                 });
 
             it('mergeRowsIntoTable() with checkExistance=false, deleted rows, merges rows correctly into the dsTarget ',
-                function () {
+                function (){
 
                     var ds = new jsDataSet.DataSet("temp");
                     var tSource = ds.newTable("tSource");
@@ -102,10 +101,10 @@ describe('getDataUtils', function () {
                     tTarget.setDataColumn(cField2, "String");
                     tSource.key("c_codice");
                     tTarget.key("c_codice");
-                    var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                    var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                    var objrow3 = { c_codice: 3, c_field1: "tre", c_field2: "f2_3" };
-                    var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
+                    var objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    var objrow3 = {c_codice: 3, c_field1: "tre", c_field2: "f2_3"};
+                    var objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
 
                     tSource.add(objrow1);
                     tSource.add(objrow2);
@@ -114,7 +113,7 @@ describe('getDataUtils', function () {
 
                     objrow3.getRow().state = jsDataSet.dataRowState.deleted;
 
-                    var objrow3old = { c_codice: 3, c_field1: "tre_old", c_field2: "f2_3" };
+                    var objrow3old = {c_codice: 3, c_field1: "tre_old", c_field2: "f2_3"};
                     tTarget.add(objrow3old);
 
                     expect(tTarget.rows.length).toBe(1); // inizialmente solo 1 riga
@@ -128,7 +127,7 @@ describe('getDataUtils', function () {
                 });
 
             it('mergeDataSet() merges a dsSource into dsTarget',
-                function () {
+                function (){
 
                     var dsTarget = new jsDataSet.DataSet("dsTarget");
                     var dsSource = new jsDataSet.DataSet("dsSource");
@@ -151,15 +150,15 @@ describe('getDataUtils', function () {
                     tTarget2.setDataColumn("c_field2_2", "String");
                     tSource1.key("c_codice");
                     tSource2.key("c_codice_2");
-                    var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                    var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                    var objrow3 = { c_codice: 3, c_field1: "tre", c_field2: "f2_3" };
-                    var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
+                    var objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    var objrow3 = {c_codice: 3, c_field1: "tre", c_field2: "f2_3"};
+                    var objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
 
-                    var objrow5 = { c_codice_2: 5, c_field1_2: "cinque", c_field2_2: "f2_5" };
-                    var objrow6 = { c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6" };
+                    var objrow5 = {c_codice_2: 5, c_field1_2: "cinque", c_field2_2: "f2_5"};
+                    var objrow6 = {c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6"};
 
-                    var objrow7 = { c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6" };
+                    var objrow7 = {c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6"};
 
                     tSource1.add(objrow1);
                     tSource1.add(objrow2);
@@ -182,8 +181,9 @@ describe('getDataUtils', function () {
                     expect(tTarget2.rows.length).toBe(3); // 2 + 1
                 });
 
+
             it('mergeDataSet() merges a dsSource modified into dsTarget, with flag "changes committed to db" = true, easy case ',
-                function () {
+                function (){
 
                     var dsTarget = new jsDataSet.DataSet("dsTarget");
                     var dsSource = new jsDataSet.DataSet("dsSource");
@@ -212,61 +212,64 @@ describe('getDataUtils', function () {
                     tTarget1.key("c_codice");
                     tSource1.key("c_codice");
                     //tSource2.key("c_codice_2");
-                    var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                    var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                    var objrow3 = { c_codice: 3, c_field1: "tre", c_field2: "f2_3" };
-                    var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
-
-                    var objrow5 = { c_codice_2: 5, c_field1_2: "cinque", c_field2_2: "f2_5" };
-                    var objrow6 = { c_codice_2: 6, c_field1_2: "seiModificato", c_field2_2: "f2_6" };
-
-                    var objrow7 = { c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6" };
-                    var objrow8 = { c_codice_2: 8, c_field1_2: "otto", c_field2_2: "f2_5" };
-                    var objrow9= { c_codice_2: 9, c_field1_2: "nove", c_field2_2: "f2_8" };
-
-                    tSource1.add(objrow1);
-                    tSource1.add(objrow2);
-                    tSource1.add(objrow4);
-
+                    var objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    var objrow3 = {c_codice: 3, c_field1: "tre", c_field2: "f2_3"};
+                    var objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
                     tTarget1.add(objrow1);
                     tTarget1.add(objrow2);
                     tTarget1.add(objrow3);
                     tTarget1.add(objrow4);
+                    tTarget1.acceptChanges();
+
+                    var objrow5 = {c_codice_2: 5, c_field1_2: "cinque", c_field2_2: "f2_5"};
+                    var objrow6 = {c_codice_2: 6, c_field1_2: "seiModificato", c_field2_2: "f2_6"};
+
+                    var objrow7 = {c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6"};
+                    var objrow8 = {c_codice_2: 8, c_field1_2: "otto", c_field2_2: "f2_5"};
+                    var objrow9 = {c_codice_2: 9, c_field1_2: "nove", c_field2_2: "f2_8"};
+
+                    // tSource1.add(objrow1);
+                    // tSource1.add(objrow2);
+                    // tSource1.add(objrow4);
 
                     // la 3 era deleted e infatti simulo che sul source non ci sia
-                    tTarget1.acceptChanges();
+
                     tSource1.acceptChanges();
 
                     objrow3.getRow().del();  // jsDataSet.dataRowState.deleted;
 
 
-                    tSource2.add(objrow5);
+                    //tSource2.add(objrow5);
                     tSource2.add(objrow6);
 
                     tTarget2.add(objrow8);
                     tTarget2.add(objrow5);
                     tTarget2.add(objrow9);
-                    tTarget2.add(objrow7);
-
+                    let dr7 = tTarget2.add(objrow7).current;
 
                     tSource2.acceptChanges();
                     tTarget2.acceptChanges();
 
-                    //simulo riga "modified"    
-                    objrow7.getRow().old = { c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6" };
-                    objrow7.getRow().state = jsDataSet.dataRowState.modified;
                     // cancello riga in pos 1
                     objrow8.getRow().del();
                     objrow9.getRow().del();
 
                     // check preliminari
-                    expect(tSource1.rows.length).toBe(3);
-                    expect(tSource2.rows.length).toBe(2);
+                    //expect(tSource1.rows.length).toBe(3);
+                    expect(tSource2.rows.length).toBe(1);
                     expect(tTarget1.rows.length).toBe(4);
                     expect(tTarget2.rows.length).toBe(4);
 
-                    var rowsPre =  tTarget2.select(q.eq("c_codice_2", 6));
+                    var rowsPre = tTarget2.select(q.eq("c_codice_2", 6));
                     expect(rowsPre[0].c_field1_2).toBe("sei");
+
+                    //imposto riga "modified"
+                    dr7.c_codice_2 = 6;
+                    dr7.c_field1_2 = "seiModificato";
+                    dr7.c_field2_2 = "f2_6";
+                    expect(dr7.getRow().state).toBe(jsDataSet.dataRowState.modified);
+                    //objrow7.getRow().state = jsDataSet.dataRowState.modified;
 
                     getDataUtils.mergeDataSetChanges(dsTarget, dsSource, true);
                     expect(tTarget1.rows.length).toBe(3);
@@ -280,250 +283,266 @@ describe('getDataUtils', function () {
                     expect(objrow5.getRow).toBeDefined();
                     expect(objrow7.getRow).toBeDefined();
 
+                    // devono risultare detached
+                    expect(objrow8.getRow).toBeUndefined();
+                    expect(objrow9.getRow).toBeUndefined();
+
+                    var rowsPost = tTarget2.select(q.eq("c_codice_2", 6));
+                    expect(rowsPost[0].getRow().state).toBe(jsDataSet.dataRowState.unchanged);
+                    expect(rowsPost[0].c_field1_2).toBe("seiModificato");
+                });
+
+            it('mergeDataSet() merges a dsSource modified into dsTarget, with flag "changes committed to db" = true, complex case ',
+                function (){
+
+                    let dsTarget = new jsDataSet.DataSet("dsTarget");
+                    let dsSource = new jsDataSet.DataSet("dsSource");
+                    let tSource1 = dsSource.newTable("t1");
+                    let tSource2 = dsSource.newTable("t2");
+
+                    let tTarget1 = dsTarget.newTable("t1");
+                    let tTarget2 = dsTarget.newTable("t2");
+                    // colonne per il datasource
+                    tSource1.setDataColumn("c_codice", "Decimal");
+                    tSource1.setDataColumn("c_field1", "String");
+                    tSource1.setDataColumn("c_field2", "String");
+
+                    tSource2.setDataColumn("c_codice_2", "Decimal");
+                    tSource2.setDataColumn("c_field1_2", "String");
+                    tSource2.setDataColumn("c_field2_2", "String");
+
+                    tTarget1.setDataColumn("c_codice", "Decimal");
+                    tTarget1.setDataColumn("c_field1", "String");
+                    tTarget1.setDataColumn("c_field2", "String");
+
+                    tTarget2.setDataColumn("c_codice_2", "Decimal");
+                    tTarget2.setDataColumn("c_field1_2", "String");
+                    tTarget2.setDataColumn("c_field2_2", "String");
+
+                    tTarget1.key("c_codice");
+                    tSource1.key("c_codice");
+                    //tSource2.key("c_codice_2");
+                    let objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    let objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    let objrow3 = {c_codice: 3, c_field1: "tre", c_field2: "f2_3"};
+                    let objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
+
+                    let objrow5 = {c_codice_2: 5, c_field1_2: "cinque", c_field2_2: "f2_5"};
+                    let objrow6 = {c_codice_2: 6, c_field1_2: "seiModificato", c_field2_2: "f2_6"};
+
+                    let objrow7 = {c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6"};
+                    let objrow8 = {c_codice_2: 8, c_field1_2: "otto", c_field2_2: "f2_5"};
+                    let objrow9 = {c_codice_2: 9, c_field1_2: "nove", c_field2_2: "f2_8"};
+
+                    let objrowToMod = {c_codice_2: 10, c_field1_2: "dieci", c_field2_2: "f2_10"};
+                    let objrowMod = {c_codice_2: 10, c_field1_2: "dieciMod", c_field2_2: "f2_10mod"};
+
+                    // tSource1.add(objrow1);
+                    // tSource1.add(objrow2);
+                    // tSource1.add(objrow4);
+
+                    tTarget1.add(objrow1);
+                    tTarget1.add(objrow2);
+                    tTarget1.add(objrow3);
+                    tTarget1.add(objrow4);
+
+                    // la 3 era deleted e infatti simulo che sul source non ci sia
+                    tTarget1.acceptChanges();
+                    tSource1.acceptChanges();
+
+                    objrow3.getRow().del();  // jsDataSet.dataRowState.deleted;
+
+
+                    // tSource2.add(objrow5);
+                    tSource2.add(objrow6);
+                    tSource2.add(objrowMod);
+
+
+                    tTarget2.add(objrow5);
+                    tTarget2.add(objrow7);
+                    tTarget2.add(objrow8);
+                    tTarget2.add(objrowToMod);
+                    tTarget2.add(objrow9);
+
+
+                    tTarget2.acceptChanges();
+
+                    //simulo riga "modified"
+                    objrow7.getRow().current.c_codice_2 = 6;
+                    objrow7.getRow().current.c_field1_2 = "seiModificato";
+                    objrow7.getRow().current.c_field2_2 = "f2_6";
+                    expect(objrow7.getRow().state).toBe(jsDataSet.dataRowState.modified);
+
+                    objrowToMod.getRow().current.c_codice_2 = 10;
+                    objrowToMod.getRow().current.c_field1_2 = "dieciMod";
+                    objrowToMod.getRow().current.c_field2_2 = "f2_10";
+                    expect(objrowToMod.getRow().state).toBe(jsDataSet.dataRowState.modified);
+
+                    // cancello riga in pos 1
+                    objrow8.getRow().del();
+                    objrow9.getRow().del();
+                    tSource2.acceptChanges();
+
+                    // check preliminari
+                    expect(tSource1.rows.length).toBe(0);
+                    expect(tSource2.rows.length).toBe(2);
+                    expect(tTarget1.rows.length).toBe(4);
+                    expect(tTarget2.rows.length).toBe(5);
+
+                    var rowsPre = tTarget2.select(q.eq("c_codice_2", 6));
+                    expect(rowsPre[0].c_field1_2).toBe("seiModificato");
+
+                    getDataUtils.mergeDataSetChanges(dsTarget, dsSource, true);
+                    expect(tTarget1.rows.length).toBe(3);
+                    expect(objrow3.getRow).toBeUndefined(); // la 3 viene detachata, senza metodo getRow()
+                    expect(objrow1.getRow).toBeDefined();
+                    expect(objrow2.getRow).toBeDefined();
+                    expect(objrow4.getRow).toBeDefined();
+
+                    expect(tTarget2.rows.length).toBe(3); // 2 deleted
+                    expect(objrow5.getRow).toBeDefined();
+                    expect(objrow7.getRow).toBeDefined();
+
                     // devono risultare detachate
                     expect(objrow8.getRow).toBeUndefined();
                     expect(objrow9.getRow).toBeUndefined();
 
-                    var rowsPost =  tTarget2.select(q.eq("c_codice_2", 6));
+                    let rowsPost = tTarget2.select(q.eq("c_codice_2", 6));
                     expect(rowsPost[0].c_field1_2).toBe("seiModificato");
+
+                    // quella frapposta tra 8 e 9 deleted, viene modificata
+                    rowsPost = tTarget2.select(q.eq("c_codice_2", 10));
+                    expect(rowsPost[0].c_field1_2).toBe("dieciMod");
+                    expect(rowsPost[0].c_field2_2).toBe("f2_10mod");
                 });
-                
-            it('mergeDataSet() merges a dsSource modified into dsTarget, with flag "changes committed to db" = true, complex case ',
-                    function () {
 
-                            var dsTarget = new jsDataSet.DataSet("dsTarget");
-                            var dsSource = new jsDataSet.DataSet("dsSource");
-                            var tSource1 = dsSource.newTable("t1");
-                            var tSource2 = dsSource.newTable("t2");
-
-                            var tTarget1 = dsTarget.newTable("t1");
-                            var tTarget2 = dsTarget.newTable("t2");
-                            // colonne per il datasource
-                            tSource1.setDataColumn("c_codice", "Decimal");
-                            tSource1.setDataColumn("c_field1", "String");
-                            tSource1.setDataColumn("c_field2", "String");
-
-                            tSource2.setDataColumn("c_codice_2", "Decimal");
-                            tSource2.setDataColumn("c_field1_2", "String");
-                            tSource2.setDataColumn("c_field2_2", "String");
-
-                            tTarget1.setDataColumn("c_codice", "Decimal");
-                            tTarget1.setDataColumn("c_field1", "String");
-                            tTarget1.setDataColumn("c_field2", "String");
-
-                            tTarget2.setDataColumn("c_codice_2", "Decimal");
-                            tTarget2.setDataColumn("c_field1_2", "String");
-                            tTarget2.setDataColumn("c_field2_2", "String");
-
-                            tTarget1.key("c_codice");
-                            tSource1.key("c_codice");
-                            //tSource2.key("c_codice_2");
-                            var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                            var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                            var objrow3 = { c_codice: 3, c_field1: "tre", c_field2: "f2_3" };
-                            var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
-
-                            var objrow5 = { c_codice_2: 5, c_field1_2: "cinque", c_field2_2: "f2_5" };
-                            var objrow6 = { c_codice_2: 6, c_field1_2: "seiModificato", c_field2_2: "f2_6" };
-
-                            var objrow7 = { c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6" };
-                            var objrow8 = { c_codice_2: 8, c_field1_2: "otto", c_field2_2: "f2_5" };
-                            var objrow9 = { c_codice_2: 9, c_field1_2: "nove", c_field2_2: "f2_8" };
-
-                            var objrowToMod = { c_codice_2: 10, c_field1_2: "dieci", c_field2_2: "f2_10" };
-                            var objrowMod = { c_codice_2: 10, c_field1_2: "dieciMod", c_field2_2: "f2_10mod" };
-
-                            tSource1.add(objrow1);
-                            tSource1.add(objrow2);
-                            tSource1.add(objrow4);
-
-                            tTarget1.add(objrow1);
-                            tTarget1.add(objrow2);
-                            tTarget1.add(objrow3);
-                            tTarget1.add(objrow4);
-
-                            // la 3 era deleted e infatti simulo che sul source non ci sia
-                            tTarget1.acceptChanges();
-                            tSource1.acceptChanges();
-
-                            objrow3.getRow().del();  // jsDataSet.dataRowState.deleted;
-
-
-                            tSource2.add(objrow5);
-                            tSource2.add(objrow6);
-                            tSource2.add(objrowMod);
-
-
-                            tTarget2.add(objrow5);
-                            tTarget2.add(objrow7);
-                            tTarget2.add(objrow8);
-                            tTarget2.add(objrowToMod);
-                            tTarget2.add(objrow9);
-
-
-                            tTarget2.acceptChanges();
-
-                            //simulo riga "modified"    
-                            objrow7.getRow().old = { c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6" };
-                            objrow7.getRow().state = jsDataSet.dataRowState.modified;
-                            objrowToMod.getRow().old = { c_codice_2: 10, c_field1_2: "dieci", c_field2_2: "f2_10" };
-                            objrowToMod.getRow().state = jsDataSet.dataRowState.modified;
-                            // cancello riga in pos 1
-                            objrow8.getRow().del();
-                            objrow9.getRow().del();
-                            tSource2.acceptChanges();
-
-                            // check preliminari
-                            expect(tSource1.rows.length).toBe(3);
-                            expect(tSource2.rows.length).toBe(3);
-                            expect(tTarget1.rows.length).toBe(4);
-                            expect(tTarget2.rows.length).toBe(5);
-
-                            var rowsPre =  tTarget2.select(q.eq("c_codice_2", 6));
-                            expect(rowsPre[0].c_field1_2).toBe("sei");
-
-                            getDataUtils.mergeDataSetChanges(dsTarget, dsSource, true);
-                            expect(tTarget1.rows.length).toBe(3);
-                            expect(objrow3.getRow).toBeUndefined(); // la 3 viene detachata, senza metodo getRow()
-                            expect(objrow1.getRow).toBeDefined();
-                            expect(objrow2.getRow).toBeDefined();
-                            expect(objrow4.getRow).toBeDefined();
-
-                            expect(tTarget2.rows.length).toBe(3); // 2 deleted
-                            expect(objrow5.getRow).toBeDefined();
-                            expect(objrow7.getRow).toBeDefined();
-
-                            // devono risultare detachate
-                            expect(objrow8.getRow).toBeUndefined();
-                            expect(objrow9.getRow).toBeUndefined();
-
-                            var rowsPost =  tTarget2.select(q.eq("c_codice_2", 6));
-                            expect(rowsPost[0].c_field1_2).toBe("seiModificato");
-
-                            var rowsPost =  tTarget2.select(q.eq("c_codice_2", 10)); // quella frappsotatra 8 e 9 deleted, viene modificata
-                            expect(rowsPost[0].c_field1_2).toBe("dieciMod");
-                            expect(rowsPost[0].c_field2_2).toBe("f2_10mod");
-                    }); 
-                
             it('mergeDataSet() merges a dsSource modified into dsTarget, with flag "changes committed to db" = false, complex case ',
-                    function () {
+                function (){
 
-                            var dsTarget = new jsDataSet.DataSet("dsTarget");
-                            var dsSource = new jsDataSet.DataSet("dsSource");
-                            var tSource1 = dsSource.newTable("t1");
-                            var tSource2 = dsSource.newTable("t2");
+                    var dsTarget = new jsDataSet.DataSet("dsTarget");
+                    var dsSource = new jsDataSet.DataSet("dsSource");
+                    var tSource1 = dsSource.newTable("t1");
+                    var tSource2 = dsSource.newTable("t2");
 
-                            var tTarget1 = dsTarget.newTable("t1");
-                            var tTarget2 = dsTarget.newTable("t2");
-                            // colonne per il datasource
-                            tSource1.setDataColumn("c_codice", "Decimal");
-                            tSource1.setDataColumn("c_field1", "String");
-                            tSource1.setDataColumn("c_field2", "String");
+                    var tTarget1 = dsTarget.newTable("t1");
+                    var tTarget2 = dsTarget.newTable("t2");
+                    // colonne per il datasource
+                    tSource1.setDataColumn("c_codice", "Decimal");
+                    tSource1.setDataColumn("c_field1", "String");
+                    tSource1.setDataColumn("c_field2", "String");
 
-                            tSource2.setDataColumn("c_codice_2", "Decimal");
-                            tSource2.setDataColumn("c_field1_2", "String");
-                            tSource2.setDataColumn("c_field2_2", "String");
+                    tSource2.setDataColumn("c_codice_2", "Decimal");
+                    tSource2.setDataColumn("c_field1_2", "String");
+                    tSource2.setDataColumn("c_field2_2", "String");
 
-                            tTarget1.setDataColumn("c_codice", "Decimal");
-                            tTarget1.setDataColumn("c_field1", "String");
-                            tTarget1.setDataColumn("c_field2", "String");
+                    tTarget1.setDataColumn("c_codice", "Decimal");
+                    tTarget1.setDataColumn("c_field1", "String");
+                    tTarget1.setDataColumn("c_field2", "String");
 
-                            tTarget2.setDataColumn("c_codice_2", "Decimal");
-                            tTarget2.setDataColumn("c_field1_2", "String");
-                            tTarget2.setDataColumn("c_field2_2", "String");
+                    tTarget2.setDataColumn("c_codice_2", "Decimal");
+                    tTarget2.setDataColumn("c_field1_2", "String");
+                    tTarget2.setDataColumn("c_field2_2", "String");
 
-                            tTarget1.key("c_codice");
-                            tSource1.key("c_codice");
-                            //tSource2.key("c_codice_2");
-                            var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                            var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                            var objrow3 = { c_codice: 3, c_field1: "tre", c_field2: "f2_3" };
-                            var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
+                    tTarget1.key("c_codice");
+                    tSource1.key("c_codice");
+                    //tSource2.key("c_codice_2");
+                    var objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    var objrow3 = {c_codice: 3, c_field1: "tre", c_field2: "f2_3"};
+                    var objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
 
-                            var objrow5 = { c_codice_2: 5, c_field1_2: "cinque", c_field2_2: "f2_5" };
-                            var objrow6 = { c_codice_2: 6, c_field1_2: "seiModificato", c_field2_2: "f2_6" };
+                    // var objrow5 = {c_codice_2: 5, c_field1_2: "cinque", c_field2_2: "f2_5"};
+                    var objrow6 = {c_codice_2: 6, c_field1_2: "seiModificato", c_field2_2: "f2_6"};
 
-                            var objrow7 = { c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6" };
-                            var objrow8 = { c_codice_2: 8, c_field1_2: "otto", c_field2_2: "f2_5" };
-                            var objrow9 = { c_codice_2: 9, c_field1_2: "nove", c_field2_2: "f2_8" };
+                    var objrow7 = {c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6"};
+                    var objrow8 = {c_codice_2: 8, c_field1_2: "otto", c_field2_2: "f2_5"};
+                    var objrow9 = {c_codice_2: 9, c_field1_2: "nove", c_field2_2: "f2_8"};
 
-                            var objrowToMod = { c_codice_2: 10, c_field1_2: "dieci", c_field2_2: "f2_10" };
-                            var objrowMod = { c_codice_2: 10, c_field1_2: "dieciMod", c_field2_2: "f2_10mod" };
+                    var objrowToMod = {c_codice_2: 10, c_field1_2: "dieci", c_field2_2: "f2_10"};
+                    var objrowMod = {c_codice_2: 10, c_field1_2: "dieciMod", c_field2_2: "f2_10mod"};
 
-                            tSource1.add(objrow1);
-                            tSource1.add(objrow2);
-                            tSource1.add(objrow4);
+                    // tSource1.add(objrow1);
+                    // tSource1.add(objrow2);
+                    // tSource1.add(objrow4);
 
-                            tTarget1.add(objrow1);
-                            tTarget1.add(objrow2);
-                            tTarget1.add(objrow3);
-                            tTarget1.add(objrow4);
+                    tTarget1.add(objrow1);
+                    tTarget1.add(objrow2);
+                    tTarget1.add(objrow3);
+                    tTarget1.add(objrow4);
 
-                            // la 3 era deleted e infatti simulo che sul source non ci sia
-                            tTarget1.acceptChanges();
-                            tSource1.acceptChanges();
+                    // la 3 era deleted e infatti simulo che sul source non ci sia
+                    tTarget1.acceptChanges();
+                    tSource1.acceptChanges();
 
-                            objrow3.getRow().del();  // jsDataSet.dataRowState.deleted;
+                    objrow3.getRow().del();  // jsDataSet.dataRowState.deleted;
 
 
-                            tSource2.add(objrow5);
-                            tSource2.add(objrow6);
-                            tSource2.add(objrow8);
-                            tSource2.add(objrowMod);
-                            tSource2.add(objrow9);
+                    //tSource2.add(objrow5);
+                    tSource2.add(objrow6);
+                    tSource2.add(_.clone(objrow8));
+                    tSource2.add(objrowMod);
+                    tSource2.add(_.clone(objrow9));
 
-                            tTarget2.add(objrow5);
-                            tTarget2.add(objrow7);
-                            tTarget2.add(objrow8);
-                            tTarget2.add(objrowToMod);
-                            tTarget2.add(objrow9);
+                    //tTarget2.add(objrow5);
+                    let r7 = tTarget2.add(objrow7).current;
+                    tTarget2.add(objrow8);
+                    let rtoMod = tTarget2.add(objrowToMod).current;
+                    tTarget2.add(objrow9);
 
-                            tSource2.acceptChanges();
-                            tTarget2.acceptChanges();
+                    tSource2.acceptChanges();
+                    tTarget2.acceptChanges();
 
-                            //simulo riga "modified"    
-                            objrow7.getRow().old = { c_codice_2: 6, c_field1_2: "sei", c_field2_2: "f2_6" };
-                            objrow7.getRow().state = jsDataSet.dataRowState.modified;
-                            objrowToMod.getRow().old = { c_codice_2: 10, c_field1_2: "dieci", c_field2_2: "f2_10" };
-                            objrowToMod.getRow().state = jsDataSet.dataRowState.modified;
-                            // cancello riga in pos 1
-                            objrow8.getRow().del();
-                            objrow9.getRow().del();
+                    //simulo riga "modified"
+                    r7.c_codice_2 = 6;
+                    r7.c_field1_2 = "seiModificato";
+                    r7.c_field2_2 = "f2_6";
+                    expect(r7.getRow().state).toBe(jsDataSet.dataRowState.modified);
 
-                            // check preliminari
-                            expect(tSource1.rows.length).toBe(3);
-                            expect(tSource2.rows.length).toBe(5);
-                            expect(tTarget1.rows.length).toBe(4);
-                            expect(tTarget2.rows.length).toBe(5);
 
-                            var rowsPre =  tTarget2.select(q.eq("c_codice_2", 6));
-                            expect(rowsPre[0].c_field1_2).toBe("sei");
+                    rtoMod.c_codice_2 = 10;
+                    rtoMod.c_field1_2 = "dieciMod";
+                    rtoMod.c_field2_2 = "f2_10mod";
+                    expect(rtoMod.getRow().state).toBe(jsDataSet.dataRowState.modified);
 
-                            getDataUtils.mergeDataSetChanges(dsTarget, dsSource, false);
-                            expect(tTarget1.rows.length).toBe(4);
-                            expect(objrow3.getRow).toBeDefined(); // la 3 viene detachata, senza metodo getRow()
-                            expect(objrow1.getRow).toBeDefined();
-                            expect(objrow2.getRow).toBeDefined();
-                            expect(objrow4.getRow).toBeDefined();
+                    // cancello riga in pos 1
+                    objrow8.getRow().del();
+                    objrow9.getRow().del();
 
-                            expect(tTarget2.rows.length).toBe(5);
-                            expect(objrow5.getRow).toBeDefined();
-                            expect(objrow7.getRow).toBeDefined();
+                    // check preliminari
+                    expect(tSource1.rows.length).toBe(0);
+                    expect(tSource2.rows.length).toBe(4);
+                    expect(tTarget1.rows.length).toBe(4);
+                    expect(tTarget2.rows.length).toBe(4);
 
-                            // devono risultare detachate
-                            expect(objrow8.getRow).toBeDefined();
-                            expect(objrow9.getRow).toBeDefined();
+                    var rowsPre = tTarget2.select(q.eq("c_codice_2", 6));
+                    expect(rowsPre[0].c_field1_2).toBe("seiModificato");
+                    expect(rowsPre[0].getRow().originalRow().c_field1_2).toBe("sei");
 
-                            var rowsPost =  tTarget2.select(q.eq("c_codice_2", 6));
-                            expect(rowsPost[0].c_field1_2).toBe("seiModificato");
+                    getDataUtils.mergeDataSetChanges(dsTarget, dsSource, false);
+                    expect(tTarget1.rows.length).toBe(4);
+                    expect(objrow3.getRow).toBeDefined(); // la 3 viene detachata, senza metodo getRow()
+                    expect(objrow1.getRow).toBeDefined();
+                    expect(objrow2.getRow).toBeDefined();
+                    expect(objrow4.getRow).toBeDefined();
 
-                            var rowsPost =  tTarget2.select(q.eq("c_codice_2", 10));
-                            expect(rowsPost[0].c_field1_2).toBe("dieciMod");
-                            expect(rowsPost[0].c_field2_2).toBe("f2_10mod");
-                    });
+                    expect(tTarget2.rows.length).toBe(4);
+                    //expect(objrow5.getRow).toBeDefined();
+                    expect(objrow7.getRow).toBeDefined();
+
+                    // devono risultare detached
+                    expect(objrow8.getRow).toBeDefined();
+                    expect(objrow9.getRow).toBeDefined();
+
+                    let rowsPost = tTarget2.select(q.eq("c_codice_2", 6));
+                    expect(rowsPost[0].c_field1_2).toBe("seiModificato");
+
+                    rowsPost = tTarget2.select(q.eq("c_codice_2", 10));
+                    expect(rowsPost[0].c_field1_2).toBe("dieciMod");
+                    expect(rowsPost[0].c_field2_2).toBe("f2_10mod");
+                });
 
             it('cloneDataTable() clone a DatTable, new DatTable is another instance',
-                function () {
+                function (){
 
                     var dsSource = new jsDataSet.DataSet("dsSource");
                     var tSource1 = dsSource.newTable("t1");
@@ -535,9 +554,9 @@ describe('getDataUtils', function () {
 
                     tSource1.key("c_codice");
 
-                    var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                    var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                    var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
+                    var objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    var objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
 
                     tSource1.add(objrow1);
                     tSource1.add(objrow2);
@@ -547,7 +566,7 @@ describe('getDataUtils', function () {
 
                     var dtCloned = getDataUtils.cloneDataTable(tSource1);
 
-                    expect(tSource1).not.toEqual(dtCloned);
+                    expect(tSource1).toEqual(dtCloned);
                     expect((tSource1 === dtCloned)).toBe(false);
                     expect(dtCloned.name).toBe(tSource1.name);
                     var initRowsLengtDtCloned = dtCloned.rows.length;
@@ -561,46 +580,7 @@ describe('getDataUtils', function () {
                 });
 
             it('cloneDataSet() clone a DataSet, new DataSet is another instance',
-                    function () {
-
-                            var dsSource = new jsDataSet.DataSet("dsSource");
-                            var tSource1 = dsSource.newTable("t1");
-
-                            // colonne per il datasource
-                            tSource1.setDataColumn("c_codice", "Decimal");
-                            tSource1.setDataColumn("c_field1", "String");
-                            tSource1.setDataColumn("c_field2", "String");
-
-                            tSource1.key("c_codice");
-
-                            var objrow1 = { c_codice: 1, c_field1: "uno", c_field2: "f2_1" };
-                            var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "f2_2" };
-                            var objrow4 = { c_codice: 4, c_field1: "quattro", c_field2: "f2_4" };
-
-                            tSource1.add(objrow1);
-                            tSource1.add(objrow2);
-                            tSource1.add(objrow4);
-
-                            tSource1.acceptChanges();
-
-                            // invoco metodo di clone
-                            var dsCloned = getDataUtils.cloneDataSet(dsSource);
-
-                            expect(dsSource).not.toEqual(dsCloned);
-                            expect((dsSource === dsCloned)).toBe(false);
-                            expect(dsCloned.name).toBe(dsSource.name);
-                            var initRowsLengtDtCloned = dsCloned.tables.t1.rows.length;
-                            expect(initRowsLengtDtCloned).toBe(dsSource.tables.t1.rows.length);
-
-                            // tolgo riga al cloned, sul source non cambia nulla
-                            dsCloned.tables.t1.rows[0].getRow().del();
-                            dsCloned.acceptChanges();
-                            expect(dsCloned.tables.t1.rows.length).toBe(initRowsLengtDtCloned - 1);
-                            expect(dsSource.tables.t1.rows.length).toBe(initRowsLengtDtCloned);
-                    });
-
-            it('containsNull() Returns true if there is a null value or "", for some value in row on the columns cols',
-                function () {
+                function (){
 
                     var dsSource = new jsDataSet.DataSet("dsSource");
                     var tSource1 = dsSource.newTable("t1");
@@ -612,10 +592,50 @@ describe('getDataUtils', function () {
 
                     tSource1.key("c_codice");
 
-                    var objrow1 = { c_codice: 1, c_field1: null, c_field2: "f2_1" };
-                    var objrow2 = { c_codice: 2, c_field1: "due", c_field2: "" };
-                    var objrow3 = { c_codice: 3, c_field1: "", c_field2: "" };
-                    var objrow4 = { c_codice: 4, c_field1: "4", c_field2: "f4" };
+                    var objrow1 = {c_codice: 1, c_field1: "uno", c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: "f2_2"};
+                    var objrow4 = {c_codice: 4, c_field1: "quattro", c_field2: "f2_4"};
+
+                    tSource1.add(objrow1);
+                    tSource1.add(objrow2);
+                    tSource1.add(objrow4);
+
+                    tSource1.acceptChanges();
+
+                    // invoco metodo di clone
+                    var dsCloned = getDataUtils.cloneDataSet(dsSource);
+
+                    expect(dsSource).not.toBe(dsCloned);
+                    expect(dsSource).toEqual(dsCloned);
+                    //expect((dsSource === dsCloned)).toBe(false);
+                    expect(dsCloned.name).toBe(dsSource.name);
+                    var initRowsLengtDtCloned = dsCloned.tables.t1.rows.length;
+                    expect(initRowsLengtDtCloned).toBe(dsSource.tables.t1.rows.length);
+
+                    // tolgo riga al cloned, sul source non cambia nulla
+                    dsCloned.tables.t1.rows[0].getRow().del();
+                    dsCloned.acceptChanges();
+                    expect(dsCloned.tables.t1.rows.length).toBe(initRowsLengtDtCloned - 1);
+                    expect(dsSource.tables.t1.rows.length).toBe(initRowsLengtDtCloned);
+                });
+
+            it('containsNull() Returns true if there is a null value or "", for some value in row on the columns cols',
+                function (){
+
+                    var dsSource = new jsDataSet.DataSet("dsSource");
+                    var tSource1 = dsSource.newTable("t1");
+
+                    // colonne per il datasource
+                    tSource1.setDataColumn("c_codice", "Decimal");
+                    tSource1.setDataColumn("c_field1", "String");
+                    tSource1.setDataColumn("c_field2", "String");
+
+                    tSource1.key("c_codice");
+
+                    var objrow1 = {c_codice: 1, c_field1: null, c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 2, c_field1: "due", c_field2: ""};
+                    var objrow3 = {c_codice: 3, c_field1: "", c_field2: ""};
+                    var objrow4 = {c_codice: 4, c_field1: "4", c_field2: "f4"};
 
                     tSource1.add(objrow1);
                     tSource1.add(objrow2);
@@ -635,7 +655,7 @@ describe('getDataUtils', function () {
                 });
 
             it('isSameRow() Returns true if r1 and r2 are the same row',
-                function () {
+                function (){
 
                     var dsSource = new jsDataSet.DataSet("dsSource");
                     var tSource1 = dsSource.newTable("t1");
@@ -645,12 +665,12 @@ describe('getDataUtils', function () {
                     tSource1.setDataColumn("c_field1", "String");
                     tSource1.setDataColumn("c_field2", "String");
 
-                    tSource1.key(["c_codice","c_field1"]);
+                    tSource1.key(["c_codice", "c_field1"]);
 
-                    var objrow1 = { c_codice: 1, c_field1: null, c_field2: "f2_1" };
-                    var objrow2 = { c_codice: 1, c_field1: "due", c_field2: "" };
-                    var objrow3 = { c_codice: 1, c_field1: "due", c_field2: "f3" };
-                    var objrow4 = { c_codice: 4, c_field1: "due", c_field2: "f4" };
+                    var objrow1 = {c_codice: 1, c_field1: null, c_field2: "f2_1"};
+                    var objrow2 = {c_codice: 1, c_field1: "due", c_field2: ""};
+                    var objrow3 = {c_codice: 1, c_field1: "due", c_field2: "f3"};
+                    var objrow4 = {c_codice: 4, c_field1: "due", c_field2: "f4"};
 
                     tSource1.add(objrow1);
                     tSource1.add(objrow2);

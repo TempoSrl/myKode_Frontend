@@ -4,7 +4,8 @@
  * @description
  * Manages the graphics for a waiting modal control
  */
-(function() {
+(function () {
+    
     "use strict";
     /**
      * @constructor ModalLoaderControl
@@ -24,12 +25,15 @@
         
         constructor: ModalLoaderControl,
 
+        clear: function () {
+            this.waitIndicatorList = [];
+        },
         /**
          *
          */
        addProgressBar:function() {
             let p = '<div class="waitProgress" id="waitProgressId"> <div class="waitBar" id="waitBarId"></div> </div>';
-            $(appMeta.rootToolbar).after($(p));
+           $(appMeta.currApp.rootToolbar).after($(p));
         },
 
         /**
@@ -62,23 +66,29 @@
          * Sets the message and shows the modal control
          * @param {string} msg
          * @param {boolean} isBar
+         * @return Promise
          */
         showControl:function (msg, isBar) {
             if (!this.initiated){
                 this.initiated = true;
                 this.rootElement = this.rootElement || document.body;
                 $(this.rootElement).append(this.getHtmlModal());
+                //console.log("html appended");
                 this.$el = $("#modalLoader_control_id");
 
                 this.addProgressBar();
+                return appMeta.Deferred().resolve(true);
             }
 
             if (isBar){
                 return this.pbarMove();
             }
             this.setMessage(msg);
+            if (this.$el === undefined) return;
             if (this.$el.hasClass('in')) return;
             this.$el.modal("show");
+            return appMeta.Deferred().resolve(true);
+            //console.log("html showed");
         },
 
 
@@ -86,6 +96,7 @@
         /**
          * @method pbarMove
          * @description Show and move the progress bar
+         * @return Promise
          */
         pbarMove:function() {
             $("#waitProgressId").css("visibility", "visible");
@@ -97,6 +108,7 @@
                 width++;
                 bar.width(width + "%");
             }
+            return appMeta.Deferred().resolve(true);
         },
 
         /**
@@ -104,10 +116,34 @@
          * @private
          * @description SYNC
          * Hides the loader
+         * @return Promise
          */
-        hideControl:function () {
-            if (this.$el) this.$el.modal("hide");
+        hideControl: function () {
+            let result = appMeta.Deferred().resolve(true);
+            if (this.$el) {
+                //console.log("hiding " + JSON.stringify(this.$el));
+                if (this.$el.is(":visible")) {
+                    //console.log("ModalLoaderControl.hideControl seems visible -", $(".modal:visible").length);
+                    result = appMeta.Deferred()
+                    //console.log("hiding with id " + JSON.stringify(this.$el));
+                    $("#modalLoader_control_id").one("hidden.bs.modal", function () {
+                        //console.log("ModalLoaderControl.hideControl hiding done -", $(".modal:visible").length);
+                        result.resolve(true);
+                    })
+                }
+                else {
+                    //console.log("ModalLoaderControl.hideControl $el was not visible - ", $(".modal:visible").length);
+                }
+                //this.$el.modal("hide");
+                $(this.$el).modal("hide");
+                //this.$el = undefined;
+            }
+            else {
+                //console.log("ModalLoaderControl.hideControl  not hiding - ", $(".modal").length);
+            }
             $("#waitProgressId").css("visibility", "hidden");
+            //console.log("hide succeeded");
+            return result;
         },
 
         /**
@@ -117,8 +153,8 @@
          * Set the text message on the control
          * @param {string} msg          
          */
-        setMessage:function(msg){
-            this.$el.find(".modalLoader_control_text").text(msg);
+        setMessage: function (msg) {
+            if (this.$el) this.$el.find(".modalLoader_control_text").text(msg);
         },
 
         /**
@@ -160,6 +196,7 @@
          * Hides a modal loader indicator. (Shown with funct. showWaitingIndicator).
          * If handler is undefiend or null or 0 it forces the hide
          * @param {number} handler. the handler of the modal to hide. in handler is undefined it force hide
+         * @return Promise
          */
         hide:function (handler) {
             // tolgo elemento dalla lista{
@@ -177,11 +214,17 @@
             if (waitIndicatorListLength){
                 let wo = this.waitIndicatorList[waitIndicatorListLength - 1];
                 // mostro il controllo con l'ultimo messaggio calcolato
-                this.showControl(wo.msg);
+                //console.log("ModalLoaderControl.hide calls showed control");
+                return this.showControl(wo.msg);
             }
 
             // nascondo fisicamente la modale solo se esiste, e la lista dei messaggi è vuota
-            if (!this.waitIndicatorList.length) this.hideControl();
+            if (!this.waitIndicatorList.length) {
+                //console.log("ModalLoaderControl.hide calls hideControl");
+                return this.hideControl();
+            }
+
+            return Deferred().resolve(true);
         }
     };
 

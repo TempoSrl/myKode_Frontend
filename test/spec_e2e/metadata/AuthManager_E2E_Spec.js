@@ -1,13 +1,25 @@
 'use strict';
 
 describe('AuthManager', function () {
-  
+    var stabilize = appMeta.stabilize;
     var timeout  = 20000;
-    
+
+    beforeAll(function () {        
+        appMeta.basePath = "base/";
+        appMeta.serviceBasePath = "/"; // path relativo dove si trovano i servizi
+        appMeta.globalEventManager = new appMeta.EventManager();
+        appMeta.localResource.setLanguage("it");
+        appMeta.logger.setLanguage(appMeta.LocalResource);
+
+
+    });
+
     beforeEach(function () {
+        appMeta.connection.setTestMode(true);
     });
 
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
     });
 
     describe("Test Authentication methods",
@@ -33,7 +45,12 @@ describe('AuthManager', function () {
                         appMeta.configDev.datacontabile)
                         .then(function (res) {
                             expect(res).toBe(false);
-                            done();
+
+                            var s = stabilize(true);
+                            s.then(function () {
+                                done();
+                            })
+                            //$(".modal").find("button")[0].click();
                         })
                 }, timeout);
 
@@ -44,9 +61,19 @@ describe('AuthManager', function () {
                         'xxx',
                         appMeta.configDev.datacontabile)
                         .then(function (res) {
-                            expect(res).toBe(false);
-                            done();
-                        })
+                            expect(res).toBe(false);                            
+                            var s = appMeta.stabilize(true);
+                            s.then(function () {
+                                done();
+                            })
+                            //$(".modal").find("button").first().trigger("click");
+                        },
+                            err => {
+                                expect(err).toBe(undefined);
+                                expect(true).toBe(false);
+                                done();
+                            }
+                    )
                 }, timeout);
 
             // OK! da abilitare solo quando si vuole fare reset password

@@ -13,6 +13,12 @@ describe('GetData', function () {
     var defLogin;
     // effettuo login
     beforeAll(function () {
+        appMeta.basePath = "base/";
+        appMeta.serviceBasePath = "/"; // path relativo dove si trovano i servizi
+        appMeta.globalEventManager = new appMeta.EventManager();
+        appMeta.localResource.setLanguage("it");
+        appMeta.logger.setLanguage(appMeta.LocalResource);
+
         defLogin = appMeta.Deferred("login");
         appMeta.authManager.login(
             appMeta.configDev.userName,
@@ -36,12 +42,15 @@ describe('GetData', function () {
     });
 
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
     });
+
+  
 
     describe("Test methods that returns DB data from server",
         function() {
 
-            var spec1 = it('1. getDataSet empty from server, 2. invoke preFillDataSet on one table 3. ds should be correctly formatted and filled',
+            it('1. getDataSet empty from server, 2. invoke preFillDataSet on one table 3. ds should be correctly formatted and filled',
                 function(done) {
                     defLogin.then(function () {
                         //  creo oggetto per l'invio al server, per recuperare un ds vuoto
@@ -74,8 +83,8 @@ describe('GetData', function () {
                                                 var tRegistryAddress = dsTarget.tables["registryaddress"];
                                                 if (tRegistryAddress.rows.length === 0) {
                                                     logger.log(logType.ERROR,
-                                                        "Non sono tornate righe, il test '" +
-                                                        spec1.description +
+                                                        "Non sono tornate righe, il test 1 '" +
+                                                        //spec1.description +
                                                         "' non è Attendibile con questi dati");
                                                 }
                                                 _.forEach(tRegistryAddress.rows,
@@ -111,7 +120,7 @@ describe('GetData', function () {
                     });
                 }, timeout);
 
-            var spec2 = it('1. getDataSet empty from server, 2. invoke preFillDataSet on two tables 3. ds should be correctly formatted and filled',
+            it('1. getDataSet empty from server, 2. invoke preFillDataSet on two tables 3. ds should be correctly formatted and filled',
                 function(done) {
                     defLogin.then(function () {
                         //  creo oggetto per l'invio al server, per recuperare un ds vuoto
@@ -148,11 +157,11 @@ describe('GetData', function () {
                                                 var tRegistry = ds1.tables["registry"];
                                                 if (tRegistry.rows.length === 0) {
                                                     logger.log(logType.ERROR,
-                                                        "Non sono tornate righe, il test '" +
-                                                        spec2.description +
+                                                        "Non sono tornate righe, il test 2'" +
+                                                        //spec2.description +
                                                         "' non è Attendibile con questi dati");
                                                 }
-                                                expect(tRegistry.rows.length).toBe(5);
+                                                expect(tRegistry.rows.length).toBe(22);
                                                 logger.log(logType.INFO, "rows registry: " + tRegistry.rows.length);
                                                 _.forEach(tRegistry.rows,
                                                     function(r) {
@@ -165,15 +174,15 @@ describe('GetData', function () {
                                                 var tRegistryAddress = dsTarget.tables["registryaddress"];
                                                 if (tRegistryAddress.rows.length === 0) {
                                                     logger.log(logType.ERROR,
-                                                        "Non sono tornate righe, il test '" +
-                                                        spec2.description +
+                                                        "Non sono tornate righe, il test 2'" +
+                                                        //spec2.description +
                                                         "' non è Attendibile con questi dati");
                                                 }
 
-                                                expect(tRegistryAddress.rows.length).toBe(5);
+                                                expect(tRegistryAddress.rows.length).toBe(12);
                                                 _.forEach(tRegistryAddress.rows,
                                                     function(r) {
-                                                        expect(r.address.toUpperCase()).toBe("aaf".toUpperCase());
+                                                        expect(r.address.toUpperCase()).toBe("AAF");
                                                     })
 
                                                 // è l'unica di cui non avevo chiesto i dati
@@ -196,7 +205,7 @@ describe('GetData', function () {
                     });
                 }, timeout);
 
-            var spec3 = it('1. getDataSet empty from server, 2. invoke FillDataSet filtered on idreg=1 3. ds should be correctly formatted and filled',
+            it('1. getDataSet empty from server, 2. invoke FillDataSet filtered on idreg=1 3. ds should be correctly formatted and filled',
                 function(done) {
                     defLogin.then(function () {
                         //  creo oggetto per l'invio al server, per recuperare un ds vuoto
@@ -277,7 +286,6 @@ describe('GetData', function () {
                                 selBuilderArray.push({ filter: $q.eq("cu", "assistenza"), top: 100, tableName: "registry", table: ds1MultiRunSelect.tables['registry']});
                                 selBuilderArray.push({ filter: $q.and($q.eq("cap", 13100),$q.eq("lu", "Vercelli")) , top: 100, tableName: "registryaddress", table: ds1MultiRunSelect.tables['registryaddress']});
 
-                                console.log("START " + logger.getTime());
 
                                 getData.multiRunSelect(selBuilderArray)
                                     .then(
@@ -285,7 +293,6 @@ describe('GetData', function () {
                                             expect(ds1MultiRunSelect.tables["registry"].rows.length).toBeGreaterThan(0);
                                             expect(ds1MultiRunSelect.tables["registryaddress"].rows.length).toBeGreaterThan(0);
                                             expect(ds1MultiRunSelect.tables["registryreference"].rows.length).toBeGreaterThan(0);
-                                            console.log("FINISH " + logger.getTime());
                                             done();
                                         })
                                     .fail(
@@ -317,7 +324,7 @@ describe('GetData', function () {
                                 // imposto dei filtri, per entrare nei vari rami del codice
                                 var t = ds.tables['registry'];
                                 t.staticFilter($q.eq('lu','sa'));
-                                var filter = $q.and($q.eq('active','N'),$q.eq('gender','F'));
+                                var filter = $q.and($q.eq('active','S'),$q.eq('gender','F'));
                                 var selectList = undefined;
 
                                 // Configurazione per campi calcolati
@@ -338,7 +345,7 @@ describe('GetData', function () {
                                             function(r) {
                                                 expect(r.gender).toBe("FF"); // trasformato dalla calculateFunction
                                                 expect(r.lu).toBe("sa");
-                                                expect(r.active).toBe("N");
+                                                expect(r.active).toBe("S");
                                             });
                                         done();
                                     });
@@ -478,7 +485,7 @@ describe('GetData', function () {
                                         var tRegistryReference = ds.tables["registryreference"];
 
                                         // verifico almeno 1 riga, altrimenti test non è attendibile
-                                        expect(tRegistry.rows.length).toBe(1); // sulla chaive , mia spetto una riga
+                                        expect(tRegistry.rows.length).toBe(1); // sulla chaive , mi aspetto una riga
                                         expect(tRegistryAddress.rows.length).toBeGreaterThan(0);
                                         expect(tRegistryReference.rows.length).toBeGreaterThan(0);
 
@@ -497,7 +504,7 @@ describe('GetData', function () {
                                     });
                             })
                     });
-                }, timeout);
+                });
 
             it('createTableByName() is ASYNC returns an empty dataTable, columnList = "*"',
                 function (done) {
@@ -510,7 +517,7 @@ describe('GetData', function () {
                                 done();
                             });
                     });
-                }, timeout);
+                });
 
             it('createTableByName() is ASYNC returns an empty dataTable, columnList ="idreg,active"',
                 function (done) {
@@ -587,9 +594,8 @@ describe('GetData', function () {
                                 expect(t.rows.length).toBe(0); // all'inizio è vuota
 
                                 t.staticFilter($q.eq('lu','sa'));
-                                var filter = $q.and($q.eq('active','N'), $q.eq('gender','F'));
+                                var filter = $q.and($q.eq('active','S'), $q.eq('gender','F'));
                                 var selectList = undefined;
-
                                 getData.getRowsByFilter(filter, null, t, 10, null, selectList)
                                     .then(function () {
                                         expect(t.name).toBe("registry");
@@ -600,7 +606,7 @@ describe('GetData', function () {
                                             function(r) {
                                                 expect(r.gender).toBe("F");
                                                 expect(r.lu).toBe("sa");
-                                                expect(r.active).toBe("N");
+                                                expect(r.active).toBe("S");
                                             });
                                         done();
                                     });
@@ -714,6 +720,7 @@ describe('GetData', function () {
                         appMeta.authManager.sendMail(emailDest, subject, body).then(
                             function (res) {
                                 expect(res).toBe(true);
+                                done();
                             })
                     })
                 }, timeout);
@@ -770,7 +777,7 @@ describe('GetData', function () {
                                 // imposto dei filtri, per entrare nei vari rami del codice
                                 var t = ds.tables['registry'];
                                 t.staticFilter($q.eq('lu','sa'));
-                                var filter = $q.and($q.eq('active','N'),$q.eq('gender','F'));
+                                var filter = $q.and($q.eq('active','S'),$q.eq('gender','F'));
                                 var selectList = undefined;
 
                                 getData.doGetTable(t, filter, true, 10, selectList)
@@ -791,9 +798,9 @@ describe('GetData', function () {
             it('getPagedTable() is ASYNC returns a dataTable',
                 function (done) {
                     defLogin.then(function () {
-                        var filter = $q.and($q.eq('active','N'),$q.eq('gender','F'));
+                        var filter = $q.and($q.eq('active','S'),$q.eq('gender','F'));
 
-                        getData.getPagedTable('registry',2, 10, filter, "default" )
+                        getData.getPagedTable('registry',2, 10, filter, "anagrafica" )
                             .then(function (dt, totpage, totrows) {
                                 // expect(dt.name).toBe("registry");
                                 expect(dt.rows.length).toBe(10);

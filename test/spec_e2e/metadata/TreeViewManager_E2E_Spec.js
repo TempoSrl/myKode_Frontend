@@ -6,111 +6,148 @@ describe("TreeViewManager E2E",
 
         var getData  =  appMeta.getData;
         var q = window.jsDataQuery;
+        let defLogin;
+
+        beforeAll(function () {
+            appMeta.basePath = "base/";
+            appMeta.serviceBasePath = "/"; // path relativo dove si trovano i servizi
+            appMeta.globalEventManager = new appMeta.EventManager();
+            appMeta.localResource.setLanguage("it");
+            appMeta.logger.setLanguage(appMeta.LocalResource);
+            //appMeta.Stabilizer.reset();
+
+            defLogin = appMeta.Deferred("login");
+            appMeta.authManager.login(
+                appMeta.configDev.userName,
+                appMeta.configDev.password,
+                appMeta.configDev.datacontabile)
+                .then(function (res) {
+                    if (res) defLogin.resolve(true)
+                });
+            return defLogin.promise();
+        });
 
         beforeEach(function () {
-            appMeta.basePath = "base/";
+            $("html").html("");
+            appMeta.modalLoaderControl.clear();
         });
 
         afterEach(function () {
+            expect(appMeta.Stabilizer.nesting).toBe(0);
         });
+
+
 
         describe("methods work",
 
             function () {
 
-                it("start() method retrieve tree row structure of finview",function (done) {
+                it("start() method retrieve tree row structure of finview", function (done) {
+                    let helpForm,ds,s;
+                    defLogin.
+                        then(() => {
+                            var mainwin = '<head></head>' +
+                                '<div id="metaroot">' +
+                                '<div id="tree">' +
+                                "</div></div>";
+                            $("html").html(mainwin);
+                            $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
+                            $("body").append('<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default/style.min.css" />');
 
-                    var mainwin = '<head></head>' +
-                        '<div id="metaroot">' +
-                        '<div id="tree">' +
-                        "</div></div>";
-                    $("html").html(mainwin);
-                    $("body").append('<link rel="stylesheet" href="/base/test/app/styles/app.css" />');
-                    $("body").append('<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.5/themes/default/style.min.css" />');
+                            ds = new jsDataSet.DataSet("temp");
+                            ds.newTable("fin");
+                            ds.newRelation("r1", "fin", ["idfin"], "fin", ["paridfin"]);
 
-                    var ds = new jsDataSet.DataSet("temp");
-                    ds.newTable("fin");
-                    ds.newRelation("r1", "fin", ["idfin"], "fin", ["paridfin"]);
+                            // configura var ausilairie, lo state serve in helpForm, il qaule è passato nel costruttore di treeViewManger
+                            s = new appMeta.MetaPageState();
+                            s.DS = ds;
+                            // il meta è invocato per chiamare la describeTree
+                            var m = new appMeta.MetaData('fin');
+                            s.meta = m;
+                            appMeta.addMeta('fin', m);
 
-                    // configura var ausilairie, lo state serve in helpForm, il qaule è passato nel costruttore di treeViewManger
-                    var s = new appMeta.MetaPageState();
-                    s.DS = ds;
-                    // il meta è invocato per chiamare la describeTree
-                    var m = new appMeta.MetaData('fin');
-                    s.meta  = m;
-                    appMeta.addMeta('fin', m );
-                    var helpForm = new appMeta.HelpForm(s, "fin", "#metaroot");
 
-                    // *********** node dispatcher mock ******************************************************
-                    function nodeDispatcherDerived() {
-                        this.name = 'nodeDispatcherDerived';
-                    }
+                            helpForm = new appMeta.HelpForm(s, "fin", "#metaroot");
 
-                    nodeDispatcherDerived.prototype = _.extend(
-                        new appMeta.TreeNode_Dispatcher(),
-                        {
-                            constructor: nodeDispatcherDerived,
+                            // *********** node dispatcher mock ******************************************************
+                            function nodeDispatcherDerived() {
+                                this.name = 'nodeDispatcherDerived';
+                            }
 
-                            /**
-                             *
-                             * @param parentRow
-                             * @param childRow
-                             * @returns {*|TreeNode}
-                             */
-                            getNode:function (parentRow, childRow) {
+                            nodeDispatcherDerived.prototype = _.extend(
+                                new appMeta.TreeNode_Dispatcher(),
+                                {
+                                    constructor: nodeDispatcherDerived,
 
-                                var node = new appMeta.TreeNode(childRow);
+                                    /**
+                                     *
+                                     * @param parentRow
+                                     * @param childRow
+                                     * @returns {*|TreeNode}
+                                     */
+                                    getNode: function (parentRow, childRow) {
 
-                                var text = childRow["idfin"] + " - " + childRow["paridfin"]+ " - " + childRow["title"];
-                                // crea l'oogetto che rappresenta il nodo nel jstree
-                                node.text = text;
+                                        var node = new appMeta.TreeNode(childRow);
 
-                                var def = appMeta.Deferred("nodeDispatcherDerived1-getNode");
+                                        var text = childRow["idfin"] + " - " + childRow["paridfin"] + " - " + childRow["title"];
+                                        // crea l'oogetto che rappresenta il nodo nel jstree
+                                        node.text = text;
 
-                                return def.resolve(node);
-                            },
+                                        var def = appMeta.Deferred("nodeDispatcherDerived1-getNode");
 
-                            superClass: appMeta.TreeNode_Dispatcher
-                        });
-                    var nodeDispatcher = new nodeDispatcherDerived();
+                                        return def.resolve(node);
+                                    },
 
-                    // ******************** fine mock node dispatcher    ****************************************
+                                    superClass: appMeta.TreeNode_Dispatcher
+                                });
+                            var nodeDispatcher = new nodeDispatcherDerived();
 
-                    // override della funz describeTree, mi faccio tornare quello che serve, cioè il filtro root e il dispatcher
-                    s.meta.describeTree = function () {
-                      var d = $.Deferred();
+                            // ******************** fine mock node dispatcher    ****************************************
 
-                      return  d.resolve({nodeDispatcher:nodeDispatcher,  rootCondition:q.gt("idfin",0)});
-                    };
+                            // override della funz describeTree, mi faccio tornare quello che serve, cioè il filtro root e il dispatcher
+                            s.meta.describeTree = function () {
+                                var d = $.Deferred();
 
-                   //var filter = q.or(q.eq("idfin",12), q.eq("idfin",13), q.eq("idfin",18), q.eq("idfin",450),q.eq("idfin",9), q.eq("idfin",50), q.eq("idfin",1),  q.eq("idfin",2), q.eq("idfin",309));
-                    var filter = q.or(q.eq("idfin",1),  q.eq("idfin",2), q.eq("idfin",309));
+                                return d.resolve({ nodeDispatcher: nodeDispatcher, rootCondition: q.gt("idfin", 0) });
+                            };
 
-                   getData.runSelect("fin", "ayear, codefin, title, idfin, paridfin, nlevel", filter, 100)
-                    .then(function (dtTree) {
+                            //var filter = q.or(q.eq("idfin",12), q.eq("idfin",13), q.eq("idfin",18), q.eq("idfin",450),q.eq("idfin",9), q.eq("idfin",50), q.eq("idfin",1),  q.eq("idfin",2), q.eq("idfin",309));
+                            var filter = q.or(q.eq("idfin", 1), q.eq("idfin", 2), q.eq("idfin", 309));
 
-                        // assegno dataset, perchè il test non mi torna un dataset, ma parto da una query.
-                        // ma poi ovviamente il codice utilizza concetti tipo le relazioni che sono sull'oggetto dataset
-                        ds.tables["fin"] = dtTree;
-                        dtTree.dataset  = ds;
+                            return getData.runSelect("fin", "ayear, codefin, title, idfin, paridfin, nlevel", filter, 100);
+                        })
+                        .then(function (dtTree) {
+                            // assegno dataset, perchè il test non mi torna un dataset, ma parto da una query.
+                            // ma poi ovviamente il codice utilizza concetti tipo le relazioni che sono sull'oggetto dataset
+                            ds.tables["fin"] = dtTree;
+                            dtTree.dataset = ds;
 
-                        expect(dtTree.name).toBe("fin"); // nome tabella
+                            expect(dtTree.name).toBe("fin"); // nome tabella
 
-                        // passo come filtro tutti gli id >0 cioè prendo tutti
-                        var tvm = new appMeta.TreeViewManager($("#tree"), helpForm, dtTree);
+                            // passo come filtro tutti gli id >0 cioè prendo tutti
+                            var tvm = new appMeta.TreeViewManager($("#tree"), helpForm, dtTree);
 
-                        // i non roots saranno 12, 13, 18, 450
-                        var rootFilter =  q.or(q.eq("idfin",1),  q.eq("idfin",2), q.eq("idfin",309));
-                        tvm.start(rootFilter, false )
-                            .then(function () {
-                                var rootNode = $("#tree").jstree("get_node" , "#");
-                                expect(rootNode.children.length).toBeGreaterThan(0);
+                            let mp = new appMeta.MetaPage("fin", "tree", false);
+                            tvm.addEvents($("#tree"), mp);
+                            mp.helpForm = helpForm;
+                            mp.state = s;
+
+                            // i non roots saranno 12, 13, 18, 450
+                            var rootFilter = q.or(q.eq("idfin", 1), q.eq("idfin", 2), q.eq("idfin", 309));
+                            tvm.start(rootFilter, false)
+                                .then(function () {
+                                    var rootNode = $("#tree").jstree("get_node", "#");
+                                    expect(rootNode.children.length).toBeGreaterThan(0);
+                                    done();
+                                })
+                                },
+                            (err) => {
+                                expect(err).toBe(null);
                                 done();
-                            })
-                    })
-                }, 120000);
+                            })                  
+                });
 
-                it("startWithField() method retrieve tree row structure of finview and select node",function (done) {
+                it("startWithField() method retrieve tree row structure of finview and select node", function (done) {
 
                     var mainwin = '<head></head>' +
                         '<div id="metaroot">' +
@@ -129,13 +166,13 @@ describe("TreeViewManager E2E",
                     s.DS = ds;
                     // il meta è invocato per chiamare la describeTree
                     var m = new appMeta.MetaData('fin');
-                    s.meta  = m;
-                    appMeta.addMeta('fin', m );
+                    s.meta = m;
+                    appMeta.addMeta('fin', m);
                     var helpForm = new appMeta.HelpForm(s, "fin", "#metaroot");
 
                     var metapage = new appMeta.MetaPage('fin', 'default', false);
                     metapage.state = s;
-                    metapage.helpForm  = helpForm;
+                    metapage.helpForm = helpForm;
                     // *********** node dispatcher mock ******************************************************
                     function nodeDispatcherDerived() {
                         this.name = 'nodeDispatcherDerived';
@@ -152,11 +189,11 @@ describe("TreeViewManager E2E",
                              * @param childRow
                              * @returns {*|TreeNode}
                              */
-                            getNode:function (parentRow, childRow) {
+                            getNode: function (parentRow, childRow) {
 
                                 var node = new appMeta.TreeNode(childRow);
 
-                                var text = childRow["idfin"] + " - " + childRow["paridfin"]+ " - " + childRow["title"];
+                                var text = childRow["idfin"] + " - " + childRow["paridfin"] + " - " + childRow["title"];
                                 // crea l'oogetto che rappresenta il nodo nel jstree
                                 node.text = text;
 
@@ -175,39 +212,43 @@ describe("TreeViewManager E2E",
                     s.meta.describeTree = function () {
                         var d = $.Deferred();
 
-                        return  d.resolve({nodeDispatcher:nodeDispatcher,  rootCondition:q.gt("idfin",0)});
+                        return d.resolve({ nodeDispatcher: nodeDispatcher, rootCondition: q.gt("idfin", 0) });
                     };
 
                     //var filter = q.or(q.eq("idfin",12), q.eq("idfin",13), q.eq("idfin",18), q.eq("idfin",450),q.eq("idfin",9), q.eq("idfin",50), q.eq("idfin",1),  q.eq("idfin",2), q.eq("idfin",309));
-                    var filter = q.or(q.eq("idfin",1),  q.eq("idfin",2), q.eq("idfin",309));
+                    var filter = q.or(q.eq("idfin", 1), q.eq("idfin", 2), q.eq("idfin", 309));
 
                     getData.runSelect("fin", "ayear, codefin, title, idfin, paridfin, nlevel", filter, 100)
                         .then(function (dtTree) {
-
                             // assegno dataset, perchè il test non mi torna un dataset, ma parto da una query.
                             // ma poi ovviamente il codice utilizza concetti tipo le relazioni che sono sull'oggetto dataset
                             ds.tables["fin"] = dtTree;
-                            dtTree.dataset  = ds;
+                            dtTree.dataset = ds;
 
                             expect(dtTree.name).toBe("fin"); // nome tabella
 
                             // passo come filtro tutti gli id >0 cioè prendo tutti
                             var tvm = new appMeta.TreeViewManager($("#tree"), helpForm, dtTree);
-                            tvm.addEvents($("#tree"),metapage );
+                            tvm.addEvents($("#tree"), metapage);
 
                             // i non roots saranno 12, 13, 18, 450
-                            var rootFilter =  q.or(q.eq("idfin",1),  q.eq("idfin",2), q.eq("idfin",309));
-                            tvm.startWithField(q.eq("idfin",2), "import", "lu")
+                            var rootFilter = q.or(q.eq("idfin", 1), q.eq("idfin", 2), q.eq("idfin", 309));
+                            tvm.startWithField(q.eq("idfin", 2), "import", "lu")
                                 .then(function () {
-                                    var rootNode = $("#tree").jstree("get_node" , "#");
+                                    var rootNode = $("#tree").jstree("get_node", "#");
                                     expect(rootNode.children.length).toBeGreaterThan(0);
-                                    var selRow  = tvm.selectedRow();
+                                    var selRow = tvm.selectedRow();
                                     expect(selRow["idfin"]).toBe(2);
                                     done();
-                                })
-                        })
-                }, 120000);
+                                },
+                                    (err) => {
+                                        expect(true).toBe(false);
+                                        done();
+                                    }
 
+                                )
+                        });
 
+                });
             });
     });

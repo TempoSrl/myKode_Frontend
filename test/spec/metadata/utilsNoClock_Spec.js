@@ -42,7 +42,7 @@ describe('utilsNoClock',
                         allDef.push(f2);
                         allDef.push(f3);
 
-                       return  appMeta.utils.thenSequence(allDef).then(function () {
+                       appMeta.utils.thenSequence(allDef).then(function () {
                            expect(res).toBe("f1f2f3");
                            done();
                        })

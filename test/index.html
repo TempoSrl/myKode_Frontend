@@ -9,61 +9,61 @@
 </head>
 <body>
 
-<!-- include source files here... -->
-<script src="../bower_components/es6-shim/es6-shim.js"></script>
-<script src="../bower_components/jasmine-core/lib/jasmine-core/jasmine.js"></script>
-<script src="../bower_components/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
-<script src="../bower_components/jquery/dist/jquery.js"></script>
-<script src="../bower_components/lodash/lodash.js"></script>
-<script src="../bower_components/observe-js/src/observe.js"></script>
-<script src="../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
-<script src="../bower_components/jsDataSet/src/jsDataSet.js"></script>
-<script src="../bower_components/jasmine-jquery/lib/jasmine-jquery.js"></script>
+    <!-- include source files here... -->
+    <script src="../bower_components/es6-shim/es6-shim.js"></script>
+    <script src="../bower_components/jasmine-core/lib/jasmine-core/jasmine.js"></script>
+    <script src="../bower_components/jasmine-core/lib/jasmine-core/jasmine-html.js"></script>
+    <script src="../bower_components/jquery/dist/jquery.js"></script>
+    <script src="../bower_components/lodash/lodash.js"></script>
+    <script src="../bower_components/observe-js/src/observe.js"></script>
+    <script src="../bower_components/jsDataQuery/src/jsDataQuery.js"></script>
+    <script src="../bower_components/jsDataSet/src/jsDataSet.js"></script>
+    <script src="../bower_components/jasmine-jquery/lib/jasmine-jquery.js"></script>
 
-<script src="test/app/styles/bootstrap/js/bootstrap.js"></script>
+    <script src="test/app/styles/bootstrap/js/bootstrap.js"></script>
 
-<script src="../components/metadata/MetaApp.js"></script>
-<script src="../components/metadata/EventManager.js"></script>
-<script src="../components/metadata/Connection.js"></script>
-<script src="../components/metadata/LocalResource.js"></script>
-<script src="../components/metadata/TypedObject.js"></script>
-<script src="../components/metadata/MetaPageState.js"></script>
-<script src="../components/metadata/MetaModel.js"></script>
-<script src="../components/metadata/HelpForm.js"></script>
-<script src="../components/metadata/MetaData.js"></script>
-<script src="../components/metadata/GetDataUtils.js"></script>
-<script src="../components/metadata/GetData.js"></script>
-<script src="../components/metadata/MetaPage.js"></script>
-<script src="../components/metadata/GridControl.js"></script>
-<script src="../components/metadata/ComboManager.js"></script>
-<script src="../components/metadata/Utils.js"></script>
-<script src="../components/utility/select2.min.js"></script>
+    <script src="../components/metadata/MetaApp.js"></script>
+    <script src="../components/metadata/EventManager.js"></script>
+    <script src="../components/metadata/Connection.js"></script>
+    <script src="../components/metadata/LocalResource.js"></script>
+    <script src="../components/metadata/TypedObject.js"></script>
+    <script src="../components/metadata/MetaPageState.js"></script>
+    <script src="../components/metadata/MetaModel.js"></script>
+    <script src="../components/metadata/HelpForm.js"></script>
+    <script src="../components/metadata/MetaData.js"></script>
+    <script src="../components/metadata/GetDataUtils.js"></script>
+    <script src="../components/metadata/GetData.js"></script>
+    <script src="../components/metadata/MetaPage.js"></script>
+    <script src="../components/metadata/GridControl.js"></script>
+    <script src="../components/metadata/ComboManager.js"></script>
+    <script src="../components/metadata/Utils.js"></script>
+    <script src="../components/utility/select2.min.js"></script>
 
-<!-- include spec files here... -->
-<script src="spec/jasmineSpec.js"></script>
+    <!-- include spec files here... -->
+    <script src="spec/jasmineSpec.js"></script>
 
 
-<script>
-    (function() {
-        var jasmineEnv = jasmine.getEnv();
-        jasmineEnv.updateInterval = 1000;
-        var htmlReporter = new jasmine.HtmlReporter();
-        jasmineEnv.addReporter(htmlReporter);
-        jasmine.addReporter(new jasmine.ConsoleReporter());
-        //jasmineEnv.specFilter = function(spec) {            return htmlReporter.specFilter(spec);        };
-        var currentWindowOnload = window.onload;
-        window.onload = function() {
-            if (currentWindowOnload) {
-                currentWindowOnload();
+    <script>
+        (function () {
+            var jasmineEnv = jasmine.getEnv();
+            jasmineEnv.updateInterval = 1000;
+            var htmlReporter = new jasmine.HtmlReporter();
+            jasmineEnv.addReporter(htmlReporter);
+            jasmine.addReporter(new jasmine.ConsoleReporter());
+            //jasmineEnv.specFilter = function(spec) {            return htmlReporter.specFilter(spec);        };
+            var currentWindowOnload = window.onload;
+            window.onload = function () {
+                if (currentWindowOnload) {
+                    currentWindowOnload();
+                }
+                execJasmine();
+            };
+            function execJasmine() {
+                jasmineEnv.execute();
             }
-            execJasmine();
-        };
-        function execJasmine() {
-            jasmineEnv.execute();
-        }
-    })();
-</script>
-    
-  
+        })();
+    </script>
+
+
 </body>
 </html>

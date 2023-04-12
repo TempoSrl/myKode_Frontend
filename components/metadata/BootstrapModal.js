@@ -23,7 +23,7 @@
         this.closeCommand = closeCommand;
         this.title = title;
         this.body = body;
-        this.buttons = buttons || [appMeta.localResource.close];
+        this.buttons = buttons || [appMeta.localResource.dictionary.close];
         this.currModal = null;
         this.parent = null;
         this.details = details;
@@ -67,7 +67,7 @@
          * Empties the dialog box
          */
         hide:function () {
-            if (this.currModal){
+            if (this.currModal) {             
                 this.currModal.modal("hide");
                 this.currModal.remove();
                 this.currModal = null;
@@ -95,7 +95,7 @@
          * Shows the bootstrap modal
          * @param {MetaPage} page
          * @param {element} parent. the html node where the modal will be added
-         * @retunrs {Deferred} a promise, that will be resolved in the close() event
+         * @return {Promise} a promise, that will be resolved in the close() event
          */
         show: function (page, parent) {
             this.def = Deferred("BootstrapModal.show");
@@ -124,7 +124,7 @@
             if (this.details) {
                 $("#myModal" + self.idunivoque + " .modal-footer")
                     .append($("<button class='btn btn-secondary'>")
-                        .text(localResource.details)
+                        .text(localResource.dictionary.details)
                         .data("mdlModalWin", self)
                         .on("click", self.toggleDetails));
             }

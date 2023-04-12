@@ -34,11 +34,12 @@ describe('PostData', function () {
 
     });
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
         appMeta.basePath = "/";
         metapage = null;
     });
 
-    describe("MetaPage class",
+    describe("PostData class",
         function () {
 
             it( 'doPost(ds, tablename, edittype, []) is recursive; saveDataSet(null, messages, true, true) mocked, not open formProcedureMessages', function (done) {
@@ -98,7 +99,7 @@ describe('PostData', function () {
                 // mock funz saveDataSet()
                 var originalSaveDataSet = metapage.saveDataSet;
                 postData.saveDataSet = function () {
-                    var def  = Deferred("saveDataSet");
+                    var def  = Deferred("test saveDataSet");
                     return def.resolve(new jsDataSet.DataSet("test"), messages, false, true).promise();
                 };
 
@@ -112,7 +113,8 @@ describe('PostData', function () {
                                 expect($(".modal .modal-body")).toBeDefined();
                                 expect($(".procedureMessage_grid > table > tr").length).toBe(3); // 1 header + 2 rows
                                 postData.saveDataSet = originalSaveDataSet;
-                                done();
+                                $(".modal").find("button")[0].click();
+                                appMeta.stabilize(true).then(done);
                             });
 
                         $(".procedureMessage_btn_ignoreandsave").click(); // clicco
@@ -120,7 +122,7 @@ describe('PostData', function () {
                 
                 postData.doPost(new jsDataSet.DataSet("test"), null, null, inputMessages, metapage);
 
-            }, 60000);
+            });
             
         });
 });

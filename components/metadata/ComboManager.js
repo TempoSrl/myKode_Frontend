@@ -79,7 +79,7 @@
         this.colType = col.ctype;
 
         this.tag = helpForm.completeTag(tag, col); //may come back useful?
-        this.isDenyNull = metaModel.denyNull(col) || !metaModel.allowDbNull(col);
+        this.isDenyNull = metaModel.denyNull(col) || !metaModel.allowNull(col);
 
         this.noBlank = !!$(el).data("noblank");
         this.firstDataRow = this.noBlank ? 0 : 1;
@@ -338,7 +338,7 @@
          * @method fillControl
          * @public
          * @description ASYNC
-         * Executes the fill of the combo (Select html).
+         * Executes the fill of the combo (Seelct html).
          * @param {node} comboBox
          * @param {object} val
          */
@@ -580,7 +580,7 @@
                 .then(function(sel) {
                     if (selList && sel) {
                         // gli oggetti onRead() vengono richiamati alla fine della multiRunSelect
-                        sel.onRead = function() {
+                        sel.onRead = function () {
                             that.comboRows = t.select();
 							that.comboRows = _.sortBy(that.comboRows, [that.sortMember]);
                             return that.fillComboBoxTable(true);

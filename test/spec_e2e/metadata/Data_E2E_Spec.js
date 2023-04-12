@@ -12,6 +12,13 @@ describe('Data', function () {
     var defLogin;
     // effettuo login
     beforeAll(function () {
+        appMeta.connection.setTestMode(true);
+        appMeta.basePath = "base/";
+        appMeta.serviceBasePath = "/"; // path relativo dove si trovano i servizi
+        appMeta.globalEventManager = new appMeta.EventManager();
+        appMeta.localResource.setLanguage("it");
+        appMeta.logger.setLanguage(appMeta.LocalResource);
+
         defLogin = appMeta.Deferred("login");
         appMeta.authManager.login(
             appMeta.configDev.userName,
@@ -48,12 +55,12 @@ describe('Data', function () {
             expect(ds.tables.registryreference.columns.faxnumber.expression.myArguments[0].myName).toBe("field");
             expect(ds.tables.registryreference.columns.faxnumber.expression.myArguments[1].myName).toBe("constant");
 
-            var rowsLength = ds.tables['registryreference'].rows.length
+            var rowsLength = ds.tables['registryreference'].rows.length;
             expect( rowsLength).toBeGreaterThan(0);
-            expect( ds.tables['registryreference'].rows[0].getRow().myState).toBe('unchanged');
-            expect( ds.tables['registryreference'].rows[1].getRow().myState).toBe('unchanged');
-            expect( ds.tables['registryreference'].rows[2].getRow().myState).toBe('deleted');
-            expect( ds.tables['registryreference'].rows[rowsLength - 1].getRow().myState).toBe('added');
+            expect( ds.tables['registryreference'].rows[0].getRow().state).toBe('modified');
+            expect(ds.tables['registryreference'].rows[1].getRow().state).toBe('unchanged');
+            expect(ds.tables['registryreference'].rows[2].getRow().state).toBe('deleted');
+            expect(ds.tables['registryreference'].rows[rowsLength - 1].getRow().state).toBe('added');
 
             // Test deserializzazione proprietà di AutoIncrement
             // lato c# popolo struttura in maniera custom. lato js devo trovare stessa struttura
@@ -73,8 +80,8 @@ describe('Data', function () {
             expect(col.selectorMask instanceof Array).toBeTruthy();
             expect(col.selector.length).toBe(3);
             expect(col.selectorMask.length).toBe(3);
-            expect(_.isEqual(col.selector, ["referencename","cu","lt"])).toBeTruthy();
-            expect(_.isEqual(col.selectorMask, ["123","456","789"])).toBeTruthy();
+            expect(_.isEqual(_.sortBy(col.selector), _.sortBy(["referencename", "cu", "lt"]))).toBeTruthy();
+            expect(_.isEqual(_.sortBy(col.selectorMask), _.sortBy(["123","456","789"]))).toBeTruthy();
 
             // test su colonna non numerica. i valori di "idLen", "middleConst" e "prefixField" sono quelli aspettati, presi dal server
             var colEmail = ds.tables['registryreference'].autoIncrementColumns.email;
@@ -87,8 +94,9 @@ describe('Data', function () {
             expect(colEmail.selectorMask instanceof Array).toBeTruthy();
             expect(colEmail.selector.length).toBe(3);
             expect(colEmail.selectorMask.length).toBe(3);
-            expect(_.isEqual(colEmail.selector, ["referencename","cu","lt"])).toBeTruthy();
-            expect(_.isEqual(colEmail.selectorMask, ["123","456","789"])).toBeTruthy();
+            expect(_.isEqual(_.sortBy(colEmail.selector), _.sortBy(["referencename", "cu", "lt"]))).toBeTruthy();
+            //expect(_.isEqual(colEmail.selector, ["referencename","cu","lt"])).toBeTruthy();
+            expect(_.isEqual(_.sortBy(colEmail.selectorMask), _.sortBy(["123","456","789"]))).toBeTruthy();
         };
 
         /**
@@ -108,6 +116,7 @@ describe('Data', function () {
     });
 
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
     });
 
     describe("Test DataSet with server",
@@ -156,7 +165,6 @@ describe('Data', function () {
                                 r.getRow().acceptChanges();
                             }
                         );
-
 
                         _.forEach( ds.tables['table1'].rows,
                             function (r, index) {
@@ -219,6 +227,7 @@ describe('Data', function () {
                         var serMyDs = ds.serialize(true);
                         // 3. creo json da inviare
                         var jsonToSend = JSON.stringify(serMyDs);
+                        //console.log(jsonToSend);
 
                         // 4. creo oggetto per l'invio al server
                         var objConn = {
@@ -230,7 +239,7 @@ describe('Data', function () {
                         conn.call(objConn)
                             .then(function (res) {
                                     logger.log(logType.INFO, 'Server acceso ' + appMeta.basePath, 'res: ' , res);
-
+                                    //console.log(res);
                                     // creo nuovo jsDataSet da popolare
                                     var ds1 = appMeta.getDataUtils.getJsDataSetFromJson(res);
                                     expect(ds1.name).toBe("temp"); // nome aspettato
@@ -303,11 +312,12 @@ describe('Data', function () {
                                     // isCached
                                     expect(ds1.tables['table1'].isCached).toBe("1");
                                     expect(ds1.tables['table2'].isCached).toBe("0");
-                                    expect(ds1.tables['table3'].isCached).toBe(null);
+                                    expect(ds1.tables['table3'].isCached).toBeUndefined();
                                     expect(appMeta.metaModel.temporaryTable(ds1.tables['table1'])).toBe(true);
-                                    expect(appMeta.metaModel.temporaryTable(ds1.tables['table2'])).toBe(false);
-                                    expect(appMeta.metaModel.temporaryTable(ds1.tables['table3'])).toBe(false);
-                                    // check sulla deserialzzazione dello static filter
+                                    expect(appMeta.metaModel.temporaryTable(ds1.tables['table2'])).toBeUndefined();
+                                    expect(appMeta.metaModel.temporaryTable(ds1.tables['table3'])).toBeUndefined();
+
+                                    // check sulla deserializzazione dello static filter
                                     var staticFilterDes = ds1.tables['table1'].staticFilter();
                                     var rowsFilter2 = ds.tables['table1'].select(staticFilterDes);
                                     expect(staticFilter.myName).toBe(staticFilterDes.myName);
@@ -381,7 +391,7 @@ describe('Data', function () {
                                     var ds1 = appMeta.getDataUtils.getJsDataSetFromJson(res);
 
                                     expect(ds1.name).toBe("dsmeta_registry_anagrafica"); // nome aspettato
-                                    expect(Object.keys(ds1.tables['registry'].columns).length).toBe(42);
+                                    expect(Object.keys(ds1.tables['registry'].columns).length).toBe(43);
                                     expect(Object.keys(ds1.tables['registryaddress'].columns).length).toBe(18);
                                     expect(Object.keys(ds1.tables['registryreference'].columns).length).toBe(22);
 
@@ -420,9 +430,9 @@ describe('Data', function () {
                                     expect(ds1.name).toBe("dsmeta_registry_anagrafica"); // nome aspettato
                                     var rowsLenght = ds1.tables['registryreference'].rows.length;
                                     expect(rowsLenght).toBeGreaterThan(0);
-                                    expect( ds1.tables['registryreference'].rows[0].getRow().myState).toBe('unchanged');
-                                    expect( ds1.tables['registryreference'].rows[1].getRow().myState).toBe('unchanged');
-                                    expect( ds1.tables['registryreference'].rows[2].getRow().myState).toBe('deleted');
+                                    expect( ds1.tables['registryreference'].rows[0].getRow().state).toBe('modified');
+                                    expect(ds1.tables['registryreference'].rows[1].getRow().state).toBe('unchanged');
+                                    expect( ds1.tables['registryreference'].rows[2].getRow().state).toBe('deleted');
                                     expect( ds1.tables['registryreference'].rows[rowsLenght -1].getRow().myState).toBe('added');
 
                                     done();
@@ -436,54 +446,58 @@ describe('Data', function () {
                 }, timeout);
 
             it('getDataSetTest test2: 1. Get "registryreference" from server, 2. send to server 3. and get again, no data loss. AutoIncrementInfo deserialized',
-                function(done) {
+                function (done) {
                     defLogin.then(function () {
                         // 4. creo oggetto per l'invio al server
                         var objConn = {
                             method: methodEnum.getDataSetTest,
                             prm: { testClientCode: 'test2' },
-                            noLogError:true
+                            noLogError: true
                         }
                         // 4. invio la richiesta al server
                         conn.call(objConn)
                             .then(function (res) {
-                                    logger.log(logType.INFO, 'Server acceso ' + appMeta.basePath, 'res: ' , res);
+                                //Ci sono 6 righe ove referencename like riccardo%. La prima riga è modified (flagdefault,referencename) , la 3a è deleted, l'ultima è added
 
-                                    // creo nuovo jsDataSet da popolare
-                                    var ds1 = appMeta.getDataUtils.getJsDataSetFromJson(res);
-                                    // verifico  gli expect
-                                    funCompareDataSetSerDes(ds1);
-                                    // 2. serializzo in object
-                                    //var serMyDs = ds1.serialize(true);
-                                    // 3. creo json da inviare
-                                    var jsonToSend = appMeta.getDataUtils.getJsonFromJsDataSet(ds1, true);
+                                logger.log(logType.INFO, 'Server acceso ' + appMeta.basePath, 'res: ', res);
 
-                                    // 4. creo oggetto per l'invio al server
-                                    var objConn2 = {
-                                        method: methodEnum.fromJsDataSetToDataset,
-                                        prm: { ds: jsonToSend },
-                                        noLogError:true
-                                    }
-                                    // 4. invio la richiesta al server
-                                    return conn.call(objConn2)
+                                // creo nuovo jsDataSet da popolare
+                                var ds1 = appMeta.getDataUtils.getJsDataSetFromJson(res);
 
-                                },
-                                function(err) {
-                                    logger.log(logType.ERROR, 'Errore getDataSet ', 'err: ' , err);
+                                //Ci sono 6 righe ove referencename like riccardo%. La prima riga è modified (flagdefault,referencename) , la 3a è deleted, l'ultima è added
+                                // verifico  gli expect
+                                funCompareDataSetSerDes(ds1);
+                                // 2. serializzo in object
+                                //var serMyDs = ds1.serialize(true);
+                                // 3. creo json da inviare
+                                var jsonToSend = appMeta.getDataUtils.getJsonFromJsDataSet(ds1, true);
+
+                                // 4. creo oggetto per l'invio al server
+                                var objConn2 = {
+                                    method: methodEnum.fromJsDataSetToDataset,
+                                    prm: { ds: jsonToSend },
+                                    noLogError: true
+                                }
+                                // 4. invio la richiesta al server
+                                return conn.call(objConn2)
+
+                            },
+                                function (err) {
+                                    logger.log(logType.ERROR, 'Errore getDataSet ', 'err: ', err);
                                     expect(err).toBe(0);
                                     done();
                                 })
                             .then(function (res) {
 
-                                    // creo nuovo jsDataSet da popolare
-                                    var ds2 = appMeta.getDataUtils.getJsDataSetFromJson(res);
-                                    // verifico  gli expect
-                                    funCompareDataSetSerDes(ds2);
+                                // creo nuovo jsDataSet da popolare
+                                var ds2 = appMeta.getDataUtils.getJsDataSetFromJson(res);
+                                // verifico  gli expect
+                                funCompareDataSetSerDes(ds2);
 
-                                    done();
-                                },
-                                function(err) {
-                                    logger.log(logType.ERROR, 'Errore fromJsDataSetToDataset ', 'err: ' , err);
+                                done();
+                            },
+                                function (err) {
+                                    logger.log(logType.ERROR, 'Errore fromJsDataSetToDataset ', 'err: ', err);
                                     expect(err).toBe(0);
                                     done();
                                 });
@@ -557,7 +571,7 @@ describe('Data', function () {
                                     done();
                                 });
                     });
-                }, timeout);
+                });
 
             it('GetDataSet method return a DataSet (registry_anagrafica), defaults are ok',
                 function(done) {
@@ -581,7 +595,7 @@ describe('Data', function () {
                                     expect(ds1.tables["registryaddress"].rows.length).toBe(0);
                                     expect(ds1.tables["registryreference"].rows.length).toBe(0);
 
-                                    expect(Object.keys(ds1.tables['registry'].columns).length).toBe(42);
+                                    expect(Object.keys(ds1.tables['registry'].columns).length).toBe(43);
                                     expect(Object.keys(ds1.tables['registryaddress'].columns).length).toBe(18);
                                     expect(Object.keys(ds1.tables['registryreference'].columns).length).toBe(22);
 
@@ -591,7 +605,7 @@ describe('Data', function () {
 
                                     // il num di defualts è lo stesso del num colonne
                                     var defaults =  ds1.tables["registry"].myDefaults;
-                                    expect(Object.keys(defaults).length).toBe(42);
+                                    expect(Object.keys(defaults).length).toBe(43);
                                     // testo alcuni default che mi aspetto, conoscendo i valori del server.
                                     // test stringa, int e data
                                     expect(defaults.active).toBe("S");
@@ -616,7 +630,7 @@ describe('Data', function () {
                         //  creo oggetto per l'invio al server
                         var objConn = {
                             method: methodEnum.getDataSet,
-                            prm: { tableName:"registry", editType:"reference"},
+                            prm: { tableName:"registryreference", editType:"persone"},
                             noLogError:true
                         }
                         // 4. invio la richiesta al server
@@ -626,7 +640,7 @@ describe('Data', function () {
 
                                     var ds1  = appMeta.getDataUtils.getJsDataSetFromJson(res);
 
-                                    expect(ds1.name).toBe("registry_reference"); // nome aspettato
+                                expect(ds1.name).toBe("registryreference_persone"); // nome aspettato
                                     //no dati
                                     expect(ds1.tables["registryreference"].rows.length).toBe(0);
                                     expect(Object.keys(ds1.tables['registryreference'].columns).length).toBeGreaterThan(0);

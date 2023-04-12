@@ -88,7 +88,7 @@ describe("helpForm midway",
 
         beforeEach(function (){
             Stabilizer.nesting = 0;
-            //jasmine.DEFAULT_TIMEOUT_INTERVAL = 2000;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 5000;
 
             // mock funzione asyn describeColumns()
             appMeta.MetaData.prototype.describeColumns = function (){
@@ -1182,19 +1182,22 @@ describe("helpForm midway",
                 it('focus field on tab nested',
                     function (done){
                         $("html").html("");
+                        expect($("html").html()).toBe("<head></head><body></body>");
                         jasmine.getFixtures().fixturesPath = 'base/test/spec_midway/fixtures';
                         loadFixtures('tabTest.html');
+                        expect($("html").html()).toContain("table1.c_name");
 
+                        //console.log("html:",$("html").html())
+                        helpForm.logAll= true;
                         helpForm.preScanControls()
                         .then(()=> {
                             helpForm.addEvents();
-
                             //Va aggiunto il più tardi possibile cosi che le fixtures siano state già caricate
                             ///base/test/app
 
-                            $('body').append('<link rel="stylesheet" href="test/styles/bootstrap/css/bootstrap.css" />');
+                            $('body').append('<link rel="stylesheet" href="/test/styles/bootstrap/css/bootstrap.css" />');
                             $("body").append('<link rel="stylesheet" href="/test/styles/app.css" />');
-                            $("head").append('<script src="test/styles/bootstrap/js/bootstrap.js"></script>');
+                            $("head").append('<script src="/test/styles/bootstrap/js/bootstrap.js"></script>');
 
                             return helpForm.focusField("c_name", objrow1.getRow().table.name);
                         })

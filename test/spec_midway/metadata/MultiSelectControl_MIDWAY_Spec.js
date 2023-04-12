@@ -108,6 +108,7 @@ describe("MultiSelectControl",
         });
 
         afterEach(function () {
+            expect(appMeta.Stabilizer.nesting).toBe(0);
             appMeta.basePath = "/";
 
             appMeta.getData.createTableByName = originalCreateTableByName;

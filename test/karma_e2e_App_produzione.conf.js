@@ -26,10 +26,11 @@ module.exports = function(config) {
         'node_modules/jasmine-collection-matchers/index.js',
         'bower_components/lodash/lodash.js',
         'bower_components/observe-js/src/observe.js',
-        'bower_components/jsDataQuery/src/jsDataQuery.js',
+        'components/metadata/jsDataQuery.js',
         'bower_components/jasmine-jquery/lib/jasmine-jquery.js',
-        'bower_components/jsDataSet/src/jsDataSet.js',
-        'bower_components/bootstrap4/dist/js/bootstrap.js',
+        'components/metadata/jsDataSet.js',
+        'bower_components/bootstrap/dist/js/bootstrap.js',
+        
         'bower_components/jstree/dist/jstree.js',
         'bower_components/moment/min/moment.min.js',
         'bower_components/fullcalendar/dist/fullcalendar.min.js',
@@ -121,6 +122,8 @@ module.exports = function(config) {
         'components/userTemplate/mainToolBar_Template.html',
         'componentsEasy/metadata/MetaEasyPage.js',
         'componentsEasy/metadata/MetaEasyData.js',
+        { pattern: 'bower_components/bootstrap/dist/js/bootstrap.js.map', included: false, served: true },
+        { pattern: 'bower_components/moment/min/moment.min.js.map', included: false, served: true },
     ];
 
     // check the app to test

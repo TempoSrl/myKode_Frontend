@@ -188,11 +188,14 @@
                             return def.from(that.freshButtons()).
                              then(function () {
                                  appMeta.globalEventManager.trigger(appMeta.EventEnum.commandEnd, that.metaPage, cmd).
-                                 then(()=>{
+                                 then(function () {
+                                      //logger.log(logtypeEnum.INFO,"done with "+tag)
+                                     return appMeta.globalEventManager.trigger(appMeta.EventEnum.buttonClickEnd, that.metaPage, tag);
+                                 })
+                                 .then(()=>{
                                     return def.resolve();
                                  });
-                                //
-
+                                
                             });
                         });
                     }
@@ -213,6 +216,7 @@
             if (!this.rootElement) return appMeta.Deferred("freshButton").resolve(true);
             if (!this.metaPage) return appMeta.Deferred("freshButton").resolve(true);
             let self = this;
+            let def = appMeta.Deferred("freshButton");
             let allDeferredCommandEnabled = [];
             // loop sui pulsanti
             _.forEach($(this.rootElement).find("button[type=button]"), function (button) {
@@ -228,11 +232,11 @@
 
             // risolvo tutti i deferred dei bottoni
             // N.B la commandEnabled torna una struttura {res:true , btn:btn} con risultato + elemento html bottone
-            let def = appMeta.Deferred("freshButton");
+         
             let res =
                 $.when.apply($, allDeferredCommandEnabled)
                 .then(function() {
-
+                    //console.log("allDeferredCommandEnabled got");
                     // loop sui risultati della when. ogni data è un oggetto del tipo {res:true , btn:btn}
                     _.forEach(arguments,
                         function(data) {

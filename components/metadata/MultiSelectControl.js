@@ -66,8 +66,7 @@
             // avvio loader
             self.loader.showControl();
             // carico il template del multiSelect
-            var htmlFileName =  appMeta.basePath + self.templateFileHtmlPath;
-
+            var htmlFileName = appMeta.basePath + self.templateFileHtmlPath;
             $.get(htmlFileName)
                 .done(
                     function (data) {
@@ -75,7 +74,7 @@
                         $(self.rootElement).append(data);
 
                         // ora posso eseguire la fill del controllo.
-                        return self.innerFillControl().then(function() {
+                        return self.innerFillControl().then(function () {
                             // nascondo loader
                             self.loader.hideControl();
                             self.showControl(true);
@@ -84,6 +83,7 @@
                     })
                 .fail(
                     function (e) {
+
                         logger.log(logType.ERROR, "MultiSelectControl.fillControl", JSON.stringify(e));
                         self.loader.hideControl();
                         def.reject();
@@ -126,17 +126,15 @@
          * @private
          * @description ASYNC
          * Inits the grids with the DataTable
-         * @returns {Deferred}
+         * @returns Promise
          */
         initTables:function () {
             var def = Deferred('MultiSelectControl.initTables');
             var self = this;
             var columnList =  this.metaPage.state.meta.sortedColumnNameList(this.sourceTable);
-
             var res =  getData.createTableByName(this.tablename, columnList)
                 .then(function (dt) {
                     self.addedTable = dt;
-
                     self.addedTable.name = "added";
                     self.addedTable.tableForReading(self.tablename);
                     self.copyKeyWhenBlank(self.sourceTable, self.addedTable);
@@ -154,7 +152,6 @@
                             // Inoltre va integrata con righe che erano "added" e sono state rimosse
                             // in memoria
                             return getData.runSelectIntoTable(self.toAddTable, self.filter, null).then(function () {
-
                                 // Riempie la Table delle righe "Added". Questa contiene anche righe che sono
                                 // state rimosse in memoria, e quindi vanno rimosse (e integrate a "toAddTable")
                                 self.addedTable.merge(self.sourceTable);

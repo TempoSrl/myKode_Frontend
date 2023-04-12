@@ -81,6 +81,7 @@ describe('MetaPage with Clock', function () {
         metapage2.helpForm  = helpForm2;
     });
     afterEach(function () {
+        expect(appMeta.Stabilizer.nesting).toBe(0);
         appMeta.basePath = "/";
         metapage = null;
     });
@@ -109,11 +110,11 @@ describe('MetaPage with Clock', function () {
                         t.setDataColumn("Born", "DateTime");
                         t.setDataColumn("Age", "Int32");
 
-                        t.columns["Code"].allowDbNull = false;
-                        t.columns["Name"].allowDbNull = false;
-                        t.columns["City"].allowDbNull = false;
-                        t.columns["Born"].allowDbNull = false;
-                        t.columns["Age"].allowDbNull = false;
+                        t.columns["Code"].allowNull = false;
+                        t.columns["Name"].allowNull = false;
+                        t.columns["City"].allowNull = false;
+                        t.columns["Born"].allowNull = false;
+                        t.columns["Age"].allowNull = false;
 
                         t.columns["City"].maxstringlen = 10;
                         t.columns["Code"].allowZero = false;
@@ -335,6 +336,7 @@ describe('MetaPage with Clock', function () {
                         state1 = new appMeta.MetaPageState();
                         var ds1 = new jsDataSet.DataSet("temp1");
                         var t1 = ds1.newTable("t1");
+                        t1.key("key");
 
                         t1.setDataColumn("key", "String");
                         t1.setDataColumn("field1", "String");
@@ -471,7 +473,7 @@ describe('MetaPage with Clock', function () {
                                 expect(t1ds1.rows.length).toBe(2);
                                 var rows =  ds1.tables.table1.select(q.eq("key", "key1"))
                                 expect(rows[0]["field1"]).toBe("f5");
-                                expect(ds2.tables.table1.rows.length).toBe(0); // TODO è giusto che la riga non sia più presente sul ds dettaglio??
+                                expect(ds2.tables.table1.rows.length).toBe(1); // TODO è giusto che la riga non sia più presente sul ds dettaglio??no
                                 expect(res).toBe(true);
                             })
                        

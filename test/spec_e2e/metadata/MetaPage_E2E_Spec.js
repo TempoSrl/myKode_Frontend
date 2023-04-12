@@ -10,11 +10,22 @@ describe('MetaPage e2e', function () {
     var logType = appMeta.logTypeEnum;
     var timeout  = 30000;
     var common = appMeta.common;
+    var stabilize = appMeta.stabilize;
 
-    var defLogin;
+    let defLogin;
+
     // effettuo login
     beforeAll(function () {
-        defLogin = appMeta.Deferred("login");
+        appMeta.basePath = "base/";
+        appMeta.serviceBasePath = "/"; // path relativo dove si trovano i servizi
+        if (appMeta.globalEventManager === undefined) {
+            appMeta.globalEventManager = new appMeta.EventManager();
+        }
+        appMeta.localResource.setLanguage("it");
+        appMeta.logger.setLanguage(appMeta.LocalResource);
+        //appMeta.Stabilizer.reset();
+        //logger.setLogLevel(logType.INFO);
+        defLogin = appMeta.Deferred("login test");
         appMeta.authManager.login(
             appMeta.configDev.userName,
             appMeta.configDev.password,
@@ -26,18 +37,22 @@ describe('MetaPage e2e', function () {
     });
 
     beforeEach(function () {
-        appMeta.basePath = "base/";
+        //appMeta.basePath = 'base/test/spec_e2e_app/' + pathRelativeOfTest + '/'; //qui si trovano le metapage
         jasmine.getFixtures().fixturesPath = 'base/test/spec/fixtures';
         conn = appMeta.connection;
-
+        $("html").html("");
+        appMeta.modalLoaderControl.clear();
         // mock funzione asyn describeColumns()
         appMeta.MetaData.prototype.describeColumns = function() {
             return new $.Deferred().resolve();
         };
-
     });
-    afterEach(function () {
-        appMeta.basePath = "/";
+
+
+  
+
+    afterEach(function () {     
+        expect(appMeta.Stabilizer.nesting).toBe(0);
         metapage = null;
     });
 
@@ -80,6 +95,9 @@ describe('MetaPage e2e', function () {
                                 metapage.state = s;
 
                                 metapage.init().then(function (mp) {
+                                        if ($(".modal:visible").length > 0) console.log("MetaPage riga 91", $("html").html());
+                                    expect($(".modal:visible").length).toBe(0);
+
                                         expect(mp.constructor.name).toBe("MetaPage");
                                         expect(mp.state.DS.tables.registry).toBeDefined();
                                         expect(mp.state.DS.tables.registryaddress).toBeDefined();
@@ -91,8 +109,12 @@ describe('MetaPage e2e', function () {
                                         expect(mp.helpForm.primaryTable.name).toBe("registry");
                                         expect(mp.helpForm.DS.tables.registry).toBeDefined("registry");
                                         expect(mp.helpForm.DS.name).toBe("registry_anagrafica");
-                                        done();
-                                    },
+                                        metapage.cmdClose().
+                                            then(() => {
+                                                done();
+                                            });
+
+                                    },                                    
                                     function (error) {
                                         console.log(error);
                                         expect(error).toBeDefined();
@@ -105,7 +127,7 @@ describe('MetaPage e2e', function () {
                         function (done) {
                             defLogin.then(function () {
                                 var mainwin = '<div id="rootelement">' +
-                                    '<input type="text" id="txtBox1" data-tag="registry.cu" value="sa"><br>' +
+                                    '<input type="text" id="txtBox1" data-tag="registry.cu" value="import"><br>' +
                                     '<input type="text" id="txtBox2" data-tag="registry.p_iva"><br>' +
                                     "</div>";
                                 $("html").html(mainwin);
@@ -133,11 +155,11 @@ describe('MetaPage e2e', function () {
                                         metapage.state = s;
                                         var helpForm = new appMeta.HelpForm(s, tableName, "#rootelement");
                                         metapage.helpForm = helpForm;
-                                        metapage.startFilter  = $q.eq('idreg','2');
-                                        metapage.additionalSearchCondition = $q.eq('active','N');
+                                        metapage.startFilter  = $q.eq('idreg',2);
+                                        metapage.additionalSearchCondition = $q.eq('active','S');
 
                                         // inizializzo static filter
-                                        ds.tables[tableName].staticFilter($q.eq('idreg','2'));
+                                        ds.tables[tableName].staticFilter($q.eq('idreg',2));
 
                                         /*
 
@@ -152,11 +174,11 @@ describe('MetaPage e2e', function () {
                                          */
 
                                         // Testo il metodo dopo le configurazioni iniziali
-                                        metapage.cmdMainDoSearch(appMeta.localResource.maindosearch, "registry.default")
+                                        metapage.cmdMainDoSearch(appMeta.localResource.maindosearch, "registry.anagrafica")
                                             .then(function (result) {
                                                     expect(result).toBe(true);
-                                                    expect($('#txtBox2').val()).toBe("01669240028"); // valore di p_iva che torna dal db in base ai criteri scelti
-                                                    expect($('#txtBox1').val()).toBe("sa");
+                                                    expect($('#txtBox2').val()).toBe("00862330768"); // valore di p_iva che torna dal db in base ai criteri scelti
+                                                     expect($('#txtBox1').val()).toBe("import");
                                                     done();
                                                 },
                                                 function (error) {
@@ -168,7 +190,7 @@ describe('MetaPage e2e', function () {
 
                                     });
                             });
-                        }, timeout);
+                        });
 
                     it("getPrimaryTable() returns dataTable with rows filtered",
                         function (done) {
@@ -210,56 +232,79 @@ describe('MetaPage e2e', function () {
 
                     it("filterList() filters and fills the dataTable, no row selected, no fills control ",
                         function (done) {
+                            let tableName = 'registry';
+                            
                             defLogin.then(function () {
                                 var mainwin = '<div id="metaRoot">' +
                                     '<input type="text" id="txtBox1" data-tag="registry.cu" value="assistenza"><br>' +
                                     "</div>";
-                                $("html").html(mainwin);
-                                var tableName = 'registry';
+                                $("html").html(mainwin);      
+                                expect($(".modal:visible").length).toBe(0);
                                 metapage = new MetaPage(tableName, 'anagrafica', false);
                                 var s = new appMeta.MetaPageState();
-                                s.meta  = new appMeta.MetaData(tableName);
+                                s.meta = new appMeta.MetaData(tableName);
                                 metapage.state = s;
-
-                                metapage.init().then(function () {
-                                    var filter = $q.eq('gender','F');
+                                return metapage.init();
+                            })
+                                .then(function () {
+                                if ($(".modal:visible").length > 0) console.log("MetaPage riga 243",$("html").html());
+                                expect($(".modal:visible").length).toBe(0);
+                                var filter = $q.eq('gender', 'F');
                                     metapage.primaryTable = metapage.state.DS.tables[tableName];
-                                    // Testo il metodo dopo le configurazioni iniziali
-                                    metapage.filterList(filter)
-                                        .then(function () {
-                                                expect($('#txtBox1').val()).toBe(""); // non c'è riga selezionata,  viene fatto il clear del controllo
-                                                done();
-                                            },
-                                            function (error) {
-                                                console.log(error);
-                                                expect(false).toBe(true);
-                                                done();
-                                            });
+                                    
+                                let ss = appMeta.stabilizeToCurrent();
+                                let res = common.pageEventWaiter(metapage, appMeta.EventEnum.showModalWindow)
+                                    .then(function () {            
+                                        expect($(".modal:visible").length).toBe(1);
+                                        expect($(".modal:visible").find("button").length).toBe(1);
+                                        expect($(".modal .modal-body").text()).toContain(appMeta.localResource.noElementFound);
+                                        
+                                        // 4. click sul bottone ok, chiude la message
+                                        $(".modal:visible").find("button")[0].click();
+                                       
+                                        return ss;
+                                    });
 
-
-                                });
+                                // Testo il metodo dopo le configurazioni iniziali
+                                metapage.filterList(filter);
+                                return res;
+                            })
+                            .then(
+                                function () {
+                                    expect($('#txtBox1').val()).toBe("assistenza"); // non c'è riga selezionata,  rimane tutto come prima
+                                    done();
+                                },
+                                function (error) {
+                                    console.log(error);
+                                    expect(false).toBe(true);
+                                    done();
                             });
-                        }, timeout);
+                    });
+                    
 
                     it('doPrefill() is ASYNC and prefills a comboBox', function (done) {
+                        let s, filter;
                         defLogin.then(function () {
                             var mainwin = '<div id="rootelement">' +
                                 '<select id="combo1" data-custom-control="combo" data-tag="registry.idreg"  data-source-name="registryaddress" data-value-member="idcity"  data-display-member="lu">' +
                                 "</select>" +
                                 "</div>";
                             $("html").html(mainwin);
-
-                            var s = new appMeta.MetaPageState();
+                            s = new appMeta.MetaPageState();
                             metapage = new MetaPage('registry', 'anagrafica', false);
                             metapage.state = s;
-                            var filter = $q.eq($q.field('idreg'), 1); // la registryaddress per idreg=1 torna 3 righe per ora
+                            filter = $q.eq($q.field('idreg'), 326); // la registryaddress per idreg=1 torna 3 righe per ora
 
                             // eseguo prima l'assure del dataset, come prerequisito
-                            metapage.assureDataSet().then(function (result) {
+                            return metapage.assureDataSet();
+                        })
+                        .then(function (result) {
 
-                                var helpForm = new appMeta.HelpForm(s, "registry", "#rootelement");
-                                metapage.helpForm = helpForm;
-                                helpForm.preScanControls();
+                            var helpForm = new appMeta.HelpForm(s, "registry", "#rootelement");
+                            metapage.helpForm = helpForm;
+                            return helpForm.preScanControls();
+                         })
+                         .then(() => {                                
                                 var combo = $("#combo1").data("customController");
                                 expect(combo).toBeDefined();
 
@@ -280,9 +325,8 @@ describe('MetaPage e2e', function () {
                                      expect( $("#combo1 option")[3].text).toBe("SARA");*/
                                     done();
                                 });
-                            });
                         });
-                    }, timeout);
+                    });
 
                     it('doPrefill() prefills two comboBox', function (done) {
                         defLogin.then(function () {
@@ -297,18 +341,69 @@ describe('MetaPage e2e', function () {
                             var s = new appMeta.MetaPageState();
                             metapage = new MetaPage(tableName, 'anagrafica', false);
                             metapage.state = s;
-                            var filter = $q.eq($q.field('idreg'), 1); // la registryaddress per idreg=1 torna 3 righe per ora
+                            var filter = $q.eq($q.field('idreg'), 326); // la registryaddress per idreg=1 torna 3 righe per ora
 
                             // eseguo prima l'assure del dataset, come prerequisito
                             metapage.assureDataSet().then(function (result) {
-
                                 var helpForm = new appMeta.HelpForm(s, tableName, "#rootelement");
                                 metapage.helpForm = helpForm;
-                                helpForm.preScanControls();
+                                return helpForm.preScanControls();
+                            })
+                            .then(() => {
+                                    return metapage.helpForm.addEvents(metapage);
+                            })
+                            .then(() => {
                                 var combo = $("#combo1").data("customController");
                                 expect(combo).toBeDefined();
 
-                                metapage.doPreFill(null, filter).then(function () {
+                                metapage.doPreFill(null, filter)
+                            .then(function () {
+                                    expect($("#combo1 option").length).toBeGreaterThan(2);
+                                    expect(parseInt($("#combo1 option")[1].value)).toBeGreaterThan(0);
+                                    expect(parseInt($("#combo1 option")[2].value)).toBeGreaterThan(0);
+                                    expect(parseInt($("#combo1 option")[3].value)).toBeGreaterThan(0);
+                                    expect($("#combo1 option")[1].text.length).toBeGreaterThan(0);
+                                    expect($("#combo1 option")[2].text.length).toBeGreaterThan(0);
+                                    expect($("#combo1 option")[3].text.length).toBeGreaterThan(0);
+                                    expect($("#combo2 option").length).toBeGreaterThan(1);
+                                    expect(parseInt($("#combo2 option")[1].value)).toBeGreaterThan(0);
+                                    expect(parseInt($("#combo2 option")[2].value)).toBeGreaterThan(0);
+                                    done();
+                                });
+                            });
+                        });
+                    });
+
+                    it('freshform(true, true, undefined) is ASYNC and refills the form with fresh data', function (done) {
+                        defLogin.then(function () {
+                            var mainwin = '<div id="metaRoot">' +
+                                '<select id="combo1" data-custom-control="combo" data-tag="registry.residence"  data-source-name="residence" data-value-member="idresidence"  data-display-member="description">' +
+                                '</select><BR>' +
+                                '<select id="combo2" data-custom-control="combo" data-tag="registry.idmaritalstatus"  data-source-name="maritalstatus" data-value-member="idmaritalstatus"  data-display-member="description">' +
+                                '</select>' +
+                                '</div>';
+                            $("html").html(mainwin);
+                            var tableName  = "registry";
+
+                            var filterMain = $q.and($q.isNull($q.field('rtf')),$q.eq($q.field('cu'), 'sa'));
+                            metapage = new MetaPage(tableName, 'anagrafica', false);
+                            // eseguo prima l'assure del dataset, come prerequisito
+                            metapage.init().then(function (result) {
+                                metapage.state.meta = new appMeta.MetaData(tableName);
+                                return appMeta.getData.fillDataSet(metapage.state.DS, tableName, "anagrafica", filterMain);
+                            })
+                            .then(function () {
+                                return metapage.helpForm.preScanControls();
+                            })
+                            .then(() => {
+                                // seleziono la riga di id1
+                                var filterFill = $q.eq($q.field('idreg'), 1);
+                                var rowRegistryToSel = metapage.helpForm.DS.tables[tableName].select(filterFill);
+                                metapage.helpForm.lastSelected(metapage.helpForm.DS.tables[tableName], rowRegistryToSel[0]);
+                                var combo = $("#combo1").data("customController");
+                                expect(combo).toBeDefined();
+
+                                metapage.freshForm(true, true).then(function () {
                                     expect( $("#combo1 option").length).toBeGreaterThan(2);
                                     expect( parseInt($("#combo1 option")[1].value)).toBeGreaterThan(0);
                                     expect( parseInt($("#combo1 option")[2].value)).toBeGreaterThan(0);
@@ -321,63 +416,25 @@ describe('MetaPage e2e', function () {
                                     expect( parseInt($("#combo2 option")[1].value)).toBeGreaterThan(0);
                                     expect( parseInt($("#combo2 option")[2].value)).toBeGreaterThan(0);
                                     done();
-                                });
-                            });
-                        });
-                    }, timeout);
-
-                    it('freshform(true, true, undefined) is ASYNC and refills the form with fresh data', function (done) {
-                        defLogin.then(function () {
-                            var mainwin = '<div id="metaRoot">' +
-                                '<select id="combo1" data-custom-control="combo" data-tag="registry.idreg"  data-source-name="registryaddress" data-value-member="idcity"  data-display-member="lu">' +
-                                '</select><BR>' +
-                                '<select id="combo2" data-custom-control="combo" data-tag="registry.idreg"  data-source-name="registryreference" data-value-member="idregistryreference"  data-display-member="referencename">' +
-                                '</select>' +
-                                '</div>';
-                            $("html").html(mainwin);
-                            var tableName  = "registry";
-
-                            var filterMain = $q.and($q.isNull($q.field('rtf')),$q.eq($q.field('cu'), 'sa'));
-                            metapage = new MetaPage(tableName, 'anagrafica', false);
-
-                            // eseguo prima l'assure del dataset, come prerequisito
-                            metapage.init().then(function (result) {
-                                metapage.state.meta  = new appMeta.MetaData(tableName);
-                                appMeta.getData.fillDataSet(metapage.state.DS, tableName, "anagrafica", filterMain).then(function () {
-                                    metapage.helpForm.preScanControls();
-                                    // seleziono la riga di id1
-                                    var filterFill = $q.eq($q.field('idreg'), 1);
-                                    var rowRegistryToSel = metapage.helpForm.DS.tables[tableName].select(filterFill);
-                                    metapage.helpForm.lastSelected(metapage.helpForm.DS.tables[tableName], rowRegistryToSel[0]);
-                                    var combo = $("#combo1").data("customController");
-                                    expect(combo).toBeDefined();
-
-                                    metapage.freshForm(true, true).then(function () {
-                                        expect( $("#combo1 option").length).toBeGreaterThan(2);
-                                        expect( parseInt($("#combo1 option")[1].value)).toBeGreaterThan(0);
-                                        expect( parseInt($("#combo1 option")[2].value)).toBeGreaterThan(0);
-                                        expect( parseInt($("#combo1 option")[3].value)).toBeGreaterThan(0);
-                                        expect( $("#combo1 option")[1].text.length).toBeGreaterThan(0);
-                                        expect( $("#combo1 option")[2].text.length).toBeGreaterThan(0);
-                                        expect( $("#combo1 option")[3].text.length).toBeGreaterThan(0);
-
-                                        expect( $("#combo2 option").length).toBeGreaterThan(1);
-                                        expect( parseInt($("#combo2 option")[1].value)).toBeGreaterThan(0);
-                                        expect( parseInt($("#combo2 option")[2].value)).toBeGreaterThan(0);
+                                },
+                                    (error) => {
+                                        expect(error).toBeUndefined();
+                                        expect(1).toBe(0);
                                         done();
-                                    });
-                                });
-
-                            });
+                                    }
+                                );
                         });
-                    }, timeout);
+
+                    });
+                     },timeout);
+                    
 
                     it('freshform(true, true, "notExistTableName") is ASYNC and not fill data, cause notExistTableName', function (done) {
                         defLogin.then(function () {
                             var mainwin = '<div id="metaRoot">' +
-                                '<select id="combo1" data-custom-control="combo" data-tag="registry.idreg"  data-source-name="registryaddress" data-value-member="idcity"  data-display-member="lu">' +
+                                '<select id="combo1" data-custom-control="combo" data-tag="registry.residence"  data-source-name="residence" data-value-member="idresidence"  data-display-member="description">' +
                                 '</select><BR>' +
-                                '<select id="combo2" data-custom-control="combo" data-tag="registry.idreg"  data-source-name="registryreference" data-value-member="idregistryreference"  data-display-member="referencename">' +
+                                '<select id="combo2" data-custom-control="combo" data-tag="registry.idmaritalstatus"  data-source-name="maritalstatus" data-value-member="idmaritalstatus"  data-display-member="description">' +
                                 '</select>' +
                                 '</div>';
                             $("html").html(mainwin);
@@ -390,7 +447,9 @@ describe('MetaPage e2e', function () {
                             metapage.init().then(function (result) {
                                 metapage.state.meta  = new appMeta.MetaData(tableName);
                                 appMeta.getData.fillDataSet(metapage.state.DS, tableName, "anagrafica", filterMain).then(function () {
-                                    metapage.helpForm.preScanControls();
+                                    return metapage.helpForm.preScanControls()
+                                })
+                                .then(() => {
                                     // seleziono la riga di id1
                                     var filterFill = $q.eq($q.field('idreg'), 1);
                                     var rowRegistryToSel = metapage.helpForm.DS.tables[tableName].select(filterFill);
@@ -407,14 +466,15 @@ describe('MetaPage e2e', function () {
 
                             });
                         });
-                    }, timeout);
+                    });
 
-                    it('freshform(true, false, undefined) is ASYNC and refills the form with fresh data', function (done) {
+                    it('freshform(true, false, undefined) is ASYNC and refills the form with fresh data',
+                        function (done) {
                         defLogin.then(function () {
                             var mainwin = '<div id="metaRoot">' +
-                                '<select id="combo1" data-custom-control="combo" data-tag="registry.idreg"  data-source-name="registryaddress" data-value-member="idcity"  data-display-member="lu">' +
+                                '<select id="combo1" data-custom-control="combo" data-tag="registry.residence"  data-source-name="residence" data-value-member="idresidence"  data-display-member="description">' +
                                 '</select><BR>' +
-                                '<select id="combo2" data-custom-control="combo" data-tag="registry.idreg"  data-source-name="registryreference" data-value-member="idregistryreference"  data-display-member="referencename">' +
+                                '<select id="combo2" data-custom-control="combo" data-tag="registry.idmaritalstatus"  data-source-name="maritalstatus" data-value-member="idmaritalstatus"  data-display-member="description">' +
                                 '</select>' +
                                 '</div>';
                             $("html").html(mainwin);
@@ -425,17 +485,20 @@ describe('MetaPage e2e', function () {
 
                             // eseguo prima l'assure del dataset, come prerequisito
                             metapage.init().then(function (result) {
-                                metapage.state.meta  = new appMeta.MetaData(tableName);
+                                metapage.state.meta = new appMeta.MetaData(tableName);
                                 appMeta.getData.fillDataSet(metapage.state.DS, tableName, "anagrafica", filterMain).then(function () {
-                                    metapage.helpForm.preScanControls();
+                                    return metapage.helpForm.preScanControls();
+                                })
+                                .then(() => {
                                     // seleziono la riga di id1
                                     var filterFill = $q.eq($q.field('idreg'), 1);
                                     var rowRegistryToSel = metapage.helpForm.DS.tables[tableName].select(filterFill);
                                     metapage.helpForm.lastSelected(metapage.helpForm.DS.tables[tableName], rowRegistryToSel[0]);
                                     var combo = $("#combo1").data("customController");
                                     expect(combo).toBeDefined();
-
-                                    metapage.freshForm(true, false).then(function () {
+                                    return metapage.freshForm(true, false);
+                                })
+                                .then(function () {
                                         //TODO  la tabella non è temporary quindi fa return senza fillare, e' giusto?
                                         expect( $("#combo1 option").length).toBe(0);
                                         expect( $("#combo2 option").length).toBe(0);
@@ -443,9 +506,8 @@ describe('MetaPage e2e', function () {
                                     });
                                 });
 
-                            });
-                        });
-                    }, timeout);
+                            });                      
+                    });
 
                     it('choose() command is ASYNC, without filter, listTop=0', function (done) {
                         defLogin.then(function () {
@@ -499,6 +561,7 @@ describe('MetaPage e2e', function () {
                                                         return $.Deferred().resolve(tRegistry, 10, 100).promise();
                                                     }
 
+                                                    let ss = appMeta.stabilizeToCurrent();
                                                     // con questa configurazione, viene mostrata il listManager in modale,
                                                     // poichè nella select one richiamata (self.listTop !== 0 || filterLocked) entra ma poi result viene > 1
                                                     // quindi va in modale con la lista. al doppio click dovrebbe selezionare e scatenare gli eventi in cascata
@@ -506,8 +569,10 @@ describe('MetaPage e2e', function () {
                                                         .then(function() {
                                                             appMeta.getData.getPagedTable  = originGetPagedTable;
                                                             expect($("table:first").find("tr").length).toBeGreaterThan(0); // grid dati 11 righe. 1 header + 10 dati
-                                                            expect($("table:first").parent().parent().hasClass("modal-body")).toBe(true); // griglia dati ospitata sulla modaleù
-                                                            done();
+                                                            expect($("table:first").parent().parent().parent().hasClass("modal-body")).toBe(true); // griglia dati ospitata sulla modaleù
+                                                            expect($(".modal:visible").length).toBe(1);
+                                                            $(".modal:visible").find("button")[0].click();
+                                                            ss.then(done);
                                                         });
                                                     metapage.choose("choose.registry.anagrafica", filter, "#metaRoot");
 
@@ -528,18 +593,19 @@ describe('MetaPage e2e', function () {
                                     } ,
                                     function(err) {
                                         appMeta.getData.getPagedTable  = originGetPagedTable;
+                                        expect(err).toBe(undefined);
                                         expect(1).toBe(0);
                                         done();
                                     })
 
                         });
-                    }, timeout);
+                    });
 
                     it('selectByCondition() is ASYNC, filter="idreg=1" and return dataRow', function (done) {
                         defLogin.then(function () {
                             var tableName  = "registry";
 
-                            var filterMain = $q.and($q.isNull($q.field('rtf')),$q.eq($q.field('cu'), 'sa'));
+                            var filterMain = $q.and($q.isNull($q.field('rtf')),$q.eq($q.field('cu'), 'import'));
                             metapage = new MetaPage(tableName, 'anagrafica', false);
 
                             // eseguo prima l'assure del dataset, come prerequisito
@@ -551,7 +617,7 @@ describe('MetaPage e2e', function () {
 
                                     var filter = $q.eq($q.field('idreg'), 1);
 
-                                    metapage.selectByCondition(filter, tableName).then(function (res) {
+                                    metapage.state.meta.selectByCondition(filter, tableName).then(function (res) {
                                         expect(res).toBeDefined();
                                         expect(res.constructor.name).toBe("DataRow");
                                         expect(res.current.idreg).toBe(1);
@@ -561,7 +627,7 @@ describe('MetaPage e2e', function () {
 
                             });
                         });
-                    }, timeout);
+                    });
 
                     it('selectByCondition() is ASYNC, filter with clause of row not existing return null', function (done) {
                         defLogin.then(function () {
@@ -576,18 +642,21 @@ describe('MetaPage e2e', function () {
                                 metapage.state.meta  = new appMeta.MetaData(tableName);
 
                                 appMeta.getData.fillDataSet(metapage.state.DS, tableName, "anagrafica", filterMain).then(function () {
-
-                                    var filter = $q.eq($q.field('idreg'), "abcdefghi");
-
-                                    metapage.selectByCondition(filter, tableName).then(function (res) {
+                                    var filter = $q.eq($q.field('idreg'), -2);
+                                    metapage.state.meta.selectByCondition(filter, tableName).then(function (res) {
                                         expect(res).toBe(null);
                                         done();
-                                    });
+                                    },
+                                    err => {
+                                        expect(err).toBeUndeDefined();
+                                        done();
+                                    }
+                                    )                                    
                                 });
 
                             });
                         });
-                    }, timeout);
+                    });
 
                     // TODO risolvere dopo implementazione edit()
                     xit('manage() command is ASYNC', function (done) {

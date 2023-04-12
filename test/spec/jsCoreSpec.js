@@ -614,12 +614,11 @@ describe('javascript core test',
 
                     appMeta.basePath = 'base/';
                     
-                    // recupeor 2 ds di test
+                    // recupero 2 ds di test
                     const ds1 = appMeta.common.getRegistryAnagraficaMockDataSetFilled();
                     const ds2 = appMeta.common.getRegistryAnagraficaMockDataSetFilled();
                     expect(ds1.name).toBe("registry_anagrafica");
                     expect(ds2.name).toBe("registry_anagrafica");
-
                     // test del keyFilter sulla tab "registry", va solo su idreg
                     const rowsRegistry = ds1.tables.registry.rows;
                     const rSearchARegistry = ds2.tables.registry.rows[0];

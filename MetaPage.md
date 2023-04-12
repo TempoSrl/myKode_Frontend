@@ -157,7 +157,7 @@ Le MetaPage sono caricate all'interno del contenitore il cui id è memorizzato i
 ```
 
 in questo esempio si è supposto che appMeta.rootElement sia "metaRoot"
-La classe AppMeta si aspetta che i bottoni della toolbar siano presenti nel contenitore di nome pari a appMeta.rootToolbar
+La classe AppMeta si aspetta che i bottoni della toolbar siano presenti nel contenitore di nome pari a appMeta.currApp.rootToolbar
 
 
 ### freshForm(refreshPeripherals, doPreFill)

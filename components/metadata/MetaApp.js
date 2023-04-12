@@ -397,7 +397,7 @@
                                             return true;
                                         });
                                 })._else(function(){
-                                    // chiudo eventuale form di ricerca lista, altrimenti creo incongruenza con nuova metaPage
+                                    // Chiudo eventuale form di ricerca lista, altrimenti creo incongruenza con nuova metaPage
                                      //self.currentMetaPage.closeListManagerResultsSearch();
                                     // 1. salva il vecchio root node in una proprietà savedRoot di currentMetaPage ove esista
                                     self.currentMetaPage.savedRoot = $(self.rootElement);
@@ -414,17 +414,15 @@
                             // esco se non posso chiudere la precedente, perché magari ci sono modifiche e l'utente deve prima accettare
                             if (!canOpenPage) return;
 
-                            //console.log("to getMetaPage")
                             return appMeta.getMetaPage(metaToCall, editType)
                             .then(function (calledMetaPage){
-
                                 createdPage = calledMetaPage;
                                 return calledMetaPage.init(); //returns an instance of metaPage (with meta and state and dataset)
                             }, function (err){
                                 appMeta.logger.log(appMeta.logTypeEnum.ERROR, err);
                             })
                             .then(appMeta.utils.skipRun(
-                                function (/*MetaPage*/ calledMetaPage){
+                                function (/*MetaPage*/ calledMetaPage) {
                                     // aggiunge accorgimento grafico per far apparire la pag di dettaglio come un popup
                                     if (wantsRow) $(self.rootElement).addClass(appMeta.cssDefault.detailPage);
                                     if (!wantsRow) $(self.rootElement).removeClass(appMeta.cssDefault.detailPage);
@@ -432,7 +430,7 @@
                                         calledMetaPage.primaryTableName,
                                         calledMetaPage.editType); //gets and render calledMetaPage html
                                 }))
-                            .then(function (/*MetaPage*/ calledMetaPage){
+                                .then(function (/*MetaPage*/ calledMetaPage) {
                                 if (self.currentMetaPage){
                                     // DS è dataset della CALLING PAGE
                                     // currMetaData.ExtraParameter diventa calledMetaPage.state.extraParameters
@@ -448,9 +446,9 @@
                                 self.currentMetaPage = calledMetaPage; //called page is the new current page
                                 self.toolBarManager.setMetaPage(calledMetaPage); // set the currentMetaPage for the toolbar
                                 return calledMetaPage.activate(); //activate the page
-                            }).then(function (){
+                                }).then(function () {
                                 return createdPage.show();//this raises appMeta.EventEnum.showPage
-                            }).then(function (){
+                                }).then(function () {
                                 self.pushPageName(createdPage.getName());
                                 // Restituisco il deferred della pagina appena aperta.
                                 // Si risolverà nel mainsave nel caso di dettaglio di un edit di una riga del grid,
@@ -474,6 +472,7 @@
                     let def = appMeta.Deferred("returnToCaller");
                     if (!this.currentMetaPage || !this.currentMetaPage.state) {
                         //there is no caller 
+                        //console.log("rejecting returnToCaller");
                         return def.reject('there is no caller page').promise();
                     }
 
@@ -505,7 +504,7 @@
 
                     // 4. esegue replace del contenuto
                     $(parentRoot)[0].replaceChild(savedRoot[0], currentMetaPageRoot[0]);
-
+                    //console.log("currentMetaPage.show()", this.currentMetaPage);
                     return def.from(this.currentMetaPage.show()).promise();
                 },
 

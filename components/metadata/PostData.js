@@ -34,15 +34,16 @@
          * @param {string} tableName
          * @param {string} editType
          * @param {Array} messages
-         * @returns {Deferred(boolean|DataSet)}
+         * @returns {Promise(boolean|DataSet)}
          */
         saveDataSet:function (ds, tableName, editType, messages) {
             var def = Deferred("saveDataSet");
-
+            let dsToSend = ds.getChanges();
+            //dsToSend.displayData();
             var objConn = {
                 method: methodEnum.saveDataSet,
                 prm: {
-                    ds: getDataUtils.getJsonFromJsDataSet(ds, true),
+                    ds: getDataUtils.getJsonFromJsDataSet(dsToSend, false),
                     tableName: tableName,
                     editType: editType,
                     messages: getDataUtils.getJsonFromMessages(messages)
@@ -54,18 +55,16 @@
                         try{
                             // recupero oggetto json
                             var obj  = getDataUtils.getJsObjectFromJson(jsonRes);
-
                             // dal json obj recupero i vari pezzi. 1. dataset 2. success 3. canIgnore 4. messages
                             // messages a sua volta sarà un array di oggetti che metterò in obj js di tipo DbProcedureMessage
                             var dsOut = getDataUtils.getJsDataSetFromJson(obj.dataset);
+
                             var success = obj.success;
                             var canIgnore = obj.canIgnore;
                             var messages = [];
-
-                            // a prescindere se il salvataggio è avvenuto, mergio il ds di output del metodo save con quello di input
+                            // In qualsiasi caso (anche su fail)  unisco il ds di output del metodo save con quello di input
                             var changesCommittedToDB = (obj.messages.length === 0); // se non ci sono msg e quindi è andato bene sono effettivamente da cancellare
-                            getDataUtils.mergeDataSetChanges(ds, dsOut, changesCommittedToDB );
-
+                            getDataUtils.mergeDataSetChanges(ds, dsOut, changesCommittedToDB);
                             // popolo array di messaggi, creando un opportuno oggetto DbProcedureMessage.
                             _.forEach(obj.messages,
                                 function (message) {
@@ -76,9 +75,8 @@
                                     var table = message.table;
                                     var canIgnore = message.canIgnore;
                                     var m = new appMeta.DbProcedureMessage(id, description, audit, severity, table, canIgnore);
-                                    messages.push(m)
+                                    messages.push(m);
                                 });
-
                             return def.resolve(ds, messages, success, canIgnore);
 
                         } catch (e){
@@ -89,7 +87,7 @@
                     }, function(err) {
                         return def.reject(false);
                     }
-                )
+                );
 
             return def.promise();
         },
