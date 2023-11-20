@@ -1,168 +1,98 @@
-﻿# MetaApp
+﻿[![it](https://img.shields.io/badge/lang-it-green.svg)](https://github.com/TempoSrl/myKode_Frontend/blob/master/MetaApp.it.md)
 
-MetaApp è la classe che si occupa della gestione a più alto livello dell'applicazione.
+# MetaApp
 
-E' un singleton e funge anche da Mediator tra le varie componenti. Ossia è il fulcro attorno a cui gira la creazione/visualizzazione e la chiusura delle pagine ed il relativo scambio di informazioni.
+MetaApp is the class responsible for the high-level management of the application.
 
-myKode contiene una serie di pagine html, che costituiscono i template di alcuni componenti base utilizzati all’interno del framework come messageBox, indicatori di caricamento, toolbar etc. L’utente può ridefinire i suoi template e posizionarli in una qualsiasi cartella del suo progetto.
+It is a singleton and also serves as a mediator between various components. It is the focal point around which the creation, visualization, and closure of pages revolve, along with the associated exchange of information.
 
-E' possibile modificare i template usati dall'applicazione ed eventualmente la loro dislocazione usando il file Config.js, che tipicamente aggiunge all'istanza globale di appMeta la proprietà config con tutte le impostazioni.
+myKode contains a series of HTML pages, constituting templates for some basic components used within the framework, such as messageBox, loading indicators, toolbars, etc. Users can redefine their templates and place them in any folder within their project.
 
-Nel file config.js i dettagli sulle singole proprietà personalizzabili.
+It is possible to modify the templates used by the application and their location using the Config.js file, which typically adds the config property with all the settings to the global appMeta instance.
 
+Details on individual customizable properties can be found in the Config.js file.
 
-## Metodi
+## Methods
 
 ### start()
 
-Avvia l'applicazione, è il metodo da chiamare dopo aver creato e configurato le varie proprietà dell'applicazione
+Starts the application, the method to call after creating and configuring various application properties.
 
+### addMetaPage(tableName, editType, metaPage)
 
-### addMetaPage(tableName, editType, metaPage) 
+Associates the (tableName, editType) pair with a class (not an instance) derived from metaPage. Typically, there is a call to addMetaPage in every file where the code of a MetaPage is implemented, i.e., the "code-behind" JavaScript of a web page.
 
-Associa la coppia (tableName,editType) ad una classe (non un'istanza) derivata da metaPage
-Tipicamente troviamo una chiamata ad addMetaPage in ogni file in cui è implementato il codice di una MetaPage, ossia
- il "code behind" javascript di una pagina web.
+### {MetaPage} getMetaPage(tableName, editType)
 
-###  \{MetaPage\} getMetaPage (tableName, editType)
-
-Restituisce la MetaPage associata ad una coppia (tableName, editType)
+Returns the MetaPage associated with a pair (tableName, editType).
 
 ### getMetaDataPath(tableName)
 
-Restituisce il percorso dove sono dislocati il metadato, le metapage e gli html relativi ad una
- determinata tabella. Tipicamente è il l'indirizzo "base" seguito dal nome della tabella, tuttavia è possibile localizzare tutti i file nella stessa cartella, o in modi diversi, effettuando l'override di questo metodo.
-
+Returns the path where metadata, metapages, and HTML related to a particular table are located. Typically, it is the "base" address followed by the table name, but it is possible to locate all files in the same folder or in different ways by overriding this method.
 
 ### addMeta(tableName, meta)
 
-Associa una classe derivante da MetaData alla sua relativa tabella
+Associates a class derived from MetaData with its corresponding table. Typically, in the metadata file, you will find something like:
 
-Tipicamente nel file del metadato troveremo qualcosa di simile a:
+```javascript
+(function(_, metaModel, MetaData, Deferred) {
+    // ... (boilerplate code)
+    
+    function meta_tableName() {
+        MetaData.apply(this, ["tableName"]);
+        this.name = 'meta_tableName';
+    }
 
-```js
+    meta_tableName.prototype = _.extend(
+        new MetaData(),
+        {
+            constructor: meta_tableName,
+            superClass: MetaData.prototype,
+            // ... (methods)
+        }
+    );
 
-    (function(_, metaModel, MetaData, Deferred) {
-		/** BOILERPLATE **/
-		/** Detect free variable `global` from Node.js. */
-		let freeGlobal = typeof global === 'object' && global && global.Object === Object && global;
-		/** Detect free variable `self`. */
-		let freeSelf = typeof self === 'object' && self && self.Object === Object && self;
-		/** Used as a reference to the global object. */
-		let root = freeGlobal || freeSelf || Function('return this')();
-		/** Detect free variable `exports`. */
-		let freeExports = typeof exports === 'object' && exports && !exports.nodeType && exports;
-		/** Detect free variable `module`. */
-		let freeModule = freeExports && typeof module === 'object' && module && !module.nodeType && module;
-
-
-		//noinspection JSUnresolvedVariable
-		/** Detect free variable `global` from Node.js or Browserified code and use it as `root`. (thanks lodash)*/
-		let moduleExports = freeModule && freeModule.exports === freeExports;
-
-		/** THIS IS THE METADATA DEFINITION **/
-             function meta_tableName() {
-                    MetaData.apply(this, ["tableName"]);
-                    this.name = 'meta_tableName';
-                }
-
-                meta_tableName.prototype = _.extend(
-                    new MetaData(),
-                    {
-                        constructor: meta_tableName,
-			             superClass: MetaData.prototype,
-                        ... metodi  
-
-                    }
-                  });
-
-		/** BOILERPLATE **/
-		// Check for `exports` after `define` in case a build optimizer adds an `exports` object.
-		if (freeExports && freeModule) {
-				if (moduleExports) { // Export for Node.js or RingoJS.
-					(freeModule.exports = meta_attach).meta_tableName = meta_tableName;
-				} 
-				else { // Export for Narwhal or Rhino -require.
-					freeExports.meta_tableName = meta_tableName;
-				}
-		} else {
-				// Export for a browser or Rhino.
-				if (root.appMeta){
-					//root.appMeta.meta = metatableName;
-					appMeta.addMeta('tableName', new meta_attach('tableName'));
-				} 
-				else {
-					root.meta_tableName = meta_tableName;
-				}
-		}
-
-		}(  (typeof _ === 'undefined') ? require('lodash') : _,
-			(typeof appMeta === 'undefined') ? require('./../client/components/metadata/MetaModel').metaModel : appMeta.metaModel,
-			(typeof appMeta === 'undefined') ? require('./MetaApplicationData').MetaApplicationData : appMeta.MetaApplicationData,
-			(typeof appMeta === 'undefined') ? require('./../client/components/metadata/EventManager').Deferred : appMeta.Deferred,
-		)    
-
+    // ... (boilerplate code)
+    
+})(...);
 ```
 
-In questo codice si è assunto che ci sia una classe base per tutti i metadati dell'applicazione 
- di nome MetaApplicationData, derivante da MetaData, e che il nome della tabella associata al 
- metadato fosse tableName.
+### {MetaData} getMeta(tableName)
 
-Il codice contiene del boilerplate atto a rendere possibile utilizzare lo stesso file javascript sia nel client (frontend eseguito dal browser) che nel backend Node.js o altri. Tale boilerplate può essere semplificato se si decide di non assicurare la compatibilità ad uno o più moduli di loading, o semplicemente non usare i metadati lato backend o lato frontend.
+Returns an instance of the MetaData for tableName. By default, it is a singleton as normally each module that exposes metadata registers an instance of that metadata, which is then shared by the entire application. To change this behavior, you can act from this method.
 
-Nel Backend non esiste un'istanza di AppMeta pertanto i metadati sono ricavati direttamente dal modulo node.js che li contiene.
+### {Deferred<html>} getPage(tableName, editType)
 
-Si osservi che tale boilerplate è necessario solo per il codice del metadato ed eventuali altri file che si intendano condividere, nell'uso, nel backend e nel frontend. Il codice delle MetaPage invece, di norma non ha questa necessità, essendo usato solo nel frontend.
+Returns the HTML associated with a pair (tableName, editType). This is usually taken from the folder <base path>/<tableName> if not present in an internal cache. To register pages, it is not necessary to write code; just place them in the appropriate subfolder named "tableName" and name them <tableName>.<editType>.html.
 
+From this interface, it is easy to understand that for each table tableName, one can associate one or more forms, each identified by a code, which is precisely the editType.
 
-### \{MetaData\} getMeta(tableName)
+### {Deferred<html>} callPage(metaToCall, editType, wantsRow)
 
-Restituisce l'istanza del MetaDato tableName. Di default è un singleton per come è definito, ossia normalmente 
- ogni modulo che espone un metadato registra un'istanza di quel MetaDato stesso che poi è condivisa da tutta l'applicazione.
+Opens a form identified by the pair metaToCall-editType and returns a deferred, which is true if the editing is concluded with an "Ok." wantsRow is a parameter indicating whether the caller requests the return of a row. If wantsRow is true, the opened form appears as a pop-up.
 
-Volendo cambiare questo comportamento si può agire da questo metodo.
+Upon opening and displaying a page, an event of type showPage is also generated, to which you can subscribe to perform specific operations. For example:
 
+```javascript
+appMeta.globalEventManager.subscribe(appMeta.EventEnum.showPage, this.showPage, this);
 
-###  \{Deferred\<html\>} getPage (tableName, editType)
+// ...
 
-Restituisce l'html associato ad una coppia (tableName, editType). Questo è di solito preso dalla cartella \<base path>/\<tableName> se non è presente in una cache interna. Per registrare le pagine quindi non è necessario scrivere codice, basta riporle nella 
- opportuna sotto cartella di nome "tableName" e nominarle \<tableName>.\<editType>.html
-
-Da questa interfaccia è facile capire che ad ogni tabella tableName è possibile associare una o più maschere, ognuna identificata
- da un codice, che è appunto l'editType.
-
-
-### \{Deferred\<html\>} callPage(metaToCall, editType, wantsRow)
-
-Apre una maschera identificata dalla coppia metaToCall-editType, e restituisce un deferred, che è true se l'editing si è concluso con un "Ok". wantsRow è un parametro che indica se il chiamante richiede la restituzione di una riga.
-Ove wantsRow sia true, la maschera che si apre ha l'aspetto di un pop up.
-
-All'apertura e visualizzazione di una pagina è anche generato un evento di tipo showPage, al quale è possibile registrarsi per effettuare specifice operazioni, ad esempio:
-
-```js
-
-
-	appMeta.globalEventManager.subscribe(appMeta.EventEnum.showPage, this.showPage, this);
-
-	...
-
-	showPage:function (metaPage) {
-		if (metaPage.detailPage) ...
-	}
-
-
+showPage: function(metaPage) {
+    if (metaPage.detailPage) ...
+}
 ```
 
-### Deferred\<object>callWebService (method, prms)
+### Deferred<object> callWebService(method, prms)
 
-Invoca un web service di nome "method" e con i parametri prms. Il risultato è girato pari pari al chiamante.
-Il metodo "method" deve essere stato precedentemente registrato con il metodo 
+Invokes a web service named "method" with the parameters prms. The result is returned as-is to the caller. The "method" must have been previously registered with the method.
 
 ### register(prms)
 
-Registra un web service nel sistema, prms deve avere i seguenti campi:
+Registers a web service in the system. prms must have the following fields:
 
-- method: nome del metodo 
-- type: può essere GET/POST/DELETE
-- multipleResult: true se sono possibili più risposte
-- url: absolute url, es: http://mysite/mypath/method
+- method: the name of the method
+- type: can be GET/POST/DELETE
+- multipleResult: true if multiple responses are possible
+- url: absolute URL, e.g., http://mysite/mypath/method
+

@@ -1,42 +1,42 @@
-﻿
+﻿[![it](https://img.shields.io/badge/lang-it-green.svg)](https://github.com/TempoSrl/myKode_Frontend/blob/master/Router.it.md)
+
 # Routing
 
-La classe Routing conserva le modalità di accesso a tutti i servizi, custom e del framework, ed è lei che conosce l'indirizzo a cui accedere, il nome dei servizi, gli url, le modalità di accesso (POST/GET)
+The Routing class manages the access modes for all services, both custom and framework-related. It is responsible for knowing the addresses to access, the service names, URLs, and access methods (POST/GET).
 
 
 
-
-
-## Metodi
+## Methods
 
 ### setUrlPrefix(prefixUrl)
 
-Usa prefixUrl come prefisso per accedere a tutti i servizi. Questa è la prima parte dell'url fisico "finito"
+Uses prefixUrl as a prefix to access all services. This is the first part of the "endpoint" physical URL.
+
 
 
 ### getMethod(serviceName)
 
-Dato il nome di un servizio, restituisce i parametri per accedervi:
+Given the name of a service, returns the parameters to access it:
 
-- Method: 
-- type:  HTTP method come POST, GET, DELETE..
-- url: relative path per accedere al servizio
-- multipleResult: se true è gestito con un protocollo con delle notify del Deferred
-- auth: se true, è necessario inserire 
+- Method:
+- Type: HTTP method such as POST, GET, DELETE...
+- URL: relative path to access the service
+- MultipleResult: if true, it is managed with a protocol using Deferred notifications
+- Auth: if true, authentication is required
 
+This method is used by the callWebService method of MetaApp to invoke a web service, along with specific parameters.
 
-Questa metodo è utilizzato dal metodo callWebService di MetaApp per invocare un web service, unitamente ai parametri specifici.
 
 
 ### register(service)
 
-service ha la struttura simile a quella restituita da getMethod
+The service has a structure similar to what is returned by getMethod.
+
 
 
 ### init
 
-Metodo che registra tutti i web service del backend standard, usato da myKode. E' invocato in automatico.
-
+A method that registers all standard backend web services, used by myKode. It is invoked automatically.
 
 
 

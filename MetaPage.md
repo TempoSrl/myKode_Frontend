@@ -1,519 +1,491 @@
-﻿# MetaPage
+﻿[![it](https://img.shields.io/badge/lang-it-green.svg)](https://github.com/TempoSrl/myKode_Frontend/blob/master/MetaPage.it.md)
 
-Le classi derivanti da MetaPage contengono il codice javascript che implementa i comportamenti specifici di una pagina web, ove ve ne siano.
-Viceversa, la classe base MetaPage, implementa tutti i comportamenti comuni a tutte le pagine. 
+# MetaPage
 
-E' importante capire quali siano questi comportamenti comuni per poterli integrare o modificare in base alle esigenze di ogni singola pagina, ove sia necessario.
+Classes derived from MetaPage contain the JavaScript code that implements specific behaviors for a web page, if any. 
+Conversely, the base class MetaPage implements all common behaviors for all pages.
 
-Una pagina (MetaPage) di per se non fa nulla sin quando l'utente non interagisce con i controlli in essa contenuti o con eventuali menu o altri strumenti che ne invochino i metodi. Pertanto per comprendere come funziona una pagina occorre comprendere i diversi controlli che essa può contenere.
+It's important to understand these common behaviors to integrate or modify them according to the needs of each individual page when necessary.
 
-Una pagina è sempre associato ad un DataSet, ed ogni controllo contenuto nella pagina è associato a dei tag che determinano a quale campo di quale riga (ossia di quale tabella) il controllo si riferisca. Si è già descritto nella [pagina iniziale](readme.md) la struttura di un DataSet. L'associazione tra MetaPage e DataSet avviene nel metodo init della MetaPage.
+A page (MetaPage) does nothing on its own until the user interacts with the controls it contains or with any menus or other tools that invoke its methods. 
+Therefore, to understand how a page works, you need to understand the different controls it can contain.
 
-In generale in una pagina possono esserci due tipi di controlli: controlli che visualizzano un valore (come text,select, etc.) e controlli che visualizzano tanti valori (come table, treeview etc). 
+A page is always associated with a DataSet, and each control contained in the page is associated with tags that determine which field of which 
+ row (i.e., which table) the control refers to. The structure of a DataSet has already been described on the [initial page](readme.md). 
+The association between MetaPage and DataSet occurs in the init method of MetaPage.
 
-I controlli che visualizzano un valore si riferiscono ad una riga che deve essere univocamente determinata in base alla riga della tabella principale correntemente visualizzata.
+In general, there can be two types of controls on a page: controls that display a single value (such as text, select, etc.) and controls that display 
+ multiple values (such as table, treeview, etc.).
 
-Per i controlli che visualizzano un valore la tabella e la colonna a cui si riferiscono è specificata nel tag, come spiegato nella pagina [HTML](MetaPageHtml.md), in cui è spiegato nei dettagli come realizzare la vista html associata alla MetaPage.
+Controls that display a single value refer to a row that must be uniquely determined based on the current row of the main table being displayed.
 
-La tabella dovrebbe essere tale per cui, a partire dalla riga principale e seguendo le relazioni presenti nel DataSet, è unica la riga a cui si perviene nella tabella data, e di quella riga sarà visualizzato il campo indicato nel tag. 
+For controls that display a single value, the table and column to which they refer are specified in the tag, as explained in the [HTML page](MetaPageHtml.md), 
+ which details how to create the HTML view associated with MetaPage.
 
-Analogamente lo stesso campo della stessa riga sarà utilizzato per modificare i valori esistenti, qualora la tabella sia l'entità principale o una sua subentità in relazione uno a uno con la riga principale.
+The table should be such that, starting from the main row and following the relationships present in the DataSet, the row reached in the given table 
+ is unique, and the field indicated in the tag of that row will be displayed.
 
+Similarly, the same field of the same row will be used to modify existing values if the table is the main entity or one of its sub-entities in a 
+ one-to-one relationship with the main row.
 
-I controlli che visualizzano più righe solitamente visualizeranno una tabella figlia della tabella principale.
+Controls that display multiple rows usually show a child table of the main table.
 
-## Tipi di pagina
+## Types of Pages
 
-Esistono due principali tipi di form (maschera): **singolo** o **lista**. 
+There are two main types of forms: **single** or **list**.
 
-Un form **"singolo"** visualizza una riga della tabella principale alla volta, e per selezionarne un'altra va svuotato con un comando di "imposta ricerca" e poi riempito con un'altra riga, tipicamente selezionandola da un elenco calcolato in base a dei filtri, oppure creando una nuova riga con il comando di inserimento.
-Dividiamo i form singoli in due categorie: 
+A **"single"** form displays one row of the main table at a time, and to select another, it must be cleared with a "set search" command and then 
+ filled with another row, typically by selecting it from a list calculated based on filters or by creating a new row with the insert command. 
+ We divide single forms into two categories:
 
-- form principale: in questo caso troviamo, tra gli altri, i bottoni "imposta ricerca", "effettua ricerca", "elimina", "inserisci", "salva
-- form dettaglio: sono form che visualizzano dettagli di una maschera principale, e hanno solo i bottoni "Ok" e "Annulla"
+- Main form: in this case, you find, among others, the buttons "set search," "perform search," "delete," "insert," "save."
+- Detail form: these are forms that display details of a main form and only have the "Ok" and "Cancel" buttons.
 
-Un form **"lista"** visualizza un grid, un tree o altri controlli multi riga in cui si può selezionare una riga e vedere la maschera aggiornarsi con i dati di quella riga (e subentità relative).
+A **"list"** form displays a grid, tree, or other multi-row controls where you can select a row and see the form update with the data for that row
+ (and related sub-entities).
 
-## Creazioni di MetaPage
+## Creating MetaPage
 
-Per creare una pagina, sarà necessario creare una classe derivata da MetaPage, con i canoni classici della programmazione javascript:
-
-```js
-
-        function(){
-            function meta_<tableName>() {
-                MetaPage.apply(this, arguments);
-                this.name = <NomePagina>;
-            }
-           metaPage_<tableName>.prototype = _.extend(
-               new MetaPage(<TableName>, <EditType>, <bool:iDetail>),
-               {
-                   constructor: metaPage_<tableName>,
-
-                   superClass: MetaPage.prototype,
-
-	             <funzione_classeBase_da_sovrascrivere>, 		
-    	             <funzioni_private>
-               }
-        )
-        }())
-```
-
-## Metodi principali di una pagina
-
-
-### Costruttore
-
-Nel costruttore possono essere sovrascritte in maniera del tutto opzionale le seguenti proprietà booleane:
-
-- searchEnabled: indica se è permessa la ricerca. (default true)
-- mainSelectionEnabled:indica se è abilitata la funzione di “main select” (default true)
-- canInsert: indica se è permesso l’inserimento (default true)
-- canInsertCopy: indica se è permessa la copia e inserimento (default true)
-- canSave: indica se è permesso il salvataggio (default true)
-- canCancel: indica se è permessa la cancellazione (default true)
-- startEmpty: indica se la lista non deve essere riempita allo start dell’applicazione. (default false).
-
-Queste proprietà possono essere cambiate in ogni momento, un altro momento buono per impostarle è il metodo afterLink.
-
-E' possibile definire il tipo di pagina valorizzando le proprietà:
-
-- isList: indica che si tratta di form di tipo lista. (default false).
-- isTree: indica un form principale con un tree manager (default false).
-
-
-
-Inoltre si possono configurare i seguenti parametri:
-
-- startFilter: è un’espressione jsDataQuery che rappresenta un filtro sui dati che si vuole applicare a livello di pagina. 
-
-- additionalSearchCondition: è un espressione jsDataQuery che rappresenta un filtro da applicare al livello di pagina quando si fa una ricerca. Se ad esempio vogliamo che in fase di ricerca la maschera debba già filtrare un determinato campo allora si dovrà inserire sul costruttore della MetaPage la seguente riga di codice:
+To create a page, you need to create a class derived from MetaPage, following the classic JavaScript programming conventions:
 
 ```js
-    this.additionalSearchCondition = window.jsDataQuery.eq(“<nome_campo>”, “valore”).  
-
-```
-
-
-Naturalmente è possibile inserire qualsiasi tipo di espressione che si vuole. (Fare riferimento alla documentazione su [JsDataQuery](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataQuery.md))
-
-
-- defaultListType: è il listType di default che viene inizializzato dal framewrok alla stringa “default”. Bisogna sovrascriverlo se si utilizza un nuovo listType.
-  Bisogna inserire per questo una entry sulla tabella **web_listredir**, in cui c’è il mapping tra il tablename e listtype originali con quelli nuovi **newtablename** e **newlisttype**. La pagina in fase di ricerca effettuerà la query quindi sulla vista indicata nel campo newtablename. Naturalmente sarà necessario realizzare un metadato lato server del tipo meta_<newtablename>.
-
-- Se la pagina è pubblica, bisogna inserire nel costruttore della MetaPage derivata la chiamata alla funzione 
-
-```js
-        appMeta.connection.setAnonymous();
-```
- In questo caso tutte le chiamate ai servizi web saranno autenticate in maniera anonima. Il token anonimo è per ora cablato a codice e condiviso con il backend. Nel backend per sicurezza tutte le connessioni anonime vengono filtrate ed eventualmente bloccate se eseguite su dataset non permessi. Per vedere la configurazione backend vedere il paragrafo 4.1.1
- 
-
-Il costruttore di una classe derivata da MetaPage sarà qualcosa tipo:
-
-
-```js
-
-    function(){
-        function metaPage_<tableName>() {
-            MetaPage.apply(this, arguments);
-            this.name = <NomePagina>;
-        }
+(function(){
+    function meta_<tableName>() {
+        MetaPage.apply(this, arguments);
+        this.name = <PageName>;
+    }
     metaPage_<tableName>.prototype = _.extend(
         new MetaPage(<TableName>, <EditType>, <bool:iDetail>),
         {
             constructor: metaPage_<tableName>,
-
             superClass: MetaPage.prototype,
-            
-	        ...metodi classeBase da sovrascrivere, 		
-    	    ..funzioni_private
+            <base_class_function_to_override>,
+            <private_functions>
         }
     )
-    }())
+}())
+```
+
+## Main Methods of a Page
+
+### Constructor
+
+In the constructor, the following boolean properties can be optionally overridden:
+
+- searchEnabled: indicates if searching is allowed. (default true)
+- mainSelectionEnabled: indicates if "main select" is enabled. (default true)
+- canInsert: indicates if insertion is allowed. (default true)
+- canInsertCopy: indicates if copying and insertion are allowed. (default true)
+- canSave: indicates if saving is allowed. (default true)
+- canCancel: indicates if cancellation is allowed. (default true)
+- startEmpty: indicates if the list should not be filled at the start of the application. (default false).
 
 
-Le MetaPage sono caricate all'interno del contenitore il cui id è memorizzato in appMeta.rootElement
+These properties can be changed at any time, another good time to set them is in the afterLink method.
+
+The page type can be defined by setting the following properties:
+
+- isList: indicates that it is a list-type form. (default false).
+- isTree: indicates a main form with a tree manager. (default false).
+
+## Configuration Parameters
+
+Additionally, the following parameters can be configured:
+
+- **startFilter**: It is a `jsDataQuery` expression representing a filter on the data that you want to apply at the page level.
+
+- **additionalSearchCondition**: It is a `jsDataQuery` expression representing a filter to apply at the page level when conducting a search. For example, if you want the mask to already filter a specific field during a search, you should include the following line of code in the constructor of `MetaPage`:
+
+```js
+this.additionalSearchCondition = window.jsDataQuery.eq("<field_name>", "value");
+```
+
+Of course, you can insert any type of expression you want. (Refer to the documentation on [JsDataQuery](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataQuery.md))
+
+- **defaultListType**: It is the default `listType` initialized by the framework to the string "default." You need to override it if you use a new `listType`. For this, insert an entry in the **web_listredir** table, where there is the mapping between the original `tablename` and `listtype` with the new ones **newtablename** and **newlisttype**. The page, during the search, will query the view indicated in the newtablename field. Of course, it will be necessary to create a server-side metadata of the type meta_<newtablename>.
+
+- If the page is public, you need to insert the following function call in the constructor of the derived `MetaPage`:
+
+```js
+appMeta.connection.setAnonymous();
+```
+
+In this case, all calls to web services will be authenticated anonymously. The anonymous token is currently hardwired with code and shared with the backend. For security, all anonymous connections in the backend are filtered and potentially blocked if executed on unauthorized datasets. To see the backend configuration, refer to section 4.1.1.
+
+The constructor of a class derived from `MetaPage` will be something like:
+
+```js
+function(){
+    function metaPage_<tableName>() {
+        MetaPage.apply(this, arguments);
+        this.name = <PageName>;
+    }
+    metaPage_<tableName>.prototype = _.extend(
+        new MetaPage(<TableName>, <EditType>, <bool:iDetail>),
+        {
+            constructor: metaPage_<tableName>,
+            superClass: MetaPage.prototype,
+            ...base class methods to override,
+            ...private functions
+        }
+    )
+}())
+```
+
+## Loading MetaPages
+
+MetaPages are loaded within the container whose ID is stored in `appMeta.rootElement`.
 
 ```html
-
 <head>
-	<!-- Contiene gli script js del framework -->
+    <!-- Contains the framework's JavaScript scripts -->
 </head>
 
 <body>
     <div id="appRoot">
-       <!-- div che ospita la barra del menù-->
-       <div id=”menu”></div>
+        <!-- div hosting the menu bar -->
+        <div id="menu"></div>
 
-       <!-- div che ospita la toolbar -->
-       <div class="container" id="toolbar" hidden></div>
+        <!-- div hosting the toolbar -->
+        <div class="container" id="toolbar" hidden></div>
 
-     <!-- contenitore dove andranno ospitate le MetaPage -->
-       <div class="container" id="metaRoot"> </div>
+        <!-- container where MetaPages will be hosted -->
+        <div class="container" id="metaRoot"></div>
     </div>
 </body>
-
 ```
 
-in questo esempio si è supposto che appMeta.rootElement sia "metaRoot"
-La classe AppMeta si aspetta che i bottoni della toolbar siano presenti nel contenitore di nome pari a appMeta.currApp.rootToolbar
+In this example, it is assumed that `appMeta.rootElement` is "metaRoot." 
+The `AppMeta` class expects that the buttons of the toolbar are present in the container with a name equal to `appMeta.currApp.rootToolbar`.
 
+### `freshForm(refreshPeripherals, doPreFill)`
 
-### freshForm(refreshPeripherals, doPreFill)
+Dumps the content of the DataSet into the form controls, displaying the current data. 
+If `refreshPeripherals` is true, it triggers a re-reading of satellite tables before display. 
+If `doPreFill` is true, it causes a read of cached tables. Typically, it is true only the first time the form is displayed and concerns tables underlying dropdowns (SELECT tags).
 
-Riversa il contenuto del DataSet nei controlli del form, che quindi visualizzerà i dati correnti.
-refreshPeripherals se true causa la rilettura delle tabelle satellite prima della visualizzazione
-doPreFill se true causa la rilettura delle tabelle in cache, di solito è true solamente la prima volta che viene visualizzata la maschera e riguarda le tabelle sottostanti le tendine (tag SELECT)
+It's important to note that before actual control filling, the `beforeFill` method of MetaPage is invoked, and similarly, the `afterFill` method is called after filling. 
+These represent two hooks that can be overridden to enrich the page with specific behaviors.
 
-E' da notare che prima dell'effettivo riempimento dei controlli, è richiamato il metodo beforFill della MetaPage, e dopo il riempimento è richiamato, analogamente, il metodo afterFill. Questi rappresentano due hook, che possono essere ridefiniti per arricchire la pagina di comportamenti particolari.
+### `getFormData(noCheck)`
 
-### getFormData(noCheck) 
+Reads data from the form, updating the content of the DataSet accordingly. In custom event handling for a form, there is usually a sequence:
 
-Legge i dati presenti nella maschera aggiornando di conseguenza il contenuto del DataSet.
-Di norma negli eventi custom gestiti da una maschera, ci sarà una sequenza:
+```javascript
+   let result = await this.getFormData(false);  // reads data
+   /// event handling, possibly modifies dataset
+   await this.freshForm(false);       // displays updated data
+```
 
-           let result = await this.getFormData(false);  //legge i dati
-           /// gestione dell'evento, eventualmente modifica i dati del dataset
-           await this.freshForm(false)       //mostra i dati aggiornati
+This is useful if the event handling needs to modify data. If it has purely aesthetic effects, it's not necessary to include it in the `getFormData`/`freshForm` cycle. 
+By default, `getFormData` also performs a client-side check, using metadata associated with tables, of modified rows, which can be entities or sub-entities at any level. 
+If the `noCheck` parameter is true, the validity check is skipped, and only the data in the DataSet is read.
 
-questo serve se la gestione dell'evento deve modificare i dati, se invece ha effetti puramente estetici, non è necessario inserirla nel ciclo getFormData/freshForm.
+It is common practice to call `getFormData(true)` for intermediate states of the form and `getFormData(false)` when saving data to the database to perform client-side checks first.
 
-Di norma getFormData effettua anche una verifica lato client, tramite i metadati associati alle tabelle, delle righe modificate, che possono essere entità o subentità di ogni livello. Se il parametro noCheck è passato come true, il controllo di validità non è effettuato e sono solo letti i dati nel DataSet. 
+The client-side checks, present in the `isValid()` methods of metadata, can be non-ignorable or ignorable. In the latter case, they might show confirmation windows to the user for any issues in the data. 
+In such cases, the user can decide to accept the data as is or modify it before proceeding with the save.
 
-Di solito è prassi chiamare getFormData(true) per gli stati intermedi della maschera, e getFormData(false) se si stanno per salvare i dati sul database, per fare agire prima i controlli lato client.
+The method returns a `Deferred<true>` if the data is correct or if it is decided not to validate it; otherwise, it returns a `Deferred<false>`. 
+After reading the data, the `afterGetFormData` event is raised through the `eventManager`.
 
-I controlli lato client, presenti nei metodi isValid() dei metadati, potranno essere non ignorabili o ignorabili, nel qual caso potrebbero mostrare delle finestre di conferma all'utente per eventuali problemi presenti nei dati. L'utente potrà quindi decidere, in tali casi, di accettare comunque i dati come sono o modificarli prima di procedere con il salvataggio.
+### `rowSelect(sender, table, row)`
 
-Il metodo restituisce un Deferred\<true> i dati sono corretti o se si è deciso di non validarli, altrimenti un Deferred\<false>
+Automatically invoked when a row of a certain table is selected to update the form accordingly. 
+It is called, for example, when selecting a row from a list, a dropdown, or selecting a row in a grid. 
+However, this method can also be manually invoked if custom controls are implemented that involve selecting rows from a table.
 
-Dopo la lettura dei dati, è effettuato il raise dell'evento afterGetFormData tramite l'eventManager.
+At this point, the `EventEnum.ROW_SELECT` event is also triggered with the same parameters as the method.
 
+### `isEmpty()`
 
-### rowSelect(sender, table, row)
+Returns true if the form contains no data, meaning it is in search filter setup mode.
 
-E' un metodo invocato automaticamente quando è selezionata una riga di una certa tabella, per aggiornare la maschera di conseguenza. E' chiamato ad esempio se si seleziona una riga da un elenco, da una tendina, o si seleziona una riga in un grid. Tuttavia è possibile invocare questo metodo manualmente se si implementano dei controlli custom che prevedono la selezione di righe di una tabella.
+### `editClick(metaPage, grid)`
 
-Nell'occasione è anche scatenato l'evento EventEnum.ROW_SELECT con gli stessi parametri del metodo.
+Invoked when the edit button linked to a grid is pressed. 
+The `editClick(grid)` event of the `eventManager` is also generated. "this" refers to the MetaPage. 
+This command (and similar ones) can be used even if there is a custom control implementing the `getCurrentRow()` method instead of a grid.
 
-### isEmpty()
+### `insertClick(metaPage, grid)`
 
-Restituisce true se la maschera non contiene dati, ossia è in modalità di impostazione del filtro di ricerca
+Invoked when the insert button linked to a grid is pressed. 
+The `insertClick(grid)` event of the `eventManager` is also generated. "this" refers to the button that triggered the click.
 
+### `deleteClick(metaPage, grid)`
 
-### editClick (metaPage, grid)
+Invoked when the delete button linked to a grid is pressed. 
+The `deleteClick(grid)` event of the `eventManager` is also generated. "this" refers to the button that triggered the click.
 
-E' invocato quando è premuto il bottone di edit collegato ad un grid. E' anche generato l'evento editClick(grid) dell'eventManager. "this" è la MetaPage. E' possibile usare questo commando (e gli altri simili) anche se invece di un grid c'è un altro controllo custom che implementi il metodo getCurrentRow()
+### `unlinkClick(metaPage, grid)`
 
+Invoked when the unlink button in a grid is pressed. 
+Unlinking disconnects the row from the main table but does not delete it. The `unlinkClick(grid)` event of the `eventManager` is also generated. 
+"this" refers to the button that triggered the click. 
+The row is "disconnected" in the sense that the fields that link it from the main table are set to null.
 
-### insertClick (metaPage, grid)
+### `addDependencies(elParent, elChild, event)`
 
-E' invocato quando è premuto il bottone di insert collegato ad un grid.  E' anche generato l'evento insertClick(grid) dell'eventManager.  "this" è il botton che ha scatenato il click.
+Associates the modification of an `elParent` element with the execution of a recalculation on the `elChild` element when the "event" is triggered on the `elParent` element.
 
+This is useful when there is a need to recalculate some controls in the form when other controls are modified. 
+The modification can trigger a cascade that ends when there are no more changes or dependencies.
 
-### deleteClick(metaPage, grid)
+### `registerFormula(elChild, fn)`
 
-E' invocato quando è premuto il bottone di delete collegato ad un grid.  E' anche generato l'evento deleteClick(grid) dell'eventManager.  "this" è il botton che ha scatenato il click.
+Registers the formula necessary when `elChild` needs to be recalculated. 
+This will be automatically invoked based on events on the controls that `elChild` depends on.
 
+### `setDataTagAttr(el, value)`
 
-### unlinkClick(metaPage, grid)
+Sets the data-tag attribute of the element to the specified value. This function serves as a shortcut for:
 
-E' invocato quando è premuto il bottone di unlink in un grid. L'unlink scollega la riga dalla tabella principale, ma non la cancella. E' anche generato l'evento unlinkClick(grid) dell'eventManager.  "this" è il botton che ha scatenato il click. 
-La riga è "scollegata" nel senso che i campi che la relazionano dalla tabella principale sono posti a null.
+```javascript
+        $(el).attr('data-tag', value);
+```
 
+Caution: Avoid using the jQuery function `.data("tag", value)`, as it does not affect the DOM.
 
-### addDependencies(elParent, elChild, event) 
+### `saveFormData()`
 
-Associa alla modifica di un elemento elParent l'esecuzione di un ricalcolo sull'elemento elChild quando sull'elemento elParent si scatena l'evento "event"
+Initiates the process of saving the form data, including the invocation of business rules. 
+However, before calling this method, it is typically necessary to invoke `getFormData(false)` and ensure that client-side validation has succeeded.
 
-Questo è utile quando si ha la necessità di ricalcolare alcuni controlli della maschera in corrispondenza della modifica di altri controlli. La modifica può innescare una cascata che termina quando non ci sono più modifiche o non ci sono più dipendenze.
+This method is invoked, along with `getFormData()` and others, when the "save" button on the toolbar is pressed.
 
+### `createAndGetListManagersearch(TableName, listingType, prefilter, isModal, rootElement, metaPage, filterLocked, toMerge, isCommandSearch, sort)`
 
-### registerFormula(elChild, fn)
-
-Registra la formula necessaria quando c'è da ricalcolare l'elemento elChild. Questa sarà invocata in automatico in base agli eventi sui controlli da cui elChild dipende.
-
-
-### setDataTagAttr(el, value)
-
-Imposta il tag data-tag con il valore value. E' una scorciatoia per
-
-         $(el).attr('data-tag', value);
-
-Attenzione a non usare la funzione .data("tag",value) di jQuery, che non agisce sul DOM.
-
-
-
-### saveFormData()
-
-Avvia il processo di salvataggio degli stessi, inclusa l'invocazione delle regole di business.
-Tuttavia prima di invocare questo metodo necessario, è di solito necessario invocare getFormData(false) e verificare che la validazione lato client sia andata a buon fine.
-
-Questo metodo è chiamato invocato, insieme a getFormData() e altri, quando si preme il bottone "salva" sulla toolbar.
-
-
-
-### createAndGetListManagersearch(TableName, listingType, prefilter, isModal, rootElement, metaPage, filterLocked, toMerge, isCommandSearch, sort)
-
-E' un metodo usato per ottenere la maschera che gestisce gli elenchi. Può essere ridefinito nelle metaPage che intendono usare un altro tipo di elenco, ad esempio con un oggetto calendario invece di una lista di righe.
-
-
+This method is used to obtain the mask that manages listings. 
+It can be redefined in MetaPages that intend to use a different type of list, for example, with a calendar object instead of a list of rows.
 
 
 ## Toolbar
 
-myKode prevede una gestione automatica di una toolbar che gestisce la transizione tra gli stati imposta ricerca / inserimento / modifica dei dati visualizzati. E' possibile anche non usarla ed in quel caso si invocheranno i comandi 
+myKode provides automatic management of a toolbar that handles the transition between the set search/insert/edit states of the displayed data. 
+It is also possible not to use it, and in that case, the following commands will be invoked:
 
-### commandEnabled(tag)
+### `commandEnabled(tag)`
 
-Stabilisce se il comando indicato dal tag è abilitato o meno. I possibili comandi sono:
+Determines whether the command indicated by the tag is enabled or not. Possible commands include:
 
-- crea_ticket: crea un ticket da inviare all'assistenza
-- mainclose: chiude la maschera, tornando eventualmente alla maschera chiamante. Invoca cmdClose.
-- mainselect: seleziona la riga corrente (in una maschera "lista")
-- maininsert: inserisce una nuova riga. Questo è effettuato invocando il metodo cmdMainInsert della MetaPage
-- maininsertcopy: inserisce una nuova riga come copia di quella corrente (con le relative subentità). Invoca cmdMainInsertCopy.
-- maindosearch: effettua la ricerca sulla base del contenuto dei controlli della maschera, che deve trovarsi nello stato di "imposta ricerca" . Effettua una chiamata a cmdMainDoSearch.
-- mainsetsearch: svuota la maschera e la pone nello stato di "imposta ricerca". Effettuato invocando cmdMainSetSearch.
-- mainsave: salva i dati presenti nella maschera. Questo è effettuato invocando il metodo cmdMainSave
-- maindelete: cancella la riga corrente con le sue subentità. Effettuato invocando il metodo cmdMainDelete, che a sua volta invoca il metodo doDelete
+- `create_ticket`: creates a ticket to be sent to support
+- `mainclose`: closes the mask, potentially returning to the calling mask. Invokes `cmdClose`.
+- `mainselect`: selects the current row (in a "list" mask)
+- `maininsert`: inserts a new row. This is done by invoking the `cmdMainInsert` method of MetaPage.
+- `maininsertcopy`: inserts a new row as a copy of the current one (with its related entities). Invokes `cmdMainInsertCopy`.
+- `maindosearch`: performs a search based on the content of the mask controls, which must be in the "set search" state. Makes a call to `cmdMainDoSearch`.
+- `mainsetsearch`: clears the mask and sets it to the "set search" state. Invoked by `cmdMainSetSearch`.
+- `mainsave`: saves the data in the mask. This is done by invoking the `cmdMainSave` method.
+- `maindelete`: deletes the current row with its subentities. Invoked by the `cmdMainDelete` method, which in turn invokes the `doDelete` method.
 
+The mask, in general, can be in three states:
 
-La maschera in generale può trovarsi in 3 stati: 
-
-- imposta ricerca
-- modifica
-- inserimento
+- Set search
+- Edit
+- Insert
 
 ```mermaid
 
 stateDiagram-v2
 
-        imposta__ricerca --> elenco: maindosearch
-        imposta__ricerca --> inserimento: maininsert
-        imposta__ricerca --> inserimento: maininsertcopy
+        set__search --> list: maindosearch
+        set__search --> insert: maininsert
+        set__search --> insert: maininsertcopy
 
-        elenco --> modifica: mainselect 
+        list --> edit: mainselect 
         
-        inserimento --> imposta__ricerca: mainsetsearch
-        inserimento --> imposta__ricerca: mainclose (detail mask)
-        inserimento --> modifica: mainsave
+        insert --> set__search: mainsetsearch
+        insert --> set__search: mainclose (detail mask)
+        insert --> edit: mainsave
 
-        modifica --> imposta__ricerca: mainsetsearch
-        modifica --> imposta__ricerca: maindelete
-        modifica --> modifica: mainsave
+        edit --> set__search: mainsetsearch
+        edit --> set__search: maindelete
+        edit --> edit: mainsave
 
 
 ```
 
-### Imposta ricerca
+### Set Search
 
-La maschera si va a trovare nello stato di imposta ricerca quando l'abbiamo appena aperta o quando invochiamo il comando mainsetsearch dopo aver salvato dei dati (mainsave) o dopo aver annullato le modifiche che stavamo facendo
+The mask enters the set search state when it has just been opened or when the `mainsetsearch` command is invoked after 
+saving data (`mainsave`) or after canceling changes being made.
 
-### Modifica
+### Edit
 
-La maschera si trova nello stato di modifica se selezioniamo (mainselect) una riga della tabella principale da un elenco e poi iniziamo a modificarla. Oppure quando salviamo (comando mainsave) una riga che era nello stato di inserimento.
+The mask is in edit mode if we select (`mainselect`) a row from the main table from a list and then start editing it. 
+Or when we save (`mainsave`) a row that was in the insert state.
 
-### Inserimento
+### Insert
 
-La maschera si trova nello stato di inserimento quando usiamo il comando maininsert o maininsertcopy. Annullando la modifica si ritornerà allo stato Imposta ricerca, salvando i dati si passerà allo stato Modifica
-
-
-
-
-
+The mask is in insert mode when we use the `maininsert` or `maininsertcopy` command. Canceling the edit will return 
+to the Set Search state, saving the data will move to the Edit state.
 
 
-## Maschere di dettaglio
+## Detail Masks
 
-Se nella maschera è presente un grid (html table) che visualizza una tabella subentità della tabella principale, è possibile aprire una nuova maschera in corrispondenza delle righe presenti, o crearne delle nuove in modo molto semplice: basterà creare una maschera associata alla tabella di dettaglio ed impostare il tag del grid in modo conseguente. 
+If a grid (HTML table) is present in the mask that displays a sub-entity table of the main table, it is possible to open a new mask corresponding to the rows present or create new ones very easily: just create a mask associated with the detail table and set the grid tag accordingly.
 
-Ad esempio, ricordando che il tag del grid ha il formato tablename.listType.editType, se il tag del grid è
+For example, remembering that the grid tag has the format `tablename.listType.editType`, if the grid tag is
 
     ordine.main.single
 
-sarà necessario registrare, con il metodo  addMetaPage(tableName, editType, metaPage) della MetaApp, una maschera opportuna, ad esempio:
+it will be necessary to register, using the `addMetaPage(tableName, editType, metaPage)` method of MetaApp, an appropriate mask, for example:
 
-    metaApp.addMetaPage("ordine","single", paginaDiDettaglio)
+    metaApp.addMetaPage("ordine", "single", detailPage)
 
-ove paginaDiDettaglio è la MetaPage associata alla pagina in questione.
+where `detailPage` is the MetaPage associated with the respective page.
 
-Quando si apre, premendo il bottone "inserisci" o "modifica" di un grid,la maschera di dettaglio, è effettuato un travaso dei dati della maschera in cui ci si trova, che include la riga oggetto di modifica/inserimento e le sue righe subentità (di ogni ordine), dal DataSet della maschera di provenienza a quello della maschera di dettaglio.
+When opening, by pressing the "insert" or "edit" button of a grid, the detail mask, data transfer is performed 
+from the mask where you are, which includes the row being modified/inserted and its sub-entity rows (of each order), from the DataSet 
+of the source mask to that of the detail mask.
 
-Al termine della modifica/inserimento nella maschera di dettaglio, se si decide di mantenere le modifiche effettuate, sarà aggiornato il DataSet della maschera di origine unendovi i dati della maschera di dettaglio (solo della sua relativa entità e subentità). Il loro destino dipenderà poi da cosa si deciderà di fare nella maschera principale, se salvarle o rigettarle.
+At the end of the modification/insertion in the detail mask, if you decide to keep the changes, the DataSet of the source mask will 
+be updated by adding the data from the detail mask (only for its related entity and sub-entities). Their fate will then depend on what 
+is decided in the main mask, whether to save or reject them.
 
-Se invece si decide di annullare la modifiche, non sarà effettuato il travaso inverso, e nel caso in cui si stava inserendo una riga, questa sarà rimossa dal DataSet principale.
+If, instead, you decide to cancel the changes, the reverse transfer will not be performed, and in the case where a row was being inserted, 
+it will be removed from the main DataSet.
 
-Queste attività di interazione tra maschera principale e dettaglio sono gestite dai comportamenti di default dei bottoni relativi ai grid (html table).
+These interactions between the main and detail masks are managed by the default behaviors of the buttons related to grids (HTML tables).
 
-I metodi relativi ai grid sono:
+The methods related to grids are:
 
-        editClick(metaPage, controller)    //modifica la riga correntemente selezionata nel grid/tree/altro
-        insertClick(metaPage, controller)  //inserisce una nuova riga nella tabella
-        deleteClick(metaPage, controller)  //cancella la riga correntemente selezionata
-        unlinkClick(metaPage, controller)  //scollega la riga correntemente selezionata
+- `editClick(metaPage, controller)`: modifies the currently selected row in the grid/tree/other.
+- `insertClick(metaPage, controller)`: inserts a new row into the table.
+- `deleteClick(metaPage, controller)`: deletes the currently selected row.
+- `unlinkClick(metaPage, controller)`: unlinks the currently selected row.
 
-questi metodi sono automaticamente chiamati quando ad un bottone di modifica/inserimento associati ad un grid, tree, calendar o altri controlli custom che abilitino tali comportamenti.
+These methods are automatically called when pressing buttons for modification/insertion associated with a grid, tree, calendar, 
+or other custom controls that enable such behaviors.
 
-Il comportamento standard di tali bottoni è invocare il metodo getCurrentRow del controller per sapere quale riga modificare o cancellare e nel caso di inserimento/modifica, aprire la maschera usando l'edittype presente nel tag del grid/tree/altro.
+The standard behavior of these buttons is to invoke the `getCurrentRow` method of the controller to know which row to modify 
+or delete and, in the case of insertion/modification, open the mask using the `edittype` present in the grid/tree/other tag.
 
 
+## Standard Passive Controls
 
+Controls of type INPUT, TEXTAREA, and DIV, SPAN associated with valueSigned do not generate any activity when the user modifies their content. There might be some events related to the formatting of INPUT/TEXT input and output, but these are not "page" activities.
 
+## Custom Control
 
-## controlli passivi standard
+Other controls, including grids (HTML TABLE), combos (HTML SELECT), and all others, are managed as "custom controls," meaning they have classes that expose a predefined interface and are used uniformly by the page.
 
-I controlli di tipo INPUT, TEXTAREA, e DIV, SPAN ove associati a valueSigned, non generano alcuna attività quando l'utente ne modifica il contenuto. Potrebbe esserci qualche evento collegato alla formattazione in ingresso/uscita dagli INPUT/TEXT ma non si tratta di attività di "pagina".
+This makes it relatively simple and natural to "invent" new visual controls for various purposes. With this interface, it has been possible to uniformly manage lists, dropdowns, various types of grids, calendar controls, trees, buttons for file download or upload, etc. It is such a well-tested interface that it is also used for common controls such as the HTML SELECT tag.
 
+Adding new controllers is safe, easily testable, and never compromises existing pages.
 
-## Custom control
+The interface includes the following methods, which may also be absent:
 
-Altri controlli, tra cui i grid (html TABLE), i combo (html SELECT) e tutti gli altri sono gestiti come "custom control", ossia con delle classi che espongono un'interfaccia predefinita e che vengono usati dalla pagina in modo omogeneo.
+- `getCurrentRow`: to be defined in "grid" type controls where it is possible to select a row for editing. It should return the currently selected row where it makes sense.
 
-Questo rende relativamente semplice e naturale "inventare" nuovi controlli visuali con scopi disparati. Con questa interfaccia è stato possibile gestire in modo omogeneo liste, tendine, grid di vario genere, controlli calendario, tree, bottoni per il download o per l'upload di file etc. 
-E' un'interfaccia talmente collaudata da essere usata anche per i controlli comuni quali il tag html SELECT
+- `fillControl(el)`: fills the control `el` with the data associated with the controller.
 
-L'aggiunta di nuovi controller è sicura, facilmente testabile e non compromette mai le pagine preesistenti.
+- `preFill(el, param)`: performs one-time initialization operations when the web mask first appears.
 
-L'interfaccia prevede i seguenti metodi, che possono anche mancare:
+- `clearControl(el)`: empties the control.
 
-- getCurrentRow: è da definire nei controlli tipo "grid" in cui è possibile selezionare una riga per editarla. Deve restituire la riga correntemente selezionata ove la cosa abbia senso
+- `getSearchCondition(el, col, tagSearch)`: obtains the search condition from that control, which, along with conditions from other controls on the mask, is used to compose the query-by-example when conducting searches.
 
-- fillControl(el): deve riempire il controllo el con i dati associati al controller
+- `addEvents(el, metaPage)`: called during the page initialization, should, if necessary, add any event handlers to the control.
 
-- preFill(el, param): effettua delle operazioni di inizializzazione che sono una-tantum, quando la maschera web appare la prima volta
+- `getControl(el, objrow, column)`: reads the value of the control in `objrow`. If the controller has the `isCustomGetcontrol` property, the `getControl` method is invoked without parameters; otherwise, these are calculated based on the tag and the current row to which the control refers.
 
-- clearControl(el): svuota il controllo
+- `el`: associated HTML control.
 
-- getSearchCondition(el, col, tagSearch): ottiene la condizione di ricerca da quel controllo, che insieme alle altre provenienti dagli altri controlli della maschera, serve a comporre il query-by-example quando si effettuano delle ricerche
+- `init`: if present, this method is called during prefill, only once.
 
-- addEvents(el, metaPage): è richiamato all'atto dell'inizializzazione della pagina, dovrebbe, ove necessario, aggiungere eventuali gestori di evento al controllo
-
-- getControl(el, objrow, column): legge il valore del controllo in objrow. Se il controller ha la proprietà isCustomGetcontrol, il metodo getControl è invocato senza parametri, altrimenti questi sono calcolati in base al tag ed alla riga corrente a cui il controllo si riferisce
-
-- el: controllo html associato
-
-- init: ove presente questo metodo, è richiamato in fase di prefill, una volta sola
-
-
-Di questi metodi, quelli indispensabili sono fillControl, clearControl e getControl.
-Per gestire un controllo html come Custom control sarà necessario specificare, nei suoi attributi, data-custom-control="codice controllo custom" ove si sia preventivamente provveduto, in fase di inizializzazione del programma, ad associare a tale codice un custom controller invocando
-
-           appMeta.CustomControl("codice controllo", costruttoreGestoreControllo); 
-
-
-
-
-## Eventi principali (Hook)
-
-Questi metodi sono richiamati nel ciclo di vita di una maschera, e sono ridefinibili per personalizzarne il comportamento. Per una più facile manutenzione, è bene cercare di usare questi metodi ogni volta che sia possibile. 
-
-Infatti inserire un comportamento in un metodo anziché in un altro rende ben chiaro a chi legge "quando" dovrebbe essere attivato quel comportamento.
-
-Nello scrivere il corpo di tali metodi tener conto della fase della maschera. Ad esempio, nel metodo beforeFill, non è possibile assumere che nella maschera vi siano già i dati correnti, a differenza del metodo afterFill. 
-
-Similmente, chiamando il metodo freshForm() in modo incondizionato nel metodo afterFill si causerà un loop infinito visto che il metodo freshForm a sua volta richiama afterFill.
-
-E' pertanto cruciale nella ridefinizione dei metodi che seguono tener conto della fase in cui si trova la maschera in quel momento.
-
-
-###  \{Deferred\} afterLink
-
-**Richiamato una volta sola**
-
-Questo metodo di MetaPage è invocato quando la pagina è stata caricata nel dom, una volta sola per ogni istanza della MetaPage. In questo metodo si possono inserire operazioni da fare una-tantum, quali aggiunta di eventi ai controlli, abilitazioni/disabilitazioni una-tantum, aggiunta a runtime di controlli o prorietà alla maschera e simili
-
-Un'altra operazione che si può fare in questa fase è utilizzare il metodo setList(ctrl) per impostare la pagina come lista, ed indicare il manage lista della pagina. Il manager lista della pagina è un controllo html, quindi del tipo $(“#id_controllo_manager”) che può essere ad esempio un grid oppure un tree
-
-
-## \{Deferred\} beforeRowSelect(table, row) 
-
-Richiamata prima della selezione di una riga
-
-
-## \{Deferred\} afterRowSelect(table, row) 
-
-E' invocato ogni qualvolta è selezionata una riga row da una tabella table, e consente alla pagina di reagire di conseguenza. Per esempio ricalcolare o modificare dei campi o fare apparire o scomparire dei controlli in base alla riga row.
-
-
-## \{Deferred\} beforeFill()
-
-E' invocato prima che una maschera sia riempita con i dati del DataSet. Può essere usato per aggiungere alcuni controlli o rimuoverli o cambiare il tag di qualche controllo prima che questo controllo sia riempito con i dati. Farlo dopo non ne cambierebbe infatti il contenuto effettivo.
-
-Inoltre in questa fase il contenuto del DataSet non è ancora stato riversato sulla pagina, quindi si fa ancora in tempo a modificare il DataSet per poi vedere le modifiche applicate ai controlli della pagina.
-
-Il fill di una pagina è effettuato in generale più volte, ad esempio quando viene aperta e poi chiusa una pagina di dettaglio. Ogni volta che ciò accade, saranno richiamati i metodi beforeFill e afterFill
-
-## \{Deferred\} afterFill()
-
-E' invocato dopo che una maschera è stata riempita con tutti i dati. Può essere usato per integrare i dati visualizzati in automatico. Si può assumere in questo metodo che i dati della maschera siano già allineati a quelli presenti nel DataSet.
-
-
-## \{Deferred\} beforeClear()
-
-E' invocato prima dello svuotamento di una maschera a seguito da un comando di "imposta ricerca"
-
-
-
-## \{Deferred\} afterClear()
-
-E' invocato dopo lo svuotamento di una maschera a seguito da un comando di "imposta ricerca". Può essere usato per svuotare controlli privi di tag e riempiti in un metodo afterFill modificato
-
-Questo metodo è anche chiamato ogni volta che, scorrendo un elenco, si passa da una riga ad un'altra. In questo caso prima è effettuato un clear() e poi il form è riempito con i dati della nuova riga selezionata. 
-
-Quindi scatteranno, in sequenza, afterClear, beforeFill, afterFill
-
-
-
-## \{Deferred\} beforePost()
-
-E' invocato prima che sia effettuato il Post dei dati del form, ossia prima di inviarli al backend per scriverli su database, dopo aver acquisito dati dai controlli. 
-
-
-
-
-## \{Deferred\} freshToolBar()
-
-
-E' invocato quando c'è da aggiornare la toolbar. E' possibile inserire azioni aggiuntive o sostituire o rimuovere del tutto l'uso della toolbar.
-
-
-## setPageTitle()
-
-E' invocato quando c'è da visualizzare il titolo della pagina. Può essere usato per personalizzarla. Di solito visualizza il nome dell'entità editata seguito dallo stato della maschera.
-
- 
-## \{Deferred\} beforeActivation()
-
-**Richiamato una volta sola**
-
-E' chiamato prima di effettuare il prefill delle tabelle di un form, la prima volta che viene mostrato. Può essere usato ad esempio per specificare tabelle aggiuntive di cui effettuare il prefill (metterle in cache). Un altro punto utile a tale scopo è il metodo afterLink(). Si ricorda che le tabelle associate alle SELECT sono automaticamente messe in cache (lette una volta sola)
-
-Es.
+Of these methods, the essential ones are `fillControl`, `clearControl`, and `getControl`. To manage an HTML control as a custom control, it will be necessary to specify in its attributes `data-custom-control="custom control code"`, where you have previously associated this code with a custom controller by calling
 
 ```js
-    appMeta.metaModel.cachedTable(table, true) //marca la tabella table come cached
-
-    ////imposta filtro statico
-    this.state.DS.tables.table1.staticFilter(window.jsDataQuery.eq("idtable1", id)); 
-    
-    //Marcare alcune tabelle come temporanee per far si che non siano lette/scritte dal db dalla libreria. 
-    //In questo caso sarà cura dello sviluppatore riempire o svuotare tali tabelle all’occorrenza
-    appMeta.metaModel.temporaryTable(table, true)
-
-
-
+appMeta.CustomControl("custom control code", controllerConstructor);
 ```
 
 
+
+
+## Main Events (Hooks)
+
+These methods are invoked in the life cycle of a page and are customizable to personalize their behavior. For easier maintenance, it is advisable to use these methods whenever possible.
+
+In fact, placing a behavior in one method rather than another makes it clear to the reader "when" that behavior should be activated.
+
+When writing the body of these methods, consider the phase of the page. For example, in the `beforeFill` method, you cannot assume that the current data is already in the mask, unlike the `afterFill` method.
+
+Similarly, unconditionally calling the `freshForm()` method in the `afterFill` method will cause an infinite loop since the `freshForm` method, in turn, calls `afterFill`.
+
+It is crucial, therefore, when redefining the following methods, to consider the phase in which the mask is at that moment.
+
+### \{Deferred\} afterLink
+
+**Invoked once**
+
+This `MetaPage` method is called when the page has been loaded into the DOM, only once for each instance of the `MetaPage`. In this method, one-time operations can be performed, such as adding events to controls, one-time enable/disable actions, adding runtime controls or properties to the mask, and similar operations.
+
+Another operation that can be performed in this phase is to use the `setList(ctrl)` method to set the page as a list and indicate the page's list manager. The page's list manager is an HTML control, such as `$("#id_control_manager")`, which can be, for example, a grid or a tree.
+
+## \{Deferred\} beforeRowSelect(table, row)
+
+Called before selecting a row.
+
+## \{Deferred\} afterRowSelect(table, row)
+
+Invoked whenever a row `row` is selected from a table `table`, allowing the page to react accordingly. For example, recalculate or modify fields or show/hide controls based on the selected row.
+
+## \{Deferred\} beforeFill()
+
+Invoked before a mask is filled with DataSet data. It can be used to add or remove controls or change the tag of some control before that control is filled with data. Doing so afterward would not change its actual content.
+
+Also, at this stage, the content of the DataSet has not yet been poured onto the page, so it is still possible to modify the DataSet and see the changes applied to the page controls.
+
+Page filling is generally done multiple times, for example, when a detail page is opened and then closed. Each time this happens, the `beforeFill` and `afterFill` methods will be called.
+
+## \{Deferred\} afterFill()
+
+Invoked after a mask has been filled with all the data. It can be used to supplement automatically displayed data. In this method, it can be assumed that the mask's data is already aligned with that in the DataSet.
+
+## \{Deferred\} beforeClear()
+
+Invoked before emptying a mask following a "set search" command.
+
+## \{Deferred\} afterClear()
+
+Invoked after emptying a mask following a "set search" command. It can be used to empty controls without tags and filled in a modified `afterFill` method.
+
+This method is also called every time, scrolling through a list, you move from one row to another. In this case, a `clear()` is performed first, and then the form is filled with the data of the newly selected row. Therefore, `afterClear`, `beforeFill`, `afterFill` will trigger sequentially.
+
+## \{Deferred\} beforePost()
+
+Invoked before the form data is posted, i.e., before sending it to the backend to write it to the database, after acquiring data from the controls.
+
+## \{Deferred\} freshToolBar()
+
+Invoked when updating the toolbar. It is possible to insert additional actions or replace/remove the use of the toolbar altogether.
+
+## setPageTitle()
+
+Invoked when displaying the page title. It can be used to customize it. It usually displays the name of the edited entity followed by the state of the mask.
+
+## \{Deferred\} beforeActivation()
+
+**Invoked once**
+
+Called before filling the tables of a form, the first time it is shown. It can be used, for example, to specify additional tables for which to perform prefill (put them in the cache). Another useful point for this purpose is the `afterLink()` method. Note that tables associated with SELECT are automatically cached (read only once).
+
+Example:
+
+```js
+appMeta.metaModel.cachedTable(table, true); // marks the table 'table' as cached
+
+//// Set static filter
+this.state.DS.tables.table1.staticFilter(window.jsDataQuery.eq("idtable1", id));
+
+// Mark some tables as temporary to ensure they are not read/written from the database by the library.
+// In this case, it is up to the developer to fill or empty these tables as needed.
+appMeta.metaModel.temporaryTable(table, true);
+```
+
 ## \{Deferred\} afterActivation()
 
-**Richiamato una volta sola**
+**Invoked once**
 
-E' chiamato prima di visualizzare i dati di un form la prima volta, dopo aver effettuato il prefill delle tabelle del DataSet che eventualmente sono cached.
-
-
-
-
-
-
+Called before displaying the data of a form for the first time, after performing the prefill of the DataSet tables that are eventually cached.

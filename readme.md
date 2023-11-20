@@ -1,181 +1,149 @@
+[![it](https://img.shields.io/badge/lang-it-green.svg)](https://github.com/TempoSrl/myKode_Frontend/blob/master/readme.it.md)
+
 # Frontend myKode
 
-myKode frontend è un framework che consente di sviluppare maschere web anche molto sofisticate con pochissimo codice.
+The myKode frontend is a framework that allows the development of sophisticated web forms with minimal code.
 
-Il frontend javascript è un rich client, quindi l'interazione avviene senza continui postback.
+The JavaScript frontend is a rich client, enabling interaction without continuous postbacks.
 
-Tramite dei servizi presenti nel backend (disponibile sia in versione Node.js che .NET), svolge un set di 
- operazioni che consentono una "normale ""operatività nelle maschere web, consentendo al tempo stesso una facile estendibilità sia dal punto di vista delle componenti visuali contenute nella maschera e sia delle funzioni di interazione specifiche che la maschera può prevedere.
+Through services provided by the backend (available in both Node.js and .NET versions), it performs a set of operations that allow "normal" operations on web forms. It also allows easy extensibility in terms of both the visual components contained in the form and the specific interaction functions the form may require.
 
-Una generica maschera si intenda associata ad un [DataSet](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataSet.md), (simile a quelli di ADO.NET) che contiene la copia locale di un set
-  di righe che sono presenti sul database (o che lo saranno in futuro)
+A generic form is associated with a [DataSet](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataSet.md) (similar to those in ADO.NET), containing a local copy of a set of rows present in the database (or that will be in the future).
 
+By "normal operations," it is meant, for example:
 
-Per "normale operatività" si intende, a mero titolo di esempio:
+- The ability to set up a search in "query by example" mode, entering the data to be compared in the form, and then initiating the search based on the entered data [1].
+- Modify existing data.
+- Insert new data [2].
+- Open "detail" forms (even second or third level) on the "child" rows of the main row.
+- Delete a row and all its related details.
+- Display lists based on the selection of parent rows of the main row to populate fields in the main table.
 
-- la possibilità di impostare una ricerca in modalità "query by example", ossia immettendo i dati che si desidera confrontare
-  nella maschera e poi avviare la ricerca sulla base dei dati inseriti [1]
-- modificare dei dati esistenti
-- inserire nuovi dati [2]
-- aprire delle maschere "di dettaglio" (anche di secondo o terzo livello ) sulle righe "figlie" della riga principale
-- cancellare una riga e con tutti i relativi dettagli
-- visualizzare elenchi sulla selezione di righe parent della riga principale, al fine di valorizzare campi della tabella principale
+The basic idea is to have a DataSet (similar to those in ADO.NET) to store the local copy of the data objects being processed and operate on the database based on a set of conventions and properties of the DataSet's columns, as well as the rows (DataRow) contained in DataTables.
 
+However, the DataSet is not intended to contain any set of rows from the database but data that must adhere to a certain logic.
 
+## Main Table and Sub-Entities
 
-L'idea di base è avere un DataSet (simile a quelli di ADO.NET) per memorizzare la copia locale dei dati oggetti dell'elaborazione, e operare sul database sulla base di un insieme di convenzioni e proprietà delle colonne del DataSet, oltre che alle righe (DataRow) contenute dei DataTable.
+In particular, there is a "main" table that contains a "main" processing object.
 
-Tuttavia il DataSet non si intende contenere un set di righe qualsiasi del database, ma dei dati che devono rispettare una certa  logica. 
- 
+The main table within the framework is defined as an *entity*. We will interchangeably refer to the main table or main entity of a form.
 
-## Tabella principale e subentità
+For example, it could be a row from an address book table or an order table.
 
+Then (optionally), there are a set of "sub-entities," representing details of the main row.
 
+In the case of an address book, these could be an "address" table with various addresses for that person (office, fiscal domicile, residence, etc.) or a "phone" table with various phone numbers.
 
-In particolare, c'è una tabella "principale" che contiene una riga oggetto "principale" dell'elaborazione.
+In the case of an order, it could be a "order_detail" table with details of the ordered goods.
 
-La tabella principale nell'ambito del framework è definita *entità*. Parleremo indifferentemente di tabella principale o entità principale di una maschera.
+### Relationship: Entity - Sub-Entity or Sub-Entity - Sub-Entity
 
-Ad esempio potrebbe essere la riga di una tabella anagrafica o di una tabella ordine.
+The relationship between the entity and sub-entity is not generic but must connect **the entire key** of the parent table with **key fields** of the child table.
 
-Poi (opzionalmente) vi sono un insieme di tabelle "subentità", che rappresentano i dettagli della riga principale.
- 
-Nel caso di un'anagrafica potrebbero essere una tabella "indirizzo" con i vari indirizzi di quella persona (ufficio, domicilio fiscale, residenza, etc.) o una tabella "telefono" con i vari numeri telefonici.
+This logically guarantees that there can never be a row in the sub-entity table not connected to any parent row (entity or sub-entity). A sub-entity is, in fact, considered a **detail** of the main entity.
 
-Nel caso di un caso di un ordine, potrebbe essere una tabella "dettaglio_ordine" con i dettagli della merce ordinata.
+The "main" row is the one selected from the search performed with the "query by example" mentioned in point [1] above, or the row created in point [2].
 
+There may also be other referenced tables in the DataSet, parents of entities and sub-entities, which are not subject to modification by the form. During user data editing, the distinction between these two sets of tables is crucial. The tables subject to editing (entities and sub-entities) will never be re-read from the database while the user interacts with the form, to avoid losing any modifications being made. Similarly, a row (DataRow) in the insertion state (entity or sub-entity) would be lost if that table were accidentally re-read in the corresponding DataTable.
 
-### Relazione entità - subentità o subentità-subentità
+Conversely, parent tables can be re-read, for example, to select a new parent row for the main row or simply to update them if they have changed in the meantime, as can happen with tables with highly volatile content.
 
-La relazione tra entità e subentità non è generica, ma deve collegare **tutta la chiave** della tabella parent con  **campi chiave** della tabella child.
+When creating a form, it must be decided which is the main table and which sub-entities can be modified in that form and in its possible detail forms. These tables should be added to the DataSet and related.
 
-Questo logicamente garantisce che non potrà mai esistere una riga della tabella subentità non collegata ad alcuna riga parent (entità o subentità). Una subentità è infatti da considerarsi un **dettaglio** dell'entità principale.
+Tables that serve to improve the visualization of the first set of tables, typically parent tables, should be added to the DataSet and related by inserting the appropriate DataRelations.
 
+## Automatic Reading and Writing of the DataSet
 
+The advantage at this point is that the framework knows how to fill the entire DataSet when the user selects a row from the list. Similarly, if the user decides to delete the main row, the framework already knows which rows in the detail tables to delete. Finally, during insertion, the framework knows the order in which to insert the rows and how to propagate the calculation of incremental key fields from parent tables to child tables.
 
-La riga "principale" è quella che si seleziona dalla ricerca effettuata con la "query by example" del punto [1] di cui sopra, oppure la riga che si crea nel punto [2].
-  
-Ci possono essere poi nel DataSet altre tabelle referenziate, parent delle entità e subentità, e che non sono oggetto di modifica da parte della maschera. 
+Conversely, tables that are not entities or sub-entities will never be written during the save operation of a form.
 
-Durante l'edit dei dati da parte dell'utente, la distinzione tra questi due insiemi di tabelle è cruciale, infatti le tabelle  oggetto di editing (entità e subentità) non saranno mai rilette dal database mentre l'utente interagisce con la maschera, altrimenti l'utente perderebbe le modifiche che sta effettuando. 
+## Data Display
 
-Anche una riga (DataRow) in stato di inserimento (entità o subentità) sarebbe persa se quella tabella fosse per sbaglio riletta nel  DataTable corrispondente.
+The design of a web form is done with simple HTML tags, where attributes specify a data-tag attribute to indicate which field from which table will be displayed in that control.
 
-Viceversa, le tabelle parent possono essere rilette, ad esempio per selezionare una nuova riga parent della riga principale, o semplicemente per aggiornarle caso mai fossero nel frattempo cambiate, come può succedere in caso di tabelle dal contenuto molto volatile.
+In each form, fields of the main table are normally visible and editable (unless this behavior is disabled). It is also possible, where a sub-entity is in a 1:1 relationship with the entity (at least in the context of the current view), to display and allow editing of the fields of its row. An example of such a table could be a table containing a taxpayer's income tax declaration, and it is decided to display, in a certain form, only the row for the current year.
 
-Quando si crea una maschera si deve decidere qual è la tabella principale e quali subentità consentire di modificare in quella maschera e nelle sue eventuali maschere di dettaglio, e tali tabelle vanno inserite nel DataSet e relazionate.
- 
-Le tabelle che servono a migliorare la visualizzazione del primo set di tabelle, tipicamente tabella parent, vanno aggiunte al DataSet e relazionate inserendo le DataRelation opportune.
+In this case, the income tax table could be filtered by fiscal year, and with this premise, it becomes a 1:1 relationship with the taxpayer table, so the income tax declaration data could be displayed in a form where the main table is the taxpayer.
 
+In other cases, where a table is not a sub-entity and/or not in a 1:1 relationship with the rows of the main table, it will not be possible to display the fields of that table in "simple" controls, such as input-text or similar, but only in HTML tables, which allow displaying multiple rows.
 
-## Lettura e scrittura automatica del DataSet
+Thanks to these premises, the framework automatically fills in the fields of the web form that have the data-tag attribute, which is of the form "table.field".
 
-Il vantaggio che si ottiene a questo punto è che il framework sa perfettamente riempire tutto il DataSet quando l'utente seleziona una riga dall'elenco.
+Similarly, when necessary, the framework can read the data from the form and update it in the appropriate rows of the DataSet.
 
-Allo stesso modo se l'utente decide di cancellare la riga principale, il framework sa già quali sono le righer delle tabelle di dettaglio da eliminare.
+For further details on composing the HTML of a page, refer to [MetaPage HTML](MetaPageHtml.md).
 
-Infine, durante l'inserimento, il framework sa l'ordine con cui inserire le righe e come propagare il calcolo dei campi chiave incrementali dalle tabelle parent alle child.
- 
-All'opposto, le tabelle che non sono entità o subentità non saranno mai scritte nel salvataggio dei dati di una maschera.
+## Data Modification Cycle
 
+It is also possible to add any behavior to the form, and, in essence, it is not necessary to read or write to HTML controls.
 
-## Visualizzazione dei dati
+In fact, the convention for reading or writing form data is to use the following scheme:
 
-Il disegno di una maschera web avviene con semplici tag HTML ove negli attributi si specifica un attributo data-tag per indicare quale campo di quale tabella
- sarà mostrato in quel controllo.
+1) Invoke the getFormData() method of MetaPage, which reads the form data, updating the DataSet's content.
+2) Operate on the DataRow of the DataSet at will, modifying or inserting data into the entity and sub-entity tables.
+3) Invoke the freshForm() method of MetaPage to display the DataSet's data in the web form.
 
-In ogni maschera sono normalmente visibili ed editabili (a meno di inibire tale comportamento) i campi della tabella principale. 
+This way, the code becomes independent of the specific knowledge of which control and what type contains each field that needs to be processed.
 
-E' possibile anche, ove una subentità sia in rapporto 1:1 con l'entità (almeno nell'ambito della visualizzazione corrente), mostrare e consentire l'editing anche dei campi della sua riga. 
+## Application Structure
 
-Un esempio di tale tabella potrebbe essere una tabella che contiene la dichiarazione dei redditi di un contribuente, e si decidesse di visualizzare, in una certa maschera, solo la riga dell'anno corrente.
+Usually, each table is associated with a class derived from MetaData (the "metadata"). The metadata contains all the information about the table
 
-In questo caso si potrebbe filtrare la tabella della dichiarazione per anno fiscale, e con questa premessa diventerebbe in rapporto 1:1 con la tabella del  contribuente, pertanto si potrebbero visualizzare i dati della dichiarazione fiscale anche in una maschera ove la tabella principale fosse il contribuente.
+in a centralized manner, as we will see shortly.
 
-Negli altri casi, ovvero ove una tabella non sia subentità e/o non sia in rapporto 1:1 con le righe della tabella principale, non sarà possibile mostrare i campi  di quella tabella nei controlli "semplici", come input-text o simili, ma solo in html tables, che consentono di visualizzare più righe.
- 
-Grazie a queste premesse, il framework provvede in automatico a riempire i campi della maschera web che hanno l'attributo data-tag, che è del tipo "tabella.campo".
+If the table is subject to modification on some page, each page is built using an HTML file and a class derived from MetaPage. A table might be viewable or editable through different pages, so there is a need to assign a code to each, which is defined as editType.
 
-Analogamente, quando occorre, il framework è in grado di leggere i dati della maschera e riportarli nelle opportune righe del DataSet.
+Therefore, the tableName-editType pair identifies a form in the context of the application, where tableName is the main table of that form (and the underlying DataSet).
 
-Ulteriori dettagli su come comporre l'html di una pagina in [MetaPage HTML](MetaPageHtml.md).
+If the table appears in some list viewable by the user, the field names and characteristics of the list are described in the metadata. Since, in this case as well, there may be a need to list a table (or view) in different ways depending on the context, each list is associated with a code, called listingType.
 
-## Ciclo di modifica dei dati
-
-E' possibile anche aggiungere qualsiasi comportamento alla maschera, e di base non è necessario leggere o scrivere nei controlli html.
-
-Infatti la convenzione per leggere o scrivere i dati della maschera è utilizzare il seguente schema:
-
-1) invocare il metodo getFormData() della MetaPage, che legge i dati della maschera aggiornando il contenuto del DataSet
-2) operare sui DataRow del DataSet a piacimento, modificando o inserendo dati nelle tabelle entità e subentità
-3) invocare metodo freshForm() della MetaPage, per visualizzare i dati del DataSet nella maschera web
-
-in questo modo il codice diviene slegato dalla conoscenza specifica di quale controllo e di che tipo contenga ogni campo che deve essere oggetto di una ipotetica elaborazione.
-
-
-## Struttura dell'applicazione
- 
-Ad ogni tabella è di solito associata una classe derivata da MetaData (il "metadato"). Nel metadato sono presenti tutte le informazioni sulla tabella in modo centralizzato, come vedremo a breve.
-
-Se la tabella è oggetto di modifica in qualche pagina, ogni pagina è costruita mediante un file html ed classe
- derivata da MetaPage. Una tabella potrebbe essere visualizzabile o editabile mediante diverse pagine, per questo sorge
- la necessità di assegnare ad ognuna un codice, che è definito editType.
-
-Pertanto la coppia tableName-editType identifica una maschera nell'ambito dell'applicazione, ove tableName è la tabella 
- principale di quella maschera (e del DataSet sottostante)
-
-Se la tabella figura in qualche elenco visualizzabile dall'utente, i nomi dei campi e le caratteristiche dell'elenco sono descritte nel metadato. Poiché anche in questo caso potrebbe esserci la necessità di elencare una tabella (o vista) in diversi modi a seconda del contesto, ad ogni elenco è associato un codice, detto listingType.
-
-Pertanto la coppia tableName-listingType identifica un tipo di elenco nell'ambito dell'applicazione
-
-
-
+Therefore, the tableName-listingType pair identifies a type of list in the context of the application.
 
 ### MetaApp
 
-L'elemento di più alto livello di un'applicazione myKode è la classe [MetaApp](MetaApp.md), che si occupa di registrare e di fornire tutte le pagine
-  ([MetaPage](MetaPage.md)) ed i [MetaDati](https://github.com/TempoSrl/myKode_Backend/blob/main/jsMetaData.md)
+The highest-level element of a myKode application is usually the [MetaApp](MetaApp.md) class, which is responsible for registering and providing all the pages ([MetaPage](MetaPage.md)) and [Metadata](https://github.com/TempoSrl/myKode_Backend/blob/main/jsMetaData.md).
 
-MetaApp si occupa di gestire lo stack delle pagine che vengono via via aperte e chiuse, e del passaggio dei dati tra le stesse.
+MetaApp manages the stack of pages that are successively opened and closed and the passing of data between them.
 
-Di solito non è necessario derivarne una sottoclasse, ma è possibile personalizzarla per modificare la cartella in cui reperisce i file ed i metadati sul server.
+Usually, it is not necessary to derive a subclass, but it is possible to customize it to change the folder where it retrieves the files and metadata on the server.
 
-E' necessario registrare tutte le pagine e tutti i metadati con i metodi di MetaApp. In particolare il metodo 
+It is necessary to register all pages and metadata with the methods of MetaApp. In particular, the method
 
-	addMeta({string}tableName, {[MetaData](https://github.com/TempoSrl/myKode_Backend/blob/main/jsMetaData.md)} Meta)
+```javascript
+addMeta({string}tableName, {[MetaData](https://github.com/TempoSrl/myKode_Backend/blob/main/jsMetaData.md)} Meta)
+```
 
-serve ad associare al nome di una tabella il costruttore del relativo metadato, e analogamente
+is used to associate the name of a table with the constructor of its metadata, and similarly,
 
-	addMetaPage({string}tableName, {string} editType, {[MetaPage](metapagehtml.md)}metaPage)
+```javascript
+addMetaPage({string}tableName, {string} editType, {[MetaPage](metapagehtml.md)}metaPage)
+```
 
-serve ad associare alla coppia tableName-editType una pagina (MetaPage).
-
+is used to associate the tableName-editType pair with a page (MetaPage).
 
 ### MetaData
 
-Un [MetaDato](https://github.com/TempoSrl/myKode_Backend/blob/main/jsMetaData.md) è una classe javascript che descrive le proprietà di una tabella.
+A [Metadata](https://github.com/TempoSrl/myKode_Backend/blob/main/jsMetaData.md) is a JavaScript class that describes the properties of a table.
 
-E' da notare che le proprietà suddette sono impostate come attributi dei DataTable e dei DataColumn del DataSet, ossia il DataSet contiene tutte le informazioni su tutte le tabelle che lo compongono. 
- 
-Usare il metadato per impostarle invece di ripetere tali impostazioni in altri luoghi, come ad esempio in tutte le maschere che dovessero usare tali tabelle, è cruciale per non ripetere codice e rendere possibile la loro manutenzione in modo efficace.
+It should be noted that these properties are set as attributes of DataTables and DataColumns of the DataSet. The DataSet contains all the information about all the tables that compose it.
 
-Inoltre tali informazioni sono usate dal framework ogni volta che ne abbia la necessità, come ad esempio per creare nuove righe in una tabella o validare i dati di una riga.
+Using the metadata to set them, instead of repeating these settings in other places, such as in all forms that should use these tables, is crucial to avoid repeating code and make their maintenance effective.
 
-Essendoci solo un luogo dove descriviamo tali proprietà sarà più comodo sia reperirle che cambiarle con sicurezza.
+Moreover, this information is used by the framework whenever it is needed, such as creating new rows in a table or validating the data of a row.
 
+Since there is only one place where we describe these properties, it will be more convenient both to retrieve them and to change them safely.
 
 ### MetaPage
 
-La [MetaPage](MetaPage.md) è la classe che contiene il codice "comune" a tutte le pagine, come la gestione dei controlli, la gestione della toolbar dei comandi, il riempimento della maschera con i dati del dataset (freshForm) e la lettura dei dati della maschera nel DataSet(getFormData)
+The [MetaPage](MetaPage.md) is the class that contains the "common" code for all pages, such as control management, toolbar command management, filling the form with dataset data (freshForm), and reading form data into the DataSet (getFormData).
 
-La MetaPage è di norma derivata per implementare tutte le pagine utente, ed offre dei metodi appositi (degli hook) per integrare il comportamento base con funzioni specifiche di ogni pagina.
+MetaPage is usually derived to implement all user pages and offers specific methods (hooks) to integrate the base behavior with specific functions of each page.
 
-Pertanto se le classi derivate da MetaData contengono delle informazioni generali su ogni singola tabella, condivise da tutta l'applicazione, le classi derivate da MetaPage, invece, descrivono il comportamento di ogni singola pagina
+Therefore, if classes derived from MetaData contain general information about each individual table, shared by the entire application, classes derived from MetaPage describe the behavior of each individual page.
 
-Ogni pagina web gestita dal frontend myKode è divisa (almeno) in due parti: l'html e la MetaPage corrispondente, che è una classe derivata da MetaPage e con le peculiarità di quella pagina.
+Each web page managed by the myKode frontend is divided (at least) into two parts: the HTML and the corresponding MetaPage, which is a class derived from MetaPage and has the peculiarities of that page.
 
-Il frontend può, ove necessario, accedere a numerosi servizi del backend per leggere/scrivere dati, utilizzando generalmente la oggetti di tipo 
- [sqlFun](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataQuery.md) per i filtri e [DataSet](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataSet.md)
- per gestire i dati.
-
+The frontend can, if necessary, access many backend services to read/write data, generally using objects of type [sqlFun](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataQuery.md) for filters and [DataSet](https://github.com/TempoSrl/myKode_Backend/blob/main/jsDataSet.md) to manage the data.
 
