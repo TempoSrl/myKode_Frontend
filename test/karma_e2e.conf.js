@@ -37,6 +37,7 @@ module.exports = function(config) {
             'app_segreterie/metadata/MetaSegreterieApp.js',
             'components/metadata/Enum.js',
             'components/metadata/Config.js',
+            { pattern: 'components/metadata/ConfigDev.local.js', included: true, watched: false },
             'components/metadata/ConfigDev.js',
             'components/metadata/Logger.js',
             'components/metadata/EventManager.js',

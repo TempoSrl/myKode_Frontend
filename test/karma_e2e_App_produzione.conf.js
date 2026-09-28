@@ -50,6 +50,7 @@ module.exports = function(config) {
 		'VisualMDLW/metadata/MetaVisualMDLWApp.js',
 		///------------------------------------------
         'components/metadata/Config.js',
+        { pattern: 'components/metadata/ConfigDev.local.js', included: true, watched: false },
         'components/metadata/ConfigDev.js',
         'components/metadata/Enum.js',
         'components/metadata/LocalResource.js',
